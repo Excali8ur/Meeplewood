@@ -1,5 +1,5 @@
 <img width="640" alt="Meeplewood_Banner" src="https://github.com/user-attachments/assets/9b88a03d-f772-480e-bb8c-92cb38e754b8" />
-
+# Creating a conflict ( I think)
 # Project Philosophy
 > Building something useful, being creative, learning new things and make board game data fun to explore.
 > In other words: 'Because I can'-project ;)
