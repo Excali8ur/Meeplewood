@@ -120,7 +120,7 @@ BoardGameGeek has extensive and [detailed documentation](https://boardgamegeek.c
 
 #### Collection Management
 
-![BGGProfileOptions](img/fig_BGG02.png)
+![BGGProfileOptions](img/fig_BGG02.png)</br>
 *Figure 2: BGG Profile options*
 
 The main page starts with a dashboard containing information about latest news and blogs, the best ("Hotness") and newest games. This is public information and is visible without an account.
