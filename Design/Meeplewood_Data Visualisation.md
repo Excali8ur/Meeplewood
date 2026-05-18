@@ -1,5 +1,7 @@
 # Data Visualisation
 
+![MeepleWood Banner](img/Meeplewood_Banner.png)
+
 ## Table of Contents
 
 - [Introduction](#introduction)

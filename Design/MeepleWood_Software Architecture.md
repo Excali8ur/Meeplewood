@@ -1,6 +1,9 @@
 # Software Architecture
 
+![MeepleWood Banner](img/Meeplewood_Banner.png)
+
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Used Frameworks](#used-frameworks)
 - [System Architecture Overview](#system-architecture-overview)
@@ -9,51 +12,42 @@
 - [Interface design](#interface-design)
 - [References](#references)
 - [Appendix I: Chatlogs CoPilot](#appendix-i-chatlogs-copilot)
-  - [14-04-2026 Setting up basic framework](#14-04-2026-setting-up-basic-framework)
-  - [Project structure](#project-structure)
-  - [Key decisions](#key-decisions)
-  - [How this app is structured](#how-this-app-is-structured)
-  - [Folder-by-folder breakdown](#folder-by-folder-breakdown)
-  - [TypeScript vs JavaScript](#typescript-vs-javascript)
-  - [How data flows — a full example (Import)](#how-data-flows--a-full-example-import)
-  - [How to make a change — practical examples](#how-to-make-a-change--practical-examples)
-  - [Running the app](#running-the-app)
 
 ---
 
-# Introduction
+## Introduction
 
-# Used Frameworks
+## Used Frameworks
 
 *AI helped me setup the basics and asked to explain it to me afterwards, see appendix for full log.*
 
-## Understanding Next.js and Tailwind
+### Understanding Next.js and Tailwind
 
 - https://medium.com/@elanaolson/a-beginners-guide-to-building-a-react-nextjs-app-7463120389f0
 - https://nextjs.org/docs/app/getting-started/project-structure
 - https://nextjs.org/docs/pages/building-your-application/routing/pages-and-layouts
 
-# System Architecture Overview
+## System Architecture Overview
 
-# Component Diagram
+## Component Diagram
 
 - Purpose and responsibilities
 - Input and output specifications
 - Algorithms and processing logic
 - Dependencies on other components or external systems
 
-# Class diagram
+## Class diagram
 
 - If useful
 
-# Interface design
+## Interface design
 
 - API specifications and protocols
 - Message formats and data structures
 - How errors and exceptions will be handled
 - Security and authentication methods
 
-# References
+## References
 
 - BoardGameGeek. (n.d.). Retrieved from https://boardgamegeek.com/
 - Boumans, R. (2026). Github repository. Retrieved from https://github.com/Excali8ur/Meeplewood
@@ -67,9 +61,9 @@
 
 ---
 
-# Appendix I: Chatlogs CoPilot
+## Appendix I: Chatlogs CoPilot
 
-## 14-04-2026 Setting up basic framework
+### 14-04-2026 Setting up basic framework
 
 **User:** Create a basic structure for the webapplication using Next.js + D3.Js. Data will be handled via excel and json.
 
@@ -95,9 +89,9 @@ Created 8 todos:
 
 Dev server is running at `http://localhost:3000`.
 
-### Project structure
+#### Project structure
 
-### Key decisions
+#### Key decisions
 
 | Choice | Reason |
 |---|---|
@@ -111,17 +105,17 @@ Dev server is running at `http://localhost:3000`.
 
 **GitHub Copilot:** Let me look at the current files to give you an accurate picture.
 
-# How this app is structured
+## How this app is structured
 
 Think of it like a C# MVC web project, but where the folder structure itself defines the routes.
 
-## The mental model
+### The mental model
 
 Next.js blends the frontend (what the user sees) and backend (API logic, file reading) into one project. In C# terms: it's like having your Razor pages and your Web API controllers in the same project.
 
-# Folder-by-folder breakdown
+## Folder-by-folder breakdown
 
-## `app/` — Pages & API (the router)
+### `app/` — Pages & API (the router)
 
 This is the heart of the app. Every folder inside `app/` becomes a URL.
 
@@ -138,26 +132,26 @@ This is the heart of the app. Every folder inside `app/` becomes a URL.
 
 The `api/` routes are your Web API controllers. They only run on the server and never send HTML — just JSON or file data.
 
-## `components/` — Reusable UI pieces
+### `components/` — Reusable UI pieces
 
 Like user controls in C# WebForms, or React components. They render HTML but have no URL of their own.
 
 - `NavBar.tsx` — the navigation bar used on every page
 - `BarChart.tsx` — the D3.js chart, reusable anywhere
 
-## `lib/` — Shared server-side logic
+### `lib/` — Shared server-side logic
 
 Like a C# service class. `dataStore.ts` contains the functions `readRecords()` and `writeRecords()` — any API route imports and calls these instead of duplicating file-reading code.
 
-## `data/records.json` — The data store
+### `data/records.json` — The data store
 
 Currently a flat JSON file acting as the database.
 
-# TypeScript vs JavaScript
+## TypeScript vs JavaScript
 
 TypeScript is JavaScript with types. If you know JS, you already know most of it.
 
-# How data flows — a full example (Import)
+## How data flows — a full example (Import)
 
 1. Browser — user picks `boardgames.xlsx` on `/import`
 2. `app/import/page.tsx` — JavaScript sends the file to `/api/import` via `fetch()`
@@ -167,9 +161,9 @@ TypeScript is JavaScript with types. If you know JS, you already know most of it
 
 The same flow works in reverse for Export, and a simple GET fetch for the Data and Visualise pages.
 
-# How to make a change — practical examples
+## How to make a change — practical examples
 
-## Add a new page (e.g. `/about`)
+### Add a new page (e.g. `/about`)
 
 1. Create folder `app/about/`
 2. Create file `app/about/page.tsx` with:
@@ -182,21 +176,14 @@ export default function AboutPage() {
 
 3. That's it — it's live at `http://localhost:3000/about`
 
-## Add a new column to your data
+### Add a new column to your data
 
 Just import an Excel/JSON file that has that column — the app stores whatever fields exist on the objects. No schema changes needed.
 
-## Change a chart
+### Change a chart
 
 Edit `components/BarChart.tsx` — D3 code lives in the `useEffect` hook. If you know D3, it's standard D3 v7 API.
 
-# Running the app
+## Running the app
 
 Go to `.\Meeplewood\Code\src` in terminal and run commands.
-
----
-
-**Author:** Rianne Boumans  
-**Last change:** 14/04/2026  
-**Git Repository:** https://github.com/Excali8ur/Meeplewood
-
