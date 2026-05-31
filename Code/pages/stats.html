@@ -1,0 +1,59 @@
+<h1>Statistics</h1>
+<p>View your gaming statistics and trends here.</p>
+
+<div class="stats-filters">
+    <button class="filter-button active" data-period="week">This Week</button>
+    <button class="filter-button" data-period="month">This Month</button>
+    <button class="filter-button" data-period="year">This Year</button>
+    <button class="filter-button" data-period="all">All Time</button>
+</div>
+
+<div class="stats-grid">
+    <div class="stats-card">
+        <h3>Total Plays</h3>
+        <div id="totalPlaysChart" class="chart-container">
+            <p class="chart-placeholder">Chart will be rendered here using D3.js</p>
+        </div>
+    </div>
+    
+    <div class="stats-card">
+        <h3>Top Games</h3>
+        <div id="topGamesChart" class="chart-container">
+            <p class="chart-placeholder">Top games chart will appear here</p>
+        </div>
+    </div>
+    
+    <div class="stats-card">
+        <h3>Win Rate</h3>
+        <div id="winRateChart" class="chart-container">
+            <p class="chart-placeholder">Win rate visualization</p>
+        </div>
+    </div>
+    
+    <div class="stats-card">
+        <h3>Play Time Distribution</h3>
+        <div id="playTimeChart" class="chart-container">
+            <p class="chart-placeholder">Play time chart</p>
+        </div>
+    </div>
+</div>
+
+<div class="detailed-stats">
+    <h2>Detailed Statistics</h2>
+    <table class="stats-table">
+        <thead>
+            <tr>
+                <th>Game</th>
+                <th>Plays</th>
+                <th>Wins</th>
+                <th>Win Rate</th>
+                <th>Avg. Duration</th>
+            </tr>
+        </thead>
+        <tbody id="statsTableBody">
+            <tr>
+                <td colspan="5" class="empty-state">No data available yet</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

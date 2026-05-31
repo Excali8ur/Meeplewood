@@ -1,0 +1,104 @@
+<h1>Settings</h1>
+<p>Configure your Meeplewood preferences</p>
+
+<div class="settings-sections">
+    <section class="settings-section">
+        <h2>General Settings</h2>
+        
+        <div class="setting-item">
+            <label for="userName">Display Name</label>
+            <input type="text" id="userName" placeholder="Your name">
+        </div>
+        
+        <div class="setting-item">
+            <label for="defaultView">Default View</label>
+            <select id="defaultView">
+                <option value="dashboard">Dashboard</option>
+                <option value="games">Games</option>
+                <option value="stats">Statistics</option>
+                <option value="groups">Groups</option>
+            </select>
+        </div>
+        
+        <div class="setting-item">
+            <label class="checkbox-label">
+                <input type="checkbox" id="showWelcome">
+                Show welcome message on startup
+            </label>
+        </div>
+    </section>
+    
+    <section class="settings-section">
+        <h2>Data & Import</h2>
+        
+        <div class="setting-item">
+            <button class="primary-button" id="importBGStatsBtn">Import from BGStats</button>
+            <p class="setting-description">Import your board game collection and play history from BGStats export file</p>
+        </div>
+        
+        <div class="setting-item">
+            <button class="primary-button" id="importBGGBtn">Import from BoardGameGeek</button>
+            <p class="setting-description">Import your collection from BoardGameGeek (BGG username required)</p>
+        </div>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="exportDataBtn">Export All Data</button>
+            <p class="setting-description">Export all your Meeplewood data as JSON</p>
+        </div>
+    </section>
+    
+    <section class="settings-section">
+        <h2>Display Preferences</h2>
+        
+        <div class="setting-item">
+            <label for="theme">Theme</label>
+            <select id="theme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="auto">Auto (System)</option>
+            </select>
+        </div>
+        
+        <div class="setting-item">
+            <label for="cardSize">Game Card Size</label>
+            <select id="cardSize">
+                <option value="small">Small</option>
+                <option value="medium" selected>Medium</option>
+                <option value="large">Large</option>
+            </select>
+        </div>
+    </section>
+    
+    <section class="settings-section">
+        <h2>Privacy & Data</h2>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="clearCacheBtn">Clear Cache</button>
+            <p class="setting-description">Clear temporary data and cached images</p>
+        </div>
+        
+        <div class="setting-item">
+            <button class="danger-button" id="resetDataBtn">Reset All Data</button>
+            <p class="setting-description">⚠️ Warning: This will delete all your games, plays, and groups permanently</p>
+        </div>
+    </section>
+    
+    <section class="settings-section">
+        <h2>About</h2>
+        
+        <div class="about-info">
+            <p><strong>Meeplewood</strong></p>
+            <p>Version: 1.0.0</p>
+            <p>Your personal board game companion</p>
+            <p style="margin-top: 10px;">
+                <a href="#" id="viewLicenseBtn">View License</a> | 
+                <a href="#" id="reportIssueBtn">Report Issue</a>
+            </p>
+        </div>
+    </section>
+</div>
+
+<div class="settings-actions">
+    <button class="primary-button" id="saveSettingsBtn">Save Settings</button>
+    <button class="secondary-button" id="cancelSettingsBtn">Cancel</button>
+</div>

@@ -1,0 +1,39 @@
+<h1>Gaming Groups</h1>
+<p>Manage your gaming groups and friends.</p>
+
+<div class="groups-header">
+    <button id="createGroupBtn" class="primary-button">+ Create New Group</button>
+</div>
+
+<div id="groupsList" class="groups-list">
+    <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>No groups yet. Create one to get started!</p>
+    </div>
+</div>
+
+<div id="groupDetails" class="group-details" style="display: none;">
+    <!-- Group details will be shown here -->
+</div>
+
+<!-- Create Group Modal (hidden by default) -->
+<div id="createGroupModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h2>Create New Group</h2>
+        <form id="createGroupForm">
+            <div class="form-group">
+                <label for="groupName">Group Name</label>
+                <input type="text" id="groupName" name="groupName" required placeholder="e.g., Weekly Game Night">
+            </div>
+            <div class="form-group">
+                <label for="groupDescription">Description</label>
+                <textarea id="groupDescription" name="groupDescription" rows="3" placeholder="Optional description"></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="secondary-button" id="cancelGroupBtn">Cancel</button>
+                <button type="submit" class="primary-button">Create Group</button>
+            </div>
+        </form>
+    </div>
+</div>

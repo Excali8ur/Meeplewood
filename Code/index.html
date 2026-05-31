@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Fonts -> Delet unused fonts after final decisions -->
+    <link href="https://fonts.googleapis.com/css2?family=Agbalumo&family=Chicle&family=Kavoon&family=Lobster&display=swap" rel="stylesheet">
+    <title>Meeplewood</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/mainstyle.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/games.css">
+    <link rel="stylesheet" href="css/stats.css">
+    <link rel="stylesheet" href="css/groups.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <!-- Banner Component -->
+    <header class="banner">
+        <div class="banner-left">
+            <div class="logo">
+                <span class="logo-icon"><img src="img/Meeplewood_Banner.png" alt="Meeplewood Leafy"></span>
+            </div>
+            <nav class="banner-nav">
+                <button class="nav-button" data-route="dashboard">Dashboard</button>
+                <button class="nav-button" data-route="games">Games</button>
+                <button class="nav-button" data-route="stats">Stats</button>
+                <button class="nav-button" data-route="groups">Groups</button>
+            </nav>
+        </div>
+        <div class="banner-right">
+            <button class="settings-button" id="settingsButton">⚙️</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="mainContent" class="container">
+        <!-- Content will be dynamically loaded here -->
+    </main>
+
+    <script src="scripts/dashboard.js"></script>
+    <script src="scripts/games.js"></script>
+    <script src="scripts/stats.js"></script>
+    <script src="scripts/groups.js"></script>
+    <script src="scripts/settings.js"></script>
+    <script src="scripts/mainscript.js"></script>
+</body>
+</html>
