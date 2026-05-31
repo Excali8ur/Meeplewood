@@ -1,0 +1,26 @@
+<div class="page-header">
+    <h1>🎪 Spiel Preview Manager</h1>
+    <p>Plan your convention visits and track must-see games</p>
+</div>
+
+<div class="preview-controls">
+    <div class="filter-buttons">
+        <button class="filter-btn active" data-priority="all">All Games (<span id="countAll">0</span>)</button>
+        <button class="filter-btn priority-2" data-priority="2">Must Buy (<span id="count2">0</span>)</button>
+        <button class="filter-btn priority-3" data-priority="3">Want (<span id="count3">0</span>)</button>
+        <button class="filter-btn priority-4" data-priority="4">Maybe (<span id="count4">0</span>)</button>
+    </div>
+    
+    <div class="search-bar">
+        <input type="text" id="spielSearch" placeholder="Search by title, publisher, or location...">
+    </div>
+</div>
+
+<div id="noGamesMessage" class="no-games" style="display: none;">
+    <p>📋 No Spiel preview list imported yet.</p>
+    <p>Go to <a href="#settings" onclick="router.navigate('settings')">Settings</a> to import your CSV file.</p>
+</div>
+
+<div id="spielGrid" class="spiel-grid">
+    <!-- Game cards will be inserted here -->
+</div>

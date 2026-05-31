@@ -50,6 +50,12 @@ const SettingsPage = {
             cancelBtn.addEventListener('click', this.cancelSettings.bind(this));
         }
         
+        // Import Spiel Preview
+        const importSpielBtn = document.getElementById('importSpielBtn');
+        if (importSpielBtn) {
+            importSpielBtn.addEventListener('click', this.importSpielPreview.bind(this));
+        }
+        
         // Import BGStats
         const importBGStatsBtn = document.getElementById('importBGStatsBtn');
         if (importBGStatsBtn) {
@@ -154,6 +160,112 @@ const SettingsPage = {
         input.click();
     },
     
+    importSpielPreview: function() {
+        console.log('Import Spiel Preview CSV');
+        
+        // Create file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const csvText = event.target.result;
+                        const parsedGames = this.parseSpielCSV(csvText);
+                        
+                        // Store in localStorage
+                        localStorage.setItem('meeplewood_spiel_preview', JSON.stringify(parsedGames));
+                        
+                        console.log(`Imported ${parsedGames.length} games from Spiel preview`);
+                        
+                        // Show success message
+                        const statusEl = document.getElementById('spielImportStatus');
+                        if (statusEl) {
+                            statusEl.textContent = `✓ Successfully imported ${parsedGames.length} games from ${file.name}`;
+                            statusEl.style.display = 'block';
+                            
+                            // Hide after 5 seconds
+                            setTimeout(() => {
+                                statusEl.style.display = 'none';
+                            }, 5000);
+                        }
+                        
+                        alert(`Successfully imported ${parsedGames.length} games from Spiel preview!`);
+                    } catch (error) {
+                        console.error('Error parsing Spiel CSV:', error);
+                        alert('Error parsing CSV file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        
+        input.click();
+    },
+    
+    parseSpielCSV: function(csvText) {
+        const lines = csvText.split('\n');
+        const headers = this.parseCSVLine(lines[0]);
+        const games = [];
+        
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim() === '') continue; // Skip empty lines
+            
+            const values = this.parseCSVLine(lines[i]);
+            if (values.length < headers.length) continue; // Skip incomplete lines
+            
+            const game = {};
+            headers.forEach((header, index) => {
+                game[header] = values[index] || '';
+            });
+            
+            // Add metadata
+            game.imported = new Date().toISOString();
+            game.userPriority = game.Priority || '4'; // Default to 4 (undecided)
+            game.userNotes = game.Notes || '';
+            
+            games.push(game);
+        }
+        
+        return games;
+    },
+    
+    parseCSVLine: function(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            if (char === '"') {
+                if (inQuotes && line[i + 1] === '"') {
+                    // Escaped quote
+                    current += '"';
+                    i++;
+                } else {
+                    // Toggle quote mode
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                // End of field
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        
+        // Add last field
+        result.push(current.trim());
+        
+        return result;
+    },
+    
     importBGG: function() {
         const username = prompt('Enter your BoardGameGeek username:');
         if (username) {
@@ -171,6 +283,7 @@ const SettingsPage = {
             plays: JSON.parse(localStorage.getItem('meeplewood_plays') || '[]'),
             groups: JSON.parse(localStorage.getItem('meeplewood_groups') || '[]'),
             stats: JSON.parse(localStorage.getItem('meeplewood_stats') || '{}'),
+            spielPreview: JSON.parse(localStorage.getItem('meeplewood_spiel_preview') || '[]'),
             exportDate: new Date().toISOString()
         };
         

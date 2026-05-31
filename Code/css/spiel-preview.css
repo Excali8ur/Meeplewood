@@ -1,0 +1,283 @@
+/* Spiel Preview Page Styles */
+
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0 0 10px 0;
+    font-family: 'Agbalumo', cursive;
+    color: #2c3e50;
+}
+
+.page-header p {
+    margin: 0;
+    color: #7f8c8d;
+}
+
+/* Preview Controls */
+.preview-controls {
+    margin-bottom: 30px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    border: 2px solid #e0e0e0;
+    background-color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: #f8f9fa;
+}
+
+.filter-btn.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.filter-btn.priority-2.active {
+    background-color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.filter-btn.priority-3.active {
+    background-color: #f39c12;
+    border-color: #f39c12;
+}
+
+.filter-btn.priority-4.active {
+    background-color: #95a5a6;
+    border-color: #95a5a6;
+}
+
+.search-bar {
+    width: 100%;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* Games Grid */
+.spiel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.spiel-card {
+    background: white;
+    border-radius: 12px;
+    border-left: 5px solid #95a5a6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.spiel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.spiel-card.priority-2 {
+    border-left-color: #e74c3c;
+}
+
+.spiel-card.priority-3 {
+    border-left-color: #f39c12;
+}
+
+.spiel-card.priority-4 {
+    border-left-color: #95a5a6;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.game-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: 'Agbalumo', cursive;
+    flex: 1;
+    line-height: 1.3;
+}
+
+.bgg-link {
+    font-size: 24px;
+    text-decoration: none;
+    margin-left: 10px;
+    transition: transform 0.2s ease;
+}
+
+.bgg-link:hover {
+    transform: scale(1.2);
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.game-info {
+    margin-bottom: 15px;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.info-row .label {
+    font-weight: 600;
+    color: #7f8c8d;
+    min-width: 80px;
+}
+
+.info-row .value {
+    color: #2c3e50;
+    flex: 1;
+}
+
+.info-row .value.location {
+    font-weight: 600;
+    color: #3498db;
+}
+
+.priority-control {
+    margin-bottom: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.priority-control label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.priority-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.priority-select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.notes-control {
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.notes-control label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.notes-input {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.notes-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.notes-input::placeholder {
+    color: #adb5bd;
+}
+
+/* No Games Message */
+.no-games {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.no-games p {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.no-games a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.no-games a:hover {
+    text-decoration: underline;
+}
+
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .spiel-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-buttons {
+        flex-direction: column;
+    }
+    
+    .filter-btn {
+        width: 100%;
+    }
+}
