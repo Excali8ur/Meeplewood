@@ -153,10 +153,11 @@ const SpielPreviewPage = {
                     
                     <div class="priority-control">
                         <label>Your Priority:</label>
-                        <select class="priority-select" data-index="${this.games.indexOf(game)}">
-                            <option value="2" ${(game.userPriority || game.Priority) === '2' ? 'selected' : ''}>Must Buy</option>
-                            <option value="3" ${(game.userPriority || game.Priority) === '3' ? 'selected' : ''}>Want</option>
-                            <option value="4" ${(game.userPriority || game.Priority) === '4' ? 'selected' : ''}>Maybe</option>
+                        <select class="priority-select" data-index="${this.games.indexOf(game)}">                            
+                            <option value="1" ${(game.userPriority || game.Priority) === '1' ? 'selected' : ''}>Must Buy</option>
+                            <option value="2" ${(game.userPriority || game.Priority) === '2' ? 'selected' : ''}>Want</option>
+                            <option value="3" ${(game.userPriority || game.Priority) === '3' ? 'selected' : ''}>Maybe</option>
+                            <option value="4" ${(game.userPriority || game.Priority) === '4' ? 'selected' : ''}>No Interest</option>
                         </select>
                     </div>
                     
@@ -172,9 +173,10 @@ const SpielPreviewPage = {
     
     getPriorityLabel: function(priority) {
         const labels = {
-            '2': 'Must Buy',
-            '3': 'Want',
-            '4': 'Maybe'
+            '1': 'Must Buy',
+            '2': 'Want',
+            '3': 'Maybe',
+            '4': 'No Interest'
         };
         return labels[priority] || 'Maybe';
     },
@@ -203,6 +205,7 @@ const SpielPreviewPage = {
     updateCounts: function() {
         const counts = {
             all: this.games.length,
+            '1': 0,
             '2': 0,
             '3': 0,
             '4': 0
@@ -216,11 +219,13 @@ const SpielPreviewPage = {
         });
         
         const countAll = document.getElementById('countAll');
+        const count1 = document.getElementById('count1');
         const count2 = document.getElementById('count2');
         const count3 = document.getElementById('count3');
         const count4 = document.getElementById('count4');
         
         if (countAll) countAll.textContent = counts.all;
+        if (count1) count1.textContent = counts['1'];
         if (count2) count2.textContent = counts['2'];
         if (count3) count3.textContent = counts['3'];
         if (count4) count4.textContent = counts['4'];

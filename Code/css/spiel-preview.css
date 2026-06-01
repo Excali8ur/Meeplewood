@@ -1,5 +1,4 @@
 /* Spiel Preview Page Styles */
-
 .page-header {
     text-align: center;
     margin-bottom: 30px;
@@ -30,8 +29,9 @@
 
 .filter-btn {
     padding: 10px 20px;
-    border: 2px solid #e0e0e0;
-    background-color: white;
+    border: 2px solid lightgray;
+    background-color: lightgray;
+    color: white;
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
@@ -40,28 +40,28 @@
 }
 
 .filter-btn:hover {
-    background-color: #f8f9fa;
+    background-color: gray;
+    border: 2px solid darkgray;
 }
 
 .filter-btn.active {
-    background-color: #3498db;
-    color: white;
-    border-color: #3498db;
+    background-color: #3498db;    
+    border: 2px solid darkgray;    
 }
 
 .filter-btn.priority-2.active {
     background-color: #e74c3c;
-    border-color: #e74c3c;
+    border: 2px solid darkgray;
 }
 
 .filter-btn.priority-3.active {
     background-color: #f39c12;
-    border-color: #f39c12;
+    border: 2px solid darkgray;
 }
 
 .filter-btn.priority-4.active {
     background-color: #95a5a6;
-    border-color: #95a5a6;
+    border: 2px solid darkgray;
 }
 
 .search-bar {
@@ -71,7 +71,7 @@
 .search-bar input {
     width: 100%;
     padding: 12px 15px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid lightgray;
     border-radius: 8px;
     font-size: 16px;
     transition: border-color 0.3s ease;
@@ -92,6 +92,7 @@
 .spiel-card {
     background: white;
     border-radius: 12px;
+    border: 2px solid lightgray;
     border-left: 5px solid #95a5a6;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -192,7 +193,7 @@
 .priority-select {
     width: 100%;
     padding: 8px 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid lightgray;
     border-radius: 6px;
     font-size: 14px;
     cursor: pointer;
