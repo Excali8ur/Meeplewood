@@ -1,0 +1,580 @@
+/* Spiel Preview Page Styles */
+.page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    margin: 0 0 10px 0;
+    font-family: 'Agbalumo', cursive;
+    color: #2c3e50;
+}
+
+.page-header p {
+    margin: 0;
+    color: #7f8c8d;
+}
+
+/* Preview Controls */
+.preview-controls {
+    margin-bottom: 30px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    border: 2px solid lightgray;
+    background-color: lightgray;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: gray;
+    border: 2px solid darkgray;
+}
+
+.filter-btn.active {
+    background-color: #3498db;    
+    border: 2px solid darkgray;    
+}
+
+.filter-btn.priority-1.active {
+    background-color: #e74c3c;
+    border: 2px solid darkgray;
+}
+
+.filter-btn.priority-2.active {
+    background-color: #f39c12;
+    border: 2px solid darkgray;
+}
+
+.filter-btn.priority-3.active {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.filter-btn.priority-4.active {
+    background-color: #95a5a6;
+    border: 2px solid darkgray;
+}
+
+.filter-btn.priority-none.active {
+    background-color: #bdc3c7;
+    border-color: #bdc3c7;
+}
+
+.search-bar {
+    width: 100%;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid lightgray;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* Games Grid */
+.spiel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.spiel-card {
+    background: white;
+    border-radius: 12px;
+    border: 2px solid lightgray;
+    border-left: 5px solid #95a5a6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.spiel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.spiel-card.priority-1 {
+    border-left-color: #e74c3c;
+}
+
+.spiel-card.priority-2 {
+    border-left-color: #f39c12;
+}
+
+.spiel-card.priority-3 {
+    border-left-color: #3498db;
+}
+
+.spiel-card.priority-4 {
+    border-left-color: #95a5a6;
+}
+
+.spiel-card.priority-none {
+    border-left-color: #bdc3c7;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.game-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: 'Agbalumo', cursive;
+    flex: 1;
+    line-height: 1.3;
+}
+
+.bgg-link {
+    font-size: 24px;
+    text-decoration: none;
+    margin-left: 10px;
+    transition: transform 0.2s ease;
+}
+
+.bgg-link:hover {
+    transform: scale(1.2);
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.game-info {
+    margin-bottom: 15px;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.info-row .label {
+    font-weight: 600;
+    color: #7f8c8d;
+    min-width: 80px;
+}
+
+.info-row .value {
+    color: #2c3e50;
+    flex: 1;
+}
+
+.info-row .value.location {
+    font-weight: 600;
+    color: #3498db;
+}
+
+.priority-control {
+    margin-bottom: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.priority-control label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.priority-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid lightgray;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.priority-select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.notes-control {
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.notes-control label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.notes-input {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.notes-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.notes-input::placeholder {
+    color: #adb5bd;
+}
+
+/* Historical Entries */
+.historical-entries {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #e9ecef;
+}
+
+.historical-entries h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #7f8c8d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.historical-entry {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border-left: 3px solid #dee2e6;
+}
+
+.historical-entry:last-child {
+    margin-bottom: 0;
+}
+
+.historical-entry.current {
+    background: #d4edda;
+    border-left-color: #28a745;
+}
+
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.entry-meta {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.entry-meta strong {
+    color: #495057;
+}
+
+.entry-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.entry-badge.current {
+    background: #28a745;
+    color: white;
+}
+
+.entry-badge.historical {
+    background: #6c757d;
+    color: white;
+}
+
+.entry-details {
+    font-size: 13px;
+}
+
+.entry-details .entry-priority {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-right: 8px;
+}
+
+.entry-priority.priority-1 {
+    background: #e74c3c;
+    color: white;
+}
+
+.entry-priority.priority-2 {
+    background: #f39c12;
+    color: white;
+}
+
+.entry-priority.priority-3 {
+    background: #3498db;
+    color: white;
+}
+
+.entry-priority.priority-4 {
+    background: #95a5a6;
+    color: white;
+}
+
+.entry-priority.priority-none {
+    background: #bdc3c7;
+    color: white;
+}
+
+.entry-notes {
+    margin-top: 5px;
+    font-style: italic;
+    color: #495057;
+}
+
+.entry-dates {
+    margin-top: 5px;
+    font-size: 11px;
+    color: #868e96;
+}
+
+/* No Games Message */
+.no-games {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.no-games p {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.no-games a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.no-games a:hover {
+    text-decoration: underline;
+}
+
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+/* File Controls */
+.file-controls {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.primary-button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.primary-button:hover {
+    background-color: #2980b9;
+}
+
+.secondary-button {
+    padding: 10px 20px;
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    margin-left: 10px;
+}
+
+.secondary-button:hover {
+    background-color: #7f8c8d;
+}
+
+#currentFileName {
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* Entry Filters */
+.entry-filters {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.entry-filters h3 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: #2c3e50;
+    font-family: 'Agbalumo', cursive;
+}
+
+.filter-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.filter-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: white;
+    transition: border-color 0.3s ease;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.filter-group input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.filter-group label:has(input[type="checkbox"]) {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+/* Metadata Display */
+.metadata-display {
+    margin-bottom: 20px;
+}
+
+.metadata-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.metadata-card h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-family: 'Agbalumo', cursive;
+}
+
+.metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.metadata-grid div {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.metadata-grid strong {
+    display: block;
+    margin-bottom: 5px;
+    opacity: 0.9;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metadata-grid span {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#metaNotes {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .spiel-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-buttons {
+        flex-direction: column;
+    }
+    
+    .filter-btn {
+        width: 100%;
+    }
+}

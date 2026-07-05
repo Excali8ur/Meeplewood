@@ -74,6 +74,20 @@ const router = {
                     return '<h1>Error loading settings page</h1>';
                 }
             }
+        },
+        
+        'spiel-preview': {
+            title: 'Spiel Preview',
+            render: async function() {
+                try {
+                    const response = await fetch('pages/spiel-preview.html');
+                    const html = await response.text();
+                    return html;
+                } catch (error) {
+                    console.error('Error loading spiel-preview page:', error);
+                    return '<h1>Error loading spiel-preview page</h1>';
+                }
+            }
         }
     },
     
@@ -117,6 +131,8 @@ const router = {
             GroupsPage.init();
         } else if (this.currentRoute === 'settings' && typeof SettingsPage !== 'undefined') {
             SettingsPage.init();
+        } else if (this.currentRoute === 'spiel-preview' && typeof SpielPreviewPage !== 'undefined') {
+            SpielPreviewPage.init();
         }
     }
 };
@@ -141,12 +157,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const route = this.getAttribute('data-route');
             router.navigate(route);
         });
-    });router.navigate('settings');
+    });
+    
     // Handle settings button click
     settingsButton.addEventListener('click', function() {
         console.log('Settings button clicked');
-        // Add settings modal/panel logic here
-        alert('Settings panel will be implemented here');
+        router.navigate('settings');
     });
     
     // Handle browser back/forward buttons

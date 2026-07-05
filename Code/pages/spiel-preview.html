@@ -1,0 +1,88 @@
+<div class="page-header">
+    <h1>🎪 Spiel Preview Manager</h1>
+    <p>Plan your convention visits and track must-see games</p>
+</div>
+
+<div class="preview-controls">
+    <div class="file-controls">
+        <button class="primary-button" id="loadSpielFileBtn">📂 Load Spiel Preview File</button>
+        <button class="secondary-button" id="saveChangesBtn" style="display: none;">💾 Save Changes</button>
+        <span id="currentFileName" style="margin-left: 1rem; color: #666;"></span>
+    </div>
+    
+    <div class="entry-filters" id="entryFilters" style="display: none;">
+        <h3>View Settings</h3>
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="filterYear">Year:</label>
+                <select id="filterYear">
+                    <option value="">Latest</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="filterConvention">Convention:</label>
+                <select id="filterConvention">
+                    <option value="">All</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="filterUser">User:</label>
+                <select id="filterUser">
+                    <option value="">All</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="showHistoricalEntries" checked>
+                    Show historical entries
+                </label>
+            </div>
+            
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="showMultipleEntriesOnly">
+                    Only games with multiple entries
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <div class="filter-buttons">
+        <button class="filter-btn active" data-priority="all">All Games (<span id="countAll">0</span>)</button>
+        <button class="filter-btn priority-1" data-priority="1">Must Have (<span id="count1">0</span>)</button>
+        <button class="filter-btn priority-2" data-priority="2">Interested (<span id="count2">0</span>)</button>
+        <button class="filter-btn priority-3" data-priority="3">Undecided (<span id="count3">0</span>)</button>
+        <button class="filter-btn priority-4" data-priority="4">Not Interested (<span id="count4">0</span>)</button>
+        <button class="filter-btn priority-none" data-priority="">Not Prioritized (<span id="countNone">0</span>)</button>
+    </div>
+    
+    <div class="search-bar">
+        <input type="text" id="spielSearch" placeholder="Search by title, publisher, or location...">
+    </div>
+</div>
+
+<div id="metadataDisplay" class="metadata-display" style="display: none;">
+    <div class="metadata-card">
+        <h3>� Preview List Information</h3>
+        <div class="metadata-grid">
+            <div><strong>Convention:</strong> <span id="metaConvention">-</span></div>
+            <div><strong>Year:</strong> <span id="metaYear">-</span></div>
+            <div><strong>Owner:</strong> <span id="metaUser">-</span></div>
+            <div><strong>Games:</strong> <span id="metaGameCount">0</span></div>
+        </div>
+        <div id="metaNotes" style="margin-top: 0.5rem;"></div>
+    </div>
+</div>
+
+<div id="noGamesMessage" class="no-games" style="display: none;">
+    <p>� No Spiel preview list loaded yet.</p>
+    <p>Click "<strong>Load Spiel Preview File</strong>" above to load your JSON file.</p>
+    <p>Don't have a JSON file? Go to <a href="#settings" onclick="router.navigate('settings')">Settings</a> to import a CSV and create one.</p>
+</div>
+
+<div id="spielGrid" class="spiel-grid">
+    <!-- Game cards will be inserted here -->
+</div>
