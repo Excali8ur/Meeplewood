@@ -784,12 +784,14 @@ const SpielPreviewPage = {
         
         const countAll = document.getElementById('countAll');
         const count1 = document.getElementById('count1');
+        const count1 = document.getElementById('count1');
         const count2 = document.getElementById('count2');
         const count3 = document.getElementById('count3');
         const count4 = document.getElementById('count4');
         const countNone = document.getElementById('countNone');
         
         if (countAll) countAll.textContent = counts.all;
+        if (count1) count1.textContent = counts['1'];
         if (count1) count1.textContent = counts['1'];
         if (count2) count2.textContent = counts['2'];
         if (count3) count3.textContent = counts['3'];
