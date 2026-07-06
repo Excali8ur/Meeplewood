@@ -25,8 +25,43 @@ const SpielPreviewPage = {
         this.attachEventListeners();
         this.renderGames();
         
+        // Show loading screen and hide other elements initially
+        this.showLoadingScreen();
+        
         // Try to auto-load the default file
         this.autoLoadDefaultFile();
+    },
+    
+    showLoadingScreen: function() {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const noGamesMessage = document.getElementById('noGamesMessage');
+        const spielGrid = document.getElementById('spielGrid');
+        const entryFilters = document.getElementById('entryFilters');
+        const metadataDisplay = document.getElementById('metadataDisplay');
+        
+        if (loadingScreen) loadingScreen.style.display = 'flex';
+        if (noGamesMessage) noGamesMessage.style.display = 'none';
+        if (spielGrid) spielGrid.style.display = 'none';
+        if (entryFilters) entryFilters.style.display = 'none';
+        if (metadataDisplay) metadataDisplay.style.display = 'none';
+    },
+    
+    hideLoadingScreen: function() {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const spielGrid = document.getElementById('spielGrid');
+        
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        if (spielGrid) spielGrid.style.display = 'grid';
+    },
+    
+    showNoGamesMessage: function() {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const noGamesMessage = document.getElementById('noGamesMessage');
+        const spielGrid = document.getElementById('spielGrid');
+        
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        if (noGamesMessage) noGamesMessage.style.display = 'block';
+        if (spielGrid) spielGrid.style.display = 'none';
     },
     
     autoLoadDefaultFile: function() {
@@ -45,6 +80,7 @@ const SpielPreviewPage = {
             })
             .catch(error => {
                 console.log('Default file not found, waiting for manual load');
+                this.showNoGamesMessage();
             });
     },
     
@@ -134,6 +170,9 @@ const SpielPreviewPage = {
     loadSpielFile: function() {
         console.log('Loading Spiel Preview JSON file');
         
+        // Show loading screen
+        this.showLoadingScreen();
+        
         // Try to load the default file first
         const defaultPath = 'data/SPIEL-Combined.json';
         
@@ -149,6 +188,7 @@ const SpielPreviewPage = {
             })
             .catch(error => {
                 console.log('Default file not found, opening file picker:', error);
+                this.hideLoadingScreen();
                 this.openFilePicker();
             });
     },
@@ -162,6 +202,9 @@ const SpielPreviewPage = {
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
+                // Show loading screen
+                this.showLoadingScreen();
+                
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
@@ -169,8 +212,15 @@ const SpielPreviewPage = {
                         this.processLoadedData(data, file.name);
                     } catch (error) {
                         console.error('Error parsing JSON file:', error);
+                        this.hideLoadingScreen();
                         alert('Error parsing JSON file: ' + error.message);
+                        this.showNoGamesMessage();
                     }
+                };
+                reader.onerror = () => {
+                    this.hideLoadingScreen();
+                    alert('Error reading file');
+                    this.showNoGamesMessage();
                 };
                 reader.readAsText(file);
             }
@@ -213,6 +263,9 @@ const SpielPreviewPage = {
                 saveBtn.style.display = 'inline-block';
             }
             
+            // Hide loading screen and show content
+            this.hideLoadingScreen();
+            
             // Show metadata
             this.displayMetadata();
             
@@ -223,7 +276,9 @@ const SpielPreviewPage = {
             
             console.log(`Loaded ${this.games.length} games from ${fileName}`);
         } else {
+            this.hideLoadingScreen();
             alert('Invalid file format. Expected JSON with "games" array.');
+            this.showNoGamesMessage();
         }
     },
     

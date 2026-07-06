@@ -1,14 +1,13 @@
 {
   "metadata": {
-    "lastUpdated": "2026-07-05T21:26:04.479Z",
+    "lastUpdated": "2026-07-06T17:56:06.600Z",
     "totalGames": 4164,
     "sources": [
       {
         "year": "2025",
         "convention": "SPIEL",
         "user": "Excali8ur",
-        "notes": "",
-        "sourceFile": "GeekPreview - SPIEL Essen 25 Preview (6).csv",
+        "sourceFile": "GeekPreview - SPIEL Essen 25 Preview.csv",
         "importedDate": "2026-07-05T21:13:32.286Z",
         "gameCount": 859
       },
@@ -16,8 +15,7 @@
         "year": "2025",
         "convention": "SPIEL",
         "user": "Excali8ur",
-        "notes": "",
-        "sourceFile": "GeekPreview - SPIEL Essen 25 Preview (9).csv",
+        "sourceFile": "GeekPreview - SPIEL Essen 25 Preview.csv",
         "importedDate": "2026-07-05T21:13:57.271Z",
         "gameCount": 1290
       },
@@ -25,8 +23,7 @@
         "year": "2023",
         "convention": "SPIEL",
         "user": "Excali8ur",
-        "notes": "",
-        "sourceFile": "GeekPreview - SPIEL Essen 23 Preview - Copy.csv",
+        "sourceFile": "GeekPreview - SPIEL Essen 23 Preview.csv",
         "importedDate": "2026-07-05T21:23:36.159Z",
         "gameCount": 1234
       },
@@ -34,8 +31,7 @@
         "year": "2022",
         "convention": "SPIEL",
         "user": "Excali8ur",
-        "notes": "",
-        "sourceFile": "GeekPreview - SPIEL '22 Preview.csv",
+        "sourceFile": "GeekPreview - SPIEL 22 Preview.csv",
         "importedDate": "2026-07-05T21:24:36.888Z",
         "gameCount": 1203
       },
@@ -43,10 +39,17 @@
         "year": "2024",
         "convention": "SPIEL",
         "user": "Excali8ur",
-        "notes": "",
-        "sourceFile": "GeekPreview - SPIEL Essen 24 Preview (2).csv",
+        "sourceFile": "GeekPreview - SPIEL Essen 24 Preview.csv",
         "importedDate": "2026-07-05T21:26:04.479Z",
         "gameCount": 1229
+      },
+      {
+        "year": "2025",
+        "convention": "SPIEL",
+        "user": "TestDiffUser",
+        "sourceFile": "GeekPreview - SPIEL Essen 25 Preview - TestSet-20Records.csv",
+        "importedDate": "2026-07-06T17:56:06.600Z",
+        "gameCount": 20
       }
     ]
   },
@@ -1013,19 +1016,19 @@
       "Type": "Expansion",
       "Availability": "For Sale",
       "MSRP Currency": "EUR",
-      "MSRP": "30",
+      "MSRP": "25",
       "Show Price Currency": "N/A",
       "Show Price": "N/A",
-      "Publisher": "Pegasus Spiele",
-      "Location": "3-M120",
-      "Thumbs": "120",
+      "Publisher": "Delicious Games",
+      "Location": "4-B425",
+      "Thumbs": "616",
       "BGGId": "440715",
-      "BGGVersionId": "764999",
+      "BGGVersionId": "749613",
       "Mfg Product Code": "",
-      "Release Date": "2025-10-00",
-      "Override Release Date": "",
+      "Release Date": "0000-00-00",
+      "Override Release Date": "Q4 2025",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.082Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -1035,6 +1038,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -1082,10 +1094,10 @@
       "BGGId": "445048",
       "BGGVersionId": "756741",
       "Mfg Product Code": "CGE00134",
-      "Release Date": "2025-10-23",
+      "Release Date": "23/10/2025",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -1095,6 +1107,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -2148,21 +2169,21 @@
     {
       "Title": "Nature",
       "Type": "Standalone",
-      "Availability": "Demo",
-      "MSRP Currency": "N/A",
-      "MSRP": "N/A",
+      "Availability": "For Sale",
+      "MSRP Currency": "EUR",
+      "MSRP": "30",
       "Show Price Currency": "N/A",
       "Show Price": "N/A",
       "Publisher": "North Star Games, LLC",
-      "Location": "4-C210",
-      "Thumbs": "79",
+      "Location": "4-D600",
+      "Thumbs": "932",
       "BGGId": "330152",
       "BGGVersionId": "549334",
-      "Mfg Product Code": "NSG-750",
+      "Mfg Product Code": "",
       "Release Date": "2025-08-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:25:55.917Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -2181,6 +2202,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:26:04.479Z",
           "lastModified": "2026-07-05T21:26:04.479Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -2567,7 +2597,7 @@
       "Release Date": "0000-00-00",
       "Override Release Date": "Q3 2025",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -2577,6 +2607,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -2597,7 +2636,7 @@
       "Release Date": "0000-00-00",
       "Override Release Date": "Q3 2025",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -2607,6 +2646,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -2657,7 +2705,7 @@
       "Release Date": "0000-00-00",
       "Override Release Date": "Q4 2025",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -2667,6 +2715,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -2717,7 +2774,7 @@
       "Release Date": "2025-10-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -2727,6 +2784,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "1",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -6095,10 +6161,10 @@
       "BGGId": "450429",
       "BGGVersionId": "765985",
       "Mfg Product Code": "",
-      "Release Date": "2025-10-24",
+      "Release Date": "24/10/2025",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -6108,6 +6174,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -6851,16 +6926,16 @@
       "MSRP": "60",
       "Show Price Currency": "N/A",
       "Show Price": "N/A",
-      "Publisher": "Skellig Games",
-      "Location": "3-C300",
-      "Thumbs": "137",
+      "Publisher": "Delicious Games",
+      "Location": "4-B425",
+      "Thumbs": "555",
       "BGGId": "443932",
-      "BGGVersionId": "763280",
+      "BGGVersionId": "754840",
       "Mfg Product Code": "",
-      "Release Date": "2025-10-00",
-      "Override Release Date": "",
+      "Release Date": "0000-09-00",
+      "Override Release Date": "Q4 2025",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.081Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -6870,6 +6945,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -9797,10 +9881,10 @@
       "BGGId": "431837",
       "BGGVersionId": "733214",
       "Mfg Product Code": "",
-      "Release Date": "2025-10-03",
+      "Release Date": "03/10/2025",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -9810,6 +9894,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -9846,21 +9939,21 @@
     {
       "Title": "Galactic Cruise",
       "Type": "Standalone",
-      "Availability": "Demo",
-      "MSRP Currency": "N/A",
-      "MSRP": "N/A",
-      "Show Price Currency": "N/A",
-      "Show Price": "N/A",
+      "Availability": "For Sale",
+      "MSRP Currency": "EUR",
+      "MSRP": "120",
+      "Show Price Currency": "EUR",
+      "Show Price": "100",
       "Publisher": "Dranda Games",
-      "Location": "3-H511",
-      "Thumbs": "718",
+      "Location": "3-H400",
+      "Thumbs": "532",
       "BGGId": "391137",
       "BGGVersionId": "669203",
       "Mfg Product Code": "DRNGC001",
-      "Release Date": "2025-04-07",
+      "Release Date": "07/04/2025",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:25:55.923Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -9888,6 +9981,15 @@
           "notes": "Te lang (3/4 uur voor de korte versie...)",
           "insertedDate": "2026-07-05T21:26:04.479Z",
           "lastModified": "2026-07-05T21:26:04.479Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -10089,21 +10191,21 @@
     {
       "Title": "Luthier",
       "Type": "Standalone",
-      "Availability": "Demo",
-      "MSRP Currency": "N/A",
-      "MSRP": "N/A",
+      "Availability": "For Sale",
+      "MSRP Currency": "EUR",
+      "MSRP": "95",
       "Show Price Currency": "N/A",
       "Show Price": "N/A",
       "Publisher": "Paverson Games",
-      "Location": "2-E121",
-      "Thumbs": "502",
+      "Location": "4-D200",
+      "Thumbs": "582",
       "BGGId": "371330",
       "BGGVersionId": "633272",
-      "Mfg Product Code": "PVG02001",
+      "Mfg Product Code": "",
       "Release Date": "2025-07-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:25:55.922Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -10122,6 +10224,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:26:04.479Z",
           "lastModified": "2026-07-05T21:26:04.479Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -11417,7 +11528,7 @@
       "Release Date": "2025-10-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -11427,6 +11538,15 @@
           "notes": "Veel thumbs",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "Veel thumbs",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -13236,21 +13356,21 @@
     {
       "Title": "Ada's Dream",
       "Type": "Standalone",
-      "Availability": "Demo",
-      "MSRP Currency": "N/A",
-      "MSRP": "N/A",
+      "Availability": "For Sale",
+      "MSRP Currency": "EUR",
+      "MSRP": "85",
       "Show Price Currency": "N/A",
       "Show Price": "N/A",
       "Publisher": "Alley Cat Games",
-      "Location": "3-N311",
-      "Thumbs": "587",
+      "Location": "3-B200",
+      "Thumbs": "782",
       "BGGId": "413469",
       "BGGVersionId": "700462",
       "Mfg Product Code": "",
       "Release Date": "2025-10-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:25:55.922Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -13269,27 +13389,36 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:26:04.479Z",
           "lastModified": "2026-07-05T21:26:04.479Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "3",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
     {
       "Title": "Baghdad: The City of Peace",
       "Type": "Standalone",
-      "Availability": "Demo",
-      "MSRP Currency": "N/A",
-      "MSRP": "N/A",
+      "Availability": "For Sale",
+      "MSRP Currency": "EUR",
+      "MSRP": "75",
       "Show Price Currency": "N/A",
       "Show Price": "N/A",
       "Publisher": "Alley Cat Games",
-      "Location": "3-N311",
-      "Thumbs": "122",
+      "Location": "3-B200",
+      "Thumbs": "537",
       "BGGId": "425630",
       "BGGVersionId": "722260",
       "Mfg Product Code": "",
-      "Release Date": "2026-01-00",
+      "Release Date": "2025-10-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:25:55.917Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -13308,6 +13437,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:26:04.479Z",
           "lastModified": "2026-07-05T21:26:04.479Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -13895,7 +14033,7 @@
       "Release Date": "0000-00-00",
       "Override Release Date": "Q4 2025",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -13905,6 +14043,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -15623,7 +15770,7 @@
       "Release Date": "2025-11-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -15633,6 +15780,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "1",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -21017,7 +21173,7 @@
       "Release Date": "2025-10-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -21027,6 +21183,15 @@
           "notes": "Veel thumbs",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "Veel thumbs",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -21215,7 +21380,7 @@
       "Release Date": "0000-00-00",
       "Override Release Date": "Q1 2026",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.080Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -21225,6 +21390,15 @@
           "notes": "Veel thumbs",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "3",
+          "notes": "Veel thumbs",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },
@@ -21668,19 +21842,19 @@
       "Type": "Expansion",
       "Availability": "For Sale",
       "MSRP Currency": "EUR",
-      "MSRP": "35",
+      "MSRP": "80",
       "Show Price Currency": "N/A",
       "Show Price": "N/A",
       "Publisher": "Czech Games Edition",
       "Location": "3-V400, 7-E100",
-      "Thumbs": "132",
+      "Thumbs": "542",
       "BGGId": "439816",
-      "BGGVersionId": "772940",
-      "Mfg Product Code": "",
-      "Release Date": "2025-09-00",
+      "BGGVersionId": "747570",
+      "Mfg Product Code": "CGE00129",
+      "Release Date": "2025-07-00",
       "Override Release Date": "",
       "Events": "",
-      "imported": "2026-07-05T21:13:51.081Z",
+      "imported": "2026-07-06T17:55:49.931Z",
       "entries": [
         {
           "year": "2025",
@@ -21690,6 +21864,15 @@
           "notes": "",
           "insertedDate": "2026-07-05T21:13:32.286Z",
           "lastModified": "2026-07-05T21:13:57.271Z"
+        },
+        {
+          "year": "2025",
+          "convention": "SPIEL",
+          "user": "TestDiffUser",
+          "priority": "4",
+          "notes": "",
+          "insertedDate": "2026-07-06T17:56:06.600Z",
+          "lastModified": "2026-07-06T17:56:06.600Z"
         }
       ]
     },

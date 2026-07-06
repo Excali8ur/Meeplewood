@@ -26,38 +26,12 @@
                 Show welcome message on startup
             </label>
         </div>
-    </section>
-    
-    <section class="settings-section">
-        <h2>Data & Import</h2>
-        
-        <div class="setting-item">
-            <button class="primary-button" id="importSpielBtn">📎 Import Spiel Preview List</button>
-            <p class="setting-description">Import Spiel Essen preview list from CSV, add metadata, and save as JSON</p>
-            <p class="setting-description" id="spielImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
-        </div>        
-        <div class="setting-item">
-            <button class="secondary-button" id="loadExistingSpielBtn">📂 Load Existing Combined File (Optional)</button>
-            <p class="setting-description">Load an existing Spiel preview file to merge new data into it</p>
-            <p class="setting-description" id="existingFileStatus" style="display: none; color: #3498db; font-weight: bold;"></p>
-        </div>        
-        <div class="setting-item">
-            <button class="primary-button" id="importBGStatsBtn">Import from BGStats</button>
-            <p class="setting-description">Import your board game collection and play history from BGStats export file</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="primary-button" id="importBGGBtn">Import from BoardGameGeek</button>
-            <p class="setting-description">Import your collection from BoardGameGeek (BGG username required)</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="exportDataBtn">Export All Data</button>
-            <p class="setting-description">Export all your Meeplewood data as JSON</p>
+        <div class="settings-actions">
+            <button class="primary-button" id="saveSettingsBtn">Save Settings</button>
+            <button class="secondary-button" id="cancelSettingsBtn">Cancel</button>
         </div>
     </section>
-    
-    <section class="settings-section">
+    <section class="settings-section" style="display: none;">
         <h2>Display Preferences</h2>
         
         <div class="setting-item">
@@ -78,6 +52,38 @@
             </select>
         </div>
     </section>
+
+    
+    <section class="settings-section">
+        <h2>Data & Import</h2>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="loadExistingSpielBtn">📂 Load Existing Combined File (Optional)</button>
+            <p class="setting-description">Load an existing Spiel preview file to merge new data into it</p>
+            <p class="setting-description" id="existingFileStatus" style="display: none; color: #3498db; font-weight: bold;"></p>
+        </div>
+        <div class="setting-item">
+            <button class="primary-button" id="importSpielBtn">📎 Import Spiel Preview List</button>
+            <p class="setting-description">Import Spiel Essen preview list from CSV, add metadata, and save as JSON</p>
+            <p class="setting-description" id="spielImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
+        </div>
+        <div class="setting-item">
+            <button class="primary-button" id="importBGStatsBtn">Import from BGStats</button>
+            <p class="setting-description">Import your board game collection and play history from BGStats export file</p>
+        </div>
+        
+        <div class="setting-item">
+            <button class="primary-button" id="importBGGBtn">Import from BoardGameGeek</button>
+            <p class="setting-description">Import your collection from BoardGameGeek (BGG username required)</p>
+        </div>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="exportDataBtn">Export All Data</button>
+            <p class="setting-description">Export all your Meeplewood data as JSON</p>
+        </div>
+    </section>
+    
+
     
     <section class="settings-section">
         <h2>Privacy & Data</h2>
@@ -108,10 +114,7 @@
     </section>
 </div>
 
-<div class="settings-actions">
-    <button class="primary-button" id="saveSettingsBtn">Save Settings</button>
-    <button class="secondary-button" id="cancelSettingsBtn">Cancel</button>
-</div>
+
 
 <!-- Spiel Preview Metadata Modal -->
 <div id="spielMetadataModal" class="modal" style="display: none;">
@@ -133,11 +136,6 @@
             <div class="setting-item">
                 <label for="spielUser">User/Owner</label>
                 <input type="text" id="spielUser" placeholder="Your name or identifier">
-            </div>
-            
-            <div class="setting-item">
-                <label for="spielNotes">Additional Notes</label>
-                <textarea id="spielNotes" rows="3" placeholder="Any additional information about this list"></textarea>
             </div>
             
             <div class="preview-info">
