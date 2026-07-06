@@ -393,12 +393,29 @@ const SettingsPage = {
             );
             
             // Create new entry for this year/convention/user
+            // Normalize priority value (convert 'N/A' and '0' to empty string)
+            let priorityValue = importedGame.Priority || importedGame.userPriority || '';
+            if (priorityValue === 'N/A' || priorityValue === '0') {
+                priorityValue = '';
+            }
+            
             const newEntry = {
                 year: year,
                 convention: convention,
                 user: user,
-                priority: importedGame.Priority || importedGame.userPriority || '',
+                priority: priorityValue,
                 notes: importedGame.Notes || importedGame.userNotes || '',
+                // Entry-specific data that can vary by year/convention
+                availability: importedGame.Availability || '',
+                msrpCurrency: importedGame['MSRP Currency'] || '',
+                msrp: importedGame.MSRP || '',
+                showPriceCurrency: importedGame['Show Price Currency'] || '',
+                showPrice: importedGame['Show Price'] || '',
+                location: importedGame.Location || '',
+                thumbs: importedGame.Thumbs || '',
+                releaseDate: importedGame['Release Date'] || '',
+                overrideReleaseDate: importedGame['Override Release Date'] || '',
+                events: importedGame.Events || '',
                 insertedDate: now,
                 lastModified: now
             };
@@ -421,6 +438,16 @@ const SettingsPage = {
                         ...existingGame.entries[existingEntryIndex],
                         priority: newEntry.priority,
                         notes: newEntry.notes,
+                        availability: newEntry.availability,
+                        msrpCurrency: newEntry.msrpCurrency,
+                        msrp: newEntry.msrp,
+                        showPriceCurrency: newEntry.showPriceCurrency,
+                        showPrice: newEntry.showPrice,
+                        location: newEntry.location,
+                        thumbs: newEntry.thumbs,
+                        releaseDate: newEntry.releaseDate,
+                        overrideReleaseDate: newEntry.overrideReleaseDate,
+                        events: newEntry.events,
                         lastModified: now
                     };
                 } else {
@@ -430,7 +457,11 @@ const SettingsPage = {
                 
                 // Update base game info (in case anything changed)
                 Object.keys(importedGame).forEach(key => {
-                    if (key !== 'Priority' && key !== 'Notes' && key !== 'userPriority' && key !== 'userNotes' && key !== 'metadata' && key !== 'entries') {
+                    // Exclude user-specific and entry-specific fields from game level
+                    const excludedFields = ['Priority', 'Notes', 'userPriority', 'userNotes', 'metadata', 'entries',
+                        'Availability', 'MSRP Currency', 'MSRP', 'Show Price Currency', 'Show Price', 
+                        'Location', 'Thumbs', 'Release Date', 'Override Release Date', 'Events'];
+                    if (!excludedFields.includes(key)) {
                         existingGame[key] = importedGame[key];
                     }
                 });
@@ -438,11 +469,22 @@ const SettingsPage = {
             } else {
                 // New game - create with entry
                 const newGame = { ...importedGame };
+                // Remove user-specific and entry-specific fields from game level
                 delete newGame.Priority;
                 delete newGame.Notes;
                 delete newGame.userPriority;
                 delete newGame.userNotes;
                 delete newGame.metadata;
+                delete newGame.Availability;
+                delete newGame['MSRP Currency'];
+                delete newGame.MSRP;
+                delete newGame['Show Price Currency'];
+                delete newGame['Show Price'];
+                delete newGame.Location;
+                delete newGame.Thumbs;
+                delete newGame['Release Date'];
+                delete newGame['Override Release Date'];
+                delete newGame.Events;
                 
                 newGame.entries = [newEntry];
                 finalGames.push(newGame);
@@ -574,7 +616,12 @@ const SettingsPage = {
             
             // Add metadata
             game.imported = new Date().toISOString();
-            game.userPriority = game.Priority || '4'; // Default to 4 (undecided)
+            // Normalize priority: 'N/A' and '0' become empty string
+            let priority = game.Priority || '';
+            if (priority === 'N/A' || priority === '0') {
+                priority = '';
+            }
+            game.userPriority = priority; // Default to '' (not prioritized)
             game.userNotes = game.Notes || '';
             
             games.push(game);
