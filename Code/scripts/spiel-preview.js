@@ -1,5 +1,18 @@
 // Spiel Preview Page Module
 
+// Utility: Debounce function to limit execution rate
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 const SpielPreviewPage = {
     games: [],
     filteredGames: [],
@@ -19,6 +32,9 @@ const SpielPreviewPage = {
     availableYears: [],
     availableConventions: [],
     availableUsers: [],
+    
+    // Performance: Cache for relevant entries
+    relevantEntryCache: new Map(),
     
     init: function() {
         console.log('Spiel Preview page initialized');
@@ -97,15 +113,13 @@ const SpielPreviewPage = {
             saveChangesBtn.addEventListener('click', this.exportUpdatedJson.bind(this));
         }
         
-        // Entry filter controls
+        // Entry filter controls - no debouncing for dropdowns (single selection events)
         const filterYear = document.getElementById('filterYear');
         if (filterYear) {
             filterYear.addEventListener('change', (e) => {
                 this.selectedYear = e.target.value;
-                this.applyFilters();
-                this.updateCounts();
-                this.displayMetadata();
-                this.renderGames();
+                this.clearCache();
+                this.batchUpdate();
             });
         }
         
@@ -113,10 +127,8 @@ const SpielPreviewPage = {
         if (filterConvention) {
             filterConvention.addEventListener('change', (e) => {
                 this.selectedConvention = e.target.value;
-                this.applyFilters();
-                this.updateCounts();
-                this.displayMetadata();
-                this.renderGames();
+                this.clearCache();
+                this.batchUpdate();
             });
         }
         
@@ -124,10 +136,8 @@ const SpielPreviewPage = {
         if (filterUser) {
             filterUser.addEventListener('change', (e) => {
                 this.selectedUser = e.target.value;
-                this.applyFilters();
-                this.updateCounts();
-                this.displayMetadata();
-                this.renderGames();
+                this.clearCache();
+                this.batchUpdate();
             });
         }
         
@@ -143,10 +153,8 @@ const SpielPreviewPage = {
         if (showMultipleOnly) {
             showMultipleOnly.addEventListener('change', (e) => {
                 this.showMultipleEntriesOnly = e.target.checked;
-                this.applyFilters();
-                this.updateCounts();
-                this.displayMetadata();
-                this.renderGames();
+                this.clearCache();
+                this.batchUpdate();
             });
         }
         
@@ -158,12 +166,35 @@ const SpielPreviewPage = {
             });
         });
         
-        // Search input
+        // Search input with debouncing
         const searchInput = document.getElementById('spielSearch');
         if (searchInput) {
+            const debouncedSearch = debounce((value) => {
+                this.handleSearch(value);
+            }, 300);
             searchInput.addEventListener('input', (e) => {
-                this.handleSearch(e.target.value);
+                debouncedSearch(e.target.value);
             });
+        }
+        
+        // Event delegation for priority dropdowns and notes (on the grid)
+        const spielGrid = document.getElementById('spielGrid');
+        if (spielGrid) {
+            spielGrid.addEventListener('change', (e) => {
+                if (e.target.classList.contains('priority-select')) {
+                    const gameId = e.target.dataset.gameId;
+                    const entryKey = e.target.dataset.entryKey;
+                    this.updateGamePriority(gameId, entryKey, e.target.value);
+                }
+            });
+            
+            spielGrid.addEventListener('blur', (e) => {
+                if (e.target.classList.contains('notes-input')) {
+                    const gameId = e.target.dataset.gameId;
+                    const entryKey = e.target.dataset.entryKey;
+                    this.updateGameNotes(gameId, entryKey, e.target.value);
+                }
+            }, true); // Use capture phase for blur
         }
     },
     
@@ -266,13 +297,8 @@ const SpielPreviewPage = {
             // Hide loading screen and show content
             this.hideLoadingScreen();
             
-            // Show metadata
-            this.displayMetadata();
-            
-            // Update UI
-            this.applyFilters();
-            this.updateCounts();
-            this.renderGames();
+            // Update UI with batch update (includes metadata, counts, and rendering)
+            this.batchUpdate();
             
             console.log(`Loaded ${this.games.length} games from ${fileName}`);
         } else {
@@ -303,8 +329,8 @@ const SpielPreviewPage = {
     },
     
     setDefaultFilters: function() {
-        // Default to latest year
-        this.selectedYear = '';
+        // Default to latest year (actual year value, not 'Latest' option)
+        this.selectedYear = this.availableYears.length > 0 ? this.availableYears[0] : '';
         
         // Default to all conventions
         this.selectedConvention = '';
@@ -317,11 +343,14 @@ const SpielPreviewPage = {
         // Populate year dropdown
         const yearSelect = document.getElementById('filterYear');
         if (yearSelect) {
-            yearSelect.innerHTML = '<option value="">Latest</option>';
+            yearSelect.innerHTML = '';
             this.availableYears.forEach(year => {
                 const option = document.createElement('option');
                 option.value = year;
                 option.textContent = year;
+                if (year === this.selectedYear) {
+                    option.selected = true;
+                }
                 yearSelect.appendChild(option);
             });
         }
@@ -354,43 +383,59 @@ const SpielPreviewPage = {
         }
     },
     
-    displayMetadata: function() {
-        const metadataDisplay = document.getElementById('metadataDisplay');
+    handleFilterChange: function(priority) {
+        this.currentFilter = priority;
         
-        if (!this.metadata) {
-            if (metadataDisplay) metadataDisplay.style.display = 'none';
-            return;
-        }
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.priority === priority) {
+                btn.classList.add('active');
+            }
+        });
         
-        if (metadataDisplay) metadataDisplay.style.display = 'block';
+        this.batchUpdate();
+    },
+    
+    handleSearch: function(term) {
+        this.searchTerm = term.toLowerCase();
+        this.batchUpdate();
+    },
+    
+    batchUpdate: function() {
+        // Single pass through data to filter, count, and gather metadata
+        const counts = {
+            all: 0,
+            '1': 0,
+            '2': 0,
+            '3': 0,
+            '4': 0,
+            'none': 0
+        };
         
-        // Update metadata fields with summary info
-        const metaConvention = document.getElementById('metaConvention');
-        const metaYear = document.getElementById('metaYear');
-        const metaUser = document.getElementById('metaUser');
-        const metaGameCount = document.getElementById('metaGameCount');
-        const metaNotes = document.getElementById('metaNotes');
-        
-        // Calculate filtered data
         const filteredYears = new Set();
         const filteredConventions = new Set();
         const filteredUsers = new Set();
-        let filteredGameCount = 0;
+        const filtered = [];
         
-        this.games.forEach(game => {
+        // Single iteration through all games
+        for (let i = 0; i < this.games.length; i++) {
+            const game = this.games[i];
+            
+            // Check if game has entries
             if (!game.entries || game.entries.length === 0) {
-                return;
+                continue;
             }
             
             // Multiple entries filter
             if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
-                return;
+                continue;
             }
             
             // Get the relevant entry for this game
             const relevantEntry = this.getRelevantEntry(game);
             if (!relevantEntry) {
-                return;
+                continue;
             }
             
             // Search filter
@@ -400,15 +445,73 @@ const SpielPreviewPage = {
                                (game.Location && game.Location.toLowerCase().includes(this.searchTerm));
             
             if (!searchMatch) {
-                return;
+                continue;
             }
             
-            // This game matches all filters
-            filteredGameCount++;
+            // Game matches all filters except priority - count it
+            counts.all++;
+            const priority = relevantEntry.priority || '';
+            if (priority === '' || !priority) {
+                counts['none']++;
+            } else if (counts[priority] !== undefined) {
+                counts[priority]++;
+            }
+            
+            // Gather metadata
             filteredYears.add(relevantEntry.year);
             filteredConventions.add(relevantEntry.convention);
             filteredUsers.add(relevantEntry.user);
-        });
+            
+            // Priority filter for display
+            const entryPriority = relevantEntry.priority || '';
+            const priorityMatch = this.currentFilter === 'all' || 
+                                  entryPriority === this.currentFilter;
+            
+            if (priorityMatch) {
+                filtered.push(game);
+            }
+        }
+        
+        // Update filtered games
+        this.filteredGames = filtered;
+        
+        // Update counts
+        const countAll = document.getElementById('countAll');
+        const count1 = document.getElementById('count1');
+        const count2 = document.getElementById('count2');
+        const count3 = document.getElementById('count3');
+        const count4 = document.getElementById('count4');
+        const countNone = document.getElementById('countNone');
+        
+        if (countAll) countAll.textContent = counts.all;
+        if (count1) count1.textContent = counts['1'];
+        if (count2) count2.textContent = counts['2'];
+        if (count3) count3.textContent = counts['3'];
+        if (count4) count4.textContent = counts['4'];
+        if (countNone) countNone.textContent = counts['none'];
+        
+        // Update metadata
+        this.updateMetadataDisplay(filteredYears, filteredConventions, filteredUsers, counts.all);
+        
+        // Render games
+        this.renderGames();
+    },
+    
+    updateMetadataDisplay: function(filteredYears, filteredConventions, filteredUsers, filteredGameCount) {
+        const metadataDisplay = document.getElementById('metadataDisplay');
+        
+        if (!this.metadata) {
+            if (metadataDisplay) metadataDisplay.style.display = 'none';
+            return;
+        }
+        
+        if (metadataDisplay) metadataDisplay.style.display = 'block';
+        
+        const metaConvention = document.getElementById('metaConvention');
+        const metaYear = document.getElementById('metaYear');
+        const metaUser = document.getElementById('metaUser');
+        const metaGameCount = document.getElementById('metaGameCount');
+        const metaNotes = document.getElementById('metaNotes');
         
         // Show filtered conventions, years, and users
         if (metaConvention) {
@@ -437,66 +540,20 @@ const SpielPreviewPage = {
         }
     },
     
-    handleFilterChange: function(priority) {
-        this.currentFilter = priority;
-        
-        // Update active button
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.priority === priority) {
-                btn.classList.add('active');
-            }
-        });
-        
-        this.applyFilters();
-        this.displayMetadata();
-        this.renderGames();
-    },
-    
-    handleSearch: function(term) {
-        this.searchTerm = term.toLowerCase();
-        this.applyFilters();
-        this.updateCounts();
-        this.displayMetadata();
-        this.renderGames();
-    },
-    
-    applyFilters: function() {
-        this.filteredGames = this.games.filter(game => {
-            // Check if game has entries
-            if (!game.entries || game.entries.length === 0) {
-                return false;
-            }
-            
-            // Multiple entries filter
-            if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
-                return false;
-            }
-            
-            // Get the relevant entry for this game based on filters
-            const relevantEntry = this.getRelevantEntry(game);
-            if (!relevantEntry) {
-                return false;
-            }
-            
-            // Priority filter
-            const entryPriority = relevantEntry.priority || '';
-            const priorityMatch = this.currentFilter === 'all' || 
-                                  entryPriority === this.currentFilter;
-            
-            // Search filter
-            const searchMatch = this.searchTerm === '' ||
-                               (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
-                               (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
-                               (game.Location && game.Location.toLowerCase().includes(this.searchTerm));
-            
-            return priorityMatch && searchMatch;
-        });
+    clearCache: function() {
+        this.relevantEntryCache.clear();
     },
     
     getRelevantEntry: function(game) {
         if (!game.entries || game.entries.length === 0) {
             return null;
+        }
+        
+        // Check cache first
+        const gameKey = game.BGGId || game.Title;
+        const cacheKey = `${gameKey}-${this.selectedYear}-${this.selectedConvention}-${this.selectedUser}`;
+        if (this.relevantEntryCache.has(cacheKey)) {
+            return this.relevantEntryCache.get(cacheKey);
         }
         
         // Filter entries based on selected filters
@@ -509,6 +566,7 @@ const SpielPreviewPage = {
         });
         
         if (matchingEntries.length === 0) {
+            this.relevantEntryCache.set(cacheKey, null);
             return null;
         }
         
@@ -519,9 +577,13 @@ const SpielPreviewPage = {
         }
         
         // Return the first matching entry (or most recent if multiple)
-        return matchingEntries.sort((a, b) => 
+        const result = matchingEntries.sort((a, b) => 
             (b.lastModified || b.insertedDate).localeCompare(a.lastModified || a.insertedDate)
         )[0];
+        
+        // Cache the result
+        this.relevantEntryCache.set(cacheKey, result);
+        return result;
     },
     
     renderGames: function() {
@@ -542,25 +604,58 @@ const SpielPreviewPage = {
             return;
         }
         
-        grid.innerHTML = this.filteredGames.map(game => this.createGameCard(game)).join('');
+        // Performance optimization: For large datasets, render in batches
+        if (this.filteredGames.length > 500) {
+            this.renderGamesInBatches(grid);
+        } else {
+            grid.innerHTML = this.filteredGames.map(game => this.createGameCard(game)).join('');
+        }
         
-        // Attach event listeners to priority dropdowns
-        document.querySelectorAll('.priority-select').forEach(select => {
-            select.addEventListener('change', (e) => {
-                const gameId = e.target.dataset.gameId;
-                const entryKey = e.target.dataset.entryKey;
-                this.updateGamePriority(gameId, entryKey, e.target.value);
-            });
-        });
+        // Event listeners are handled by event delegation in attachEventListeners
+    },
+    
+    renderGamesInBatches: function(grid) {
+        // Clear the grid first
+        grid.innerHTML = '<div class="loading-more"><p>Rendering games...</p></div>';
         
-        // Attach event listeners to notes
-        document.querySelectorAll('.notes-input').forEach(input => {
-            input.addEventListener('blur', (e) => {
-                const gameId = e.target.dataset.gameId;
-                const entryKey = e.target.dataset.entryKey;
-                this.updateGameNotes(gameId, entryKey, e.target.value);
-            });
-        });
+        const BATCH_SIZE = 100;
+        let currentIndex = 0;
+        
+        const renderBatch = () => {
+            const fragment = document.createDocumentFragment();
+            const endIndex = Math.min(currentIndex + BATCH_SIZE, this.filteredGames.length);
+            
+            // Create a temporary container to parse HTML
+            const temp = document.createElement('div');
+            const htmlChunks = [];
+            
+            for (let i = currentIndex; i < endIndex; i++) {
+                htmlChunks.push(this.createGameCard(this.filteredGames[i]));
+            }
+            
+            temp.innerHTML = htmlChunks.join('');
+            
+            // Move all children to fragment
+            while (temp.firstChild) {
+                fragment.appendChild(temp.firstChild);
+            }
+            
+            // If this is the first batch, clear the loading message
+            if (currentIndex === 0) {
+                grid.innerHTML = '';
+            }
+            
+            grid.appendChild(fragment);
+            currentIndex = endIndex;
+            
+            // Continue rendering if there are more items
+            if (currentIndex < this.filteredGames.length) {
+                requestAnimationFrame(renderBatch);
+            }
+        };
+        
+        // Start rendering
+        requestAnimationFrame(renderBatch);
     },
     
     createGameCard: function(game) {
@@ -706,9 +801,9 @@ const SpielPreviewPage = {
             entry.priority = priority;
             entry.lastModified = new Date().toISOString();
             
-            this.updateCounts();
-            this.applyFilters();
-            this.renderGames();
+            // Clear cache since priority changed
+            this.clearCache();
+            this.batchUpdate();
         }
     },
     
@@ -787,70 +882,6 @@ const SpielPreviewPage = {
         URL.revokeObjectURL(url);
         
         alert(`Changes saved to ${filename}!\n\nYour updated priorities and notes have been exported.`);
-    },
-    
-    updateCounts: function() {
-        const counts = {
-            all: 0,
-            '1': 0,
-            '2': 0,
-            '3': 0,
-            '4': 0,
-            'none': 0
-        };
-        
-        // Count games that match all filters EXCEPT priority
-        this.games.forEach(game => {
-            // Check if game has entries
-            if (!game.entries || game.entries.length === 0) {
-                return;
-            }
-            
-            // Multiple entries filter
-            if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
-                return;
-            }
-            
-            // Get the relevant entry for this game
-            const relevantEntry = this.getRelevantEntry(game);
-            if (!relevantEntry) {
-                return;
-            }
-            
-            // Search filter
-            const searchMatch = this.searchTerm === '' ||
-                               (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
-                               (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
-                               (game.Location && game.Location.toLowerCase().includes(this.searchTerm));
-            
-            if (!searchMatch) {
-                return;
-            }
-            
-            // Count this game
-            counts.all++;
-            const priority = relevantEntry.priority || '';
-            if (priority === '' || !priority) {
-                counts['none']++;
-            } else if (counts[priority] !== undefined) {
-                counts[priority]++;
-            }
-        });
-        
-        const countAll = document.getElementById('countAll');
-        const count1 = document.getElementById('count1');
-        const count2 = document.getElementById('count2');
-        const count3 = document.getElementById('count3');
-        const count4 = document.getElementById('count4');
-        const countNone = document.getElementById('countNone');
-        
-        if (countAll) countAll.textContent = counts.all;
-        if (count1) count1.textContent = counts['1'];
-        if (count1) count1.textContent = counts['1'];
-        if (count2) count2.textContent = counts['2'];
-        if (count3) count3.textContent = counts['3'];
-        if (count4) count4.textContent = counts['4'];
-        if (countNone) countNone.textContent = counts['none'];
     },
     
     escapeHtml: function(text) {
