@@ -209,3 +209,9 @@ button:hover {
     background-color: #f9f9f9;
     border-left: 4px solid #4CAF50;
 }
+
+.small-icon {
+    width: 30px;
+    height: 30px;
+    vertical-align: middle;
+}

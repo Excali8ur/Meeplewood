@@ -442,7 +442,7 @@ const SpielPreviewPage = {
             const searchMatch = this.searchTerm === '' ||
                                (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
                                (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
-                               (game.Location && game.Location.toLowerCase().includes(this.searchTerm));
+                               (relevantEntry.location && relevantEntry.location.toLowerCase().includes(this.searchTerm));
             
             if (!searchMatch) {
                 continue;
@@ -451,7 +451,7 @@ const SpielPreviewPage = {
             // Game matches all filters except priority - count it
             counts.all++;
             const priority = relevantEntry.priority || '';
-            if (priority === '' || !priority) {
+            if (priority === '' || !priority || priority === 'N/A' || priority === '0') {
                 counts['none']++;
             } else if (counts[priority] !== undefined) {
                 counts[priority]++;
@@ -504,7 +504,7 @@ const SpielPreviewPage = {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
         }
-        
+        /*
         if (metadataDisplay) metadataDisplay.style.display = 'block';
         
         const metaConvention = document.getElementById('metaConvention');
@@ -538,6 +538,7 @@ const SpielPreviewPage = {
                 metaNotes.style.display = 'none';
             }
         }
+        */
     },
     
     clearCache: function() {
@@ -570,11 +571,13 @@ const SpielPreviewPage = {
             return null;
         }
         
+        /* Not possible/needed (anymore) since we don't have a "Latest" option in the year dropdown
         // If year is not specified, get the latest year
         if (this.selectedYear === '') {
             const latestYear = Math.max(...matchingEntries.map(e => parseInt(e.year) || 0));
             matchingEntries = matchingEntries.filter(e => parseInt(e.year) === latestYear);
         }
+        */
         
         // Return the first matching entry (or most recent if multiple)
         const result = matchingEntries.sort((a, b) => 
@@ -664,6 +667,7 @@ const SpielPreviewPage = {
         if (!currentEntry) return '';
         
         const priorityClass = `priority-${currentEntry.priority || 'none'}`;
+        const priorityLabel = this.getPriorityLabel(currentEntry.priority);
         const bggLink = game.BGGId ? `https://boardgamegeek.com/boardgame/${game.BGGId}` : '';
         
         // Get historical entries if enabled
@@ -676,24 +680,15 @@ const SpielPreviewPage = {
             <div class="spiel-card ${priorityClass}">
                 <div class="card-header">
                     <h3 class="game-title">${this.escapeHtml(game.Title || 'Untitled')}</h3>
-                    ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG">🎲</a>` : ''}
+                    ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
                 </div>
                 
                 <div class="card-body">
                     <div class="game-info">
                         <div class="info-row">
                             <span class="label">Publisher:</span>
-                            <span class="value">${this.escapeHtml(game.Publisher || 'Unknown')}</span>
+                            <span class="value">${this.escapeHtml(game.Publisher || '?')}</span>
                         </div>
-                        <div class="info-row">
-                            <span class="label">Location:</span>
-                            <span class="value location">${this.escapeHtml(game.Location || 'TBA')}</span>
-                        </div>
-                        ${game.MSRP ? `
-                        <div class="info-row">
-                            <span class="label">Price:</span>
-                            <span class="value">${this.escapeHtml(game['MSRP Currency'] || '')} ${this.escapeHtml(game.MSRP)}</span>
-                        </div>` : ''}
                         ${game.Type ? `
                         <div class="info-row">
                             <span class="label">Type:</span>
@@ -701,21 +696,19 @@ const SpielPreviewPage = {
                         </div>` : ''}
                     </div>
                     
-                    <div class="priority-control">
-                        <label>Your Priority (${currentEntry.year} ${currentEntry.convention}):</label>
-                        <select class="priority-select" data-game-id="${game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">
-                            <option value="1" ${currentEntry.priority === '1' ? 'selected' : ''}>Must Have</option>
-                            <option value="2" ${currentEntry.priority === '2' ? 'selected' : ''}>Interested</option>
-                            <option value="3" ${currentEntry.priority === '3' ? 'selected' : ''}>Undecided</option>
-                            <option value="4" ${currentEntry.priority === '4' ? 'selected' : ''}>Not Interested</option>
-                            <option value="" ${!currentEntry.priority || currentEntry.priority === '' ? 'selected' : ''}>Not Prioritized</option>
-                        </select>
-                    </div>
-                    
-                    <div class="notes-control">
-                        <label>Notes:</label>
-                        <textarea class="notes-input" data-game-id="${game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}" 
-                                  placeholder="Add personal notes...">${this.escapeHtml(currentEntry.notes || '')}</textarea>
+                    <div class="entry-title"><h4>${currentEntry.convention} ${currentEntry.year}</h4>
+                        <div class="info-row">                    
+                            <span class="label">Priority:</span>
+                            <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Thumbs:</span>
+                            <span class="value">${this.escapeHtml(currentEntry.thumbs)}👍</span>
+                        </div>                    
+                        <div class="info-row">
+                            <span class="label">Notes:</span>
+                            <span class="value" data-game-id="${game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
+                        </div>
                     </div>
                     
                     ${historicalEntriesHtml}
@@ -757,6 +750,7 @@ const SpielPreviewPage = {
                     <div class="entry-details">
                         <span class=\"entry-priority priority-${entry.priority || 'none'}\">${priorityLabel}</span>
                         ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}
+                        ${entry.thumbs ? `<div class="entry-thumbs">👍 Thumbs: ${this.escapeHtml(entry.thumbs)}</div>` : ''}
                         <div class="entry-dates">
                             Added: ${insertedDate}
                             ${modifiedDate ? `<br>${modifiedDate}` : ''}
@@ -779,7 +773,10 @@ const SpielPreviewPage = {
             '1': 'Must Have',
             '2': 'Interested',
             '3': 'Undecided',
-            '4': 'Not Interested'
+            '4': 'Not Interested',
+            '0': 'Not Prioritized',
+            '': 'Not Prioritized',
+            'N/A': 'Not Prioritized'
         };
         return labels[priority] || 'Not Prioritized';
     },
