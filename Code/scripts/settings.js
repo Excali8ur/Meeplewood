@@ -113,7 +113,7 @@ const SettingsPage = {
     },
     
     autoLoadDefaultCombinedFile: function() {
-        const defaultPath = 'data/Preview-Combined.json';
+        const defaultPath = 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -123,8 +123,8 @@ const SettingsPage = {
                 return response.json();
             })
             .then(data => {
-                this.processExistingCombinedData(data, 'Preview-Combined.json');
-                console.log('Auto-loaded Preview-Combined.json for merging');
+                this.processExistingCombinedData(data, 'GeekPreview-Combined.json');
+                console.log('Auto-loaded GeekPreview-Combined.json for merging');
             })
             .catch(error => {
                 console.log('Default combined file not found, will need manual load if merging');
@@ -381,7 +381,7 @@ const SettingsPage = {
         console.log('Loading existing combined Spiel file');
         
         // Try to load the default file first
-        const defaultPath = 'data/Preview-Combined.json';
+        const defaultPath = 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -391,7 +391,7 @@ const SettingsPage = {
                 return response.json();
             })
             .then(data => {
-                this.processExistingCombinedData(data, 'Preview-Combined.json');
+                this.processExistingCombinedData(data, 'GeekPreview-Combined.json');
             })
             .catch(error => {
                 console.log('Default file not found, opening file picker:', error);
@@ -599,7 +599,7 @@ const SettingsPage = {
         });
         
         // Create filename - use convention name or keep existing name
-        let filename = 'Preview-Combined.json';
+        let filename = 'GeekPreview-Combined.json';
         if (this.existingFileName) {
             filename = this.existingFileName;
         } else {

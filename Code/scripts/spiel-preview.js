@@ -82,7 +82,7 @@ const SpielPreviewPage = {
     },
     
     autoLoadDefaultFile: function() {
-        const defaultPath = 'data/Preview-Combined.json';
+        const defaultPath = 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -92,8 +92,8 @@ const SpielPreviewPage = {
                 return response.json();
             })
             .then(data => {
-                this.processLoadedData(data, 'Preview-Combined.json');
-                console.log('Auto-loaded Preview-Combined.json from data folder');
+                this.processLoadedData(data, 'GeekPreview-Combined.json');
+                console.log('Auto-loaded GeekPreview-Combined.json from data folder');
             })
             .catch(error => {
                 console.log('Default file not found, waiting for manual load');
@@ -215,7 +215,7 @@ const SpielPreviewPage = {
         this.showLoadingScreen();
         
         // Try to load the default file first
-        const defaultPath = 'data/Preview-Combined.json';
+        const defaultPath = 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -225,7 +225,7 @@ const SpielPreviewPage = {
                 return response.json();
             })
             .then(data => {
-                this.processLoadedData(data, 'Preview-Combined.json');
+                this.processLoadedData(data, 'GeekPreview-Combined.json');
             })
             .catch(error => {
                 console.log('Default file not found, opening file picker:', error);
@@ -870,7 +870,7 @@ const SpielPreviewPage = {
         };
         
         const jsonContent = JSON.stringify(exportData, null, 2);
-        const filename = this.currentFileName || 'Preview-Combined.json';
+        const filename = this.currentFileName || 'GeekPreview-Combined.json';
         
         // Try File System Access API (Chrome, Edge, Opera)
         if ('showSaveFilePicker' in window) {
