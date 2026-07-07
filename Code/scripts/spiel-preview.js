@@ -27,6 +27,7 @@ const SpielPreviewPage = {
     selectedUser: '',
     showHistoricalEntries: true,
     showMultipleEntriesOnly: false,
+    showUniqueEntriesOnly: false,
     
     // Available filter options
     availableYears: [],
@@ -153,6 +154,15 @@ const SpielPreviewPage = {
         if (showMultipleOnly) {
             showMultipleOnly.addEventListener('change', (e) => {
                 this.showMultipleEntriesOnly = e.target.checked;
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
+        
+        const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
+        if (showUniqueOnly) {
+            showUniqueOnly.addEventListener('change', (e) => {
+                this.showUniqueEntriesOnly = e.target.checked;
                 this.clearCache();
                 this.batchUpdate();
             });
@@ -431,6 +441,16 @@ const SpielPreviewPage = {
             if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
                 continue;
             }
+
+                        // Multiple entries filter
+            if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
+                continue;
+            }
+            
+            // Unique entries filter
+            if (this.showUniqueEntriesOnly && game.entries.length > 1) {
+                continue;
+            }
             
             // Get the relevant entry for this game
             const relevantEntry = this.getRelevantEntry(game);
@@ -607,6 +627,9 @@ const SpielPreviewPage = {
             return;
         }
         
+        //ToDo: Add sorting options (by title, publisher, priority, etc.)
+
+
         // Performance optimization: For large datasets, render in batches
         if (this.filteredGames.length > 500) {
             this.renderGamesInBatches(grid);
@@ -702,6 +725,10 @@ const SpielPreviewPage = {
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
                         <div class="info-row">
+                            <span class="label">Release:</span>
+                            <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
+                        </div>  
+                        <div class="info-row">
                             <span class="label">Thumbs:</span>
                             <span class="value">${this.escapeHtml(currentEntry.thumbs)}👍</span>
                         </div>                    
@@ -731,6 +758,7 @@ const SpielPreviewPage = {
         
         const entriesHtml = sortedEntries.map(entry => {
             const isCurrent = entry === currentEntry;
+            if (isCurrent) return ''; // Skip current entry in historical list
             const badgeClass = isCurrent ? 'current' : 'historical';
             const entryClass = isCurrent ? 'current' : '';
             const priorityLabel = this.getPriorityLabel(entry.priority);
@@ -749,6 +777,8 @@ const SpielPreviewPage = {
                     </div>
                     <div class="entry-details">
                         <span class=\"entry-priority priority-${entry.priority || 'none'}\">${priorityLabel}</span>
+                        ${entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.overrideReleaseDate)}</div>` : ''}  
+                        ${entry.releaseDate && !entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.releaseDate)}</div>` : ''}
                         ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}
                         ${entry.thumbs ? `<div class="entry-thumbs">👍 Thumbs: ${this.escapeHtml(entry.thumbs)}</div>` : ''}
                         <div class="entry-dates">
@@ -762,7 +792,7 @@ const SpielPreviewPage = {
         
         return `
             <div class="historical-entries">
-                <h4>📅 All Entries (${game.entries.length})</h4>
+                <h4>📅 Other Entries (${game.entries.length - 1})</h4>
                 ${entriesHtml}
             </div>
         `;
