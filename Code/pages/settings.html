@@ -58,13 +58,19 @@
         <h2>Data & Import</h2>
         
         <div class="setting-item">
-            <button class="secondary-button" id="loadExistingSpielBtn">📂 Load Existing Combined File (Optional)</button>
-            <p class="setting-description">Load an existing Spiel preview file to merge new data into it</p>
+            <button class="secondary-button" id="loadExistingSpielBtn">📂 Load Existing Combined File (other than default)</button>
+            <p class="setting-description">If you have previously saved a combined Preview file in a different location than the default, you can load it here to merge new data into it.</p>         
+            <p class="setting-description">If you don't have an existing file or want to use the default file, you can skip this step.</p>
             <p class="setting-description" id="existingFileStatus" style="display: none; color: #3498db; font-weight: bold;"></p>
         </div>
         <div class="setting-item">
-            <button class="primary-button" id="importSpielBtn">📎 Import Spiel Preview List</button>
-            <p class="setting-description">Import Spiel Essen preview list from CSV, add metadata, and save as JSON</p>
+            <button class="primary-button" id="importSpielBtn">📎 Import BGG Preview List</button>
+            <p class="setting-description">Import BGG Preview list as .csv, add metadata, and save the file in the Meeplewood "data" folder with the name "Preview-Combined.json". Meeplewood will automatically load it on the next visit.</p>
+            <p class="setting-description" style="color: #3498db; font-weight: bold;">Where to find the BGG Preview List?</p>
+            <p class="setting-description">See <a href="https://boardgamegeek.com/previews" target="_blank">all Preview Lists on BGG</a>, select the convention you want to add
+                and choose "export" to download the CSV file.</br>
+                No need to change anything in the file, just import it here and add metadata when prompted. The games will be merged with any existing data you have in Meeplewood.
+            </p>
             <p class="setting-description" id="spielImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
         </div>
         <div class="setting-item">

@@ -26,6 +26,17 @@
     margin-bottom: 20px;
 }
 
+.setting-item.has-help {
+    position: relative;
+}
+
+.setting-item-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 .setting-item:last-child {
     margin-bottom: 0;
 }
@@ -73,6 +84,85 @@
     color: #666;
     font-size: 13px;
     font-style: italic;
+}
+
+.setting-help-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #4CAF50;
+    border-radius: 50%;
+    background-color: #f4fbf4;
+    color: #2e7d32;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.setting-help-trigger:focus-visible,
+.setting-item.has-help.is-help-open .setting-help-trigger {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+}
+
+.setting-help-trigger:focus-visible {
+    outline: 2px solid #1b5e20;
+    outline-offset: 2px;
+}
+
+.setting-help-content {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    z-index: 20;
+    display: none;
+    width: min(420px, calc(100vw - 80px));
+    padding: 14px 16px;
+    border: 1px solid #d7e8d7;
+    border-radius: 10px;
+    background: #fffdf7;
+    box-shadow: 0 12px 32px rgba(40, 58, 40, 0.16);
+}
+
+.setting-help-content::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 18px;
+    width: 14px;
+    height: 14px;
+    border-top: 1px solid #d7e8d7;
+    border-left: 1px solid #d7e8d7;
+    background: #fffdf7;
+    transform: rotate(45deg);
+}
+
+.setting-item.has-help.is-help-open .setting-help-content {
+    display: block;
+}
+
+.setting-help-content .setting-description {
+    margin-top: 0;
+    font-style: normal;
+}
+
+.setting-help-content .setting-description + .setting-description {
+    margin-top: 10px;
+}
+
+.setting-help-content a {
+    color: #2e7d32;
+}
+
+@media (max-width: 600px) {
+    .setting-help-content {
+        width: min(320px, calc(100vw - 48px));
+    }
 }
 
 .about-info {

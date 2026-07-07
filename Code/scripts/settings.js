@@ -20,14 +20,100 @@ const SettingsPage = {
     init: function() {
         console.log('Settings page initialized');
         this.loadSettings();
+        this.setupHelpTooltips();
         this.attachEventListeners();
         
         // Try to auto-load the default combined file
         this.autoLoadDefaultCombinedFile();
     },
+
+    setupHelpTooltips: function() {
+        const settingItems = document.querySelectorAll('.setting-item');
+
+        settingItems.forEach((item, index) => {
+            const helpDescriptions = Array.from(item.querySelectorAll('.setting-description'))
+                .filter((description) => !description.id);
+
+            if (helpDescriptions.length === 0) {
+                return;
+            }
+
+            item.classList.add('has-help');
+
+            const anchor = item.querySelector('label, button, input, select, textarea');
+            if (!anchor) {
+                return;
+            }
+
+            const helpId = `setting-help-${index + 1}`;
+            const header = document.createElement('div');
+            header.className = 'setting-item-header';
+
+            anchor.parentNode.insertBefore(header, anchor);
+            header.appendChild(anchor);
+
+            const trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'setting-help-trigger';
+            trigger.setAttribute('aria-label', 'Show help information');
+            trigger.setAttribute('aria-expanded', 'false');
+            trigger.setAttribute('aria-controls', helpId);
+            trigger.innerHTML = '<span aria-hidden="true">i</span>';
+            header.appendChild(trigger);
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'setting-help-content';
+            tooltip.id = helpId;
+            tooltip.setAttribute('role', 'tooltip');
+
+            helpDescriptions.forEach((description) => {
+                tooltip.appendChild(description);
+            });
+
+            item.appendChild(tooltip);
+
+            const closeTooltip = () => {
+                item.classList.remove('is-help-open');
+                trigger.setAttribute('aria-expanded', 'false');
+            };
+
+            trigger.addEventListener('click', (event) => {
+                event.preventDefault();
+                const isOpen = item.classList.toggle('is-help-open');
+                trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            item.addEventListener('mouseleave', closeTooltip);
+
+            item.addEventListener('focusout', (event) => {
+                if (!item.contains(event.relatedTarget)) {
+                    closeTooltip();
+                }
+            });
+
+            trigger.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeTooltip();
+                    trigger.blur();
+                }
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            document.querySelectorAll('.setting-item.has-help.is-help-open').forEach((item) => {
+                if (!item.contains(event.target)) {
+                    item.classList.remove('is-help-open');
+                    const trigger = item.querySelector('.setting-help-trigger');
+                    if (trigger) {
+                        trigger.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
+        });
+    },
     
     autoLoadDefaultCombinedFile: function() {
-        const defaultPath = 'data/SPIEL-Combined.json';
+        const defaultPath = 'data/Preview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -37,8 +123,8 @@ const SettingsPage = {
                 return response.json();
             })
             .then(data => {
-                this.processExistingCombinedData(data, 'SPIEL-Combined.json');
-                console.log('Auto-loaded SPIEL-Combined.json for merging');
+                this.processExistingCombinedData(data, 'Preview-Combined.json');
+                console.log('Auto-loaded Preview-Combined.json for merging');
             })
             .catch(error => {
                 console.log('Default combined file not found, will need manual load if merging');
@@ -295,7 +381,7 @@ const SettingsPage = {
         console.log('Loading existing combined Spiel file');
         
         // Try to load the default file first
-        const defaultPath = 'data/SPIEL-Combined.json';
+        const defaultPath = 'data/Preview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -305,7 +391,7 @@ const SettingsPage = {
                 return response.json();
             })
             .then(data => {
-                this.processExistingCombinedData(data, 'SPIEL-Combined.json');
+                this.processExistingCombinedData(data, 'Preview-Combined.json');
             })
             .catch(error => {
                 console.log('Default file not found, opening file picker:', error);
@@ -513,7 +599,7 @@ const SettingsPage = {
         });
         
         // Create filename - use convention name or keep existing name
-        let filename = 'SPIEL-Combined.json';
+        let filename = 'Preview-Combined.json';
         if (this.existingFileName) {
             filename = this.existingFileName;
         } else {
