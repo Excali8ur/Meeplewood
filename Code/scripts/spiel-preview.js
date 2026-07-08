@@ -29,6 +29,10 @@ const SpielPreviewPage = {
     showMultipleEntriesOnly: false,
     showUniqueEntriesOnly: false,
     
+    // Sort settings
+    sortBy: 'title', // 'title', 'thumbs', 'publisher'
+    sortDirection: 'asc', // 'asc' or 'desc'
+    
     // Available filter options
     availableYears: [],
     availableConventions: [],
@@ -40,6 +44,7 @@ const SpielPreviewPage = {
     init: function() {
         console.log('Spiel Preview page initialized');
         this.attachEventListeners();
+        this.updateSortButtonStates(); // Initialize sort button states
         this.renderGames();
         
         // Show loading screen and hide other elements initially
@@ -151,18 +156,27 @@ const SpielPreviewPage = {
         }
         
         const showMultipleOnly = document.getElementById('showMultipleEntriesOnly');
+        const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
         if (showMultipleOnly) {
             showMultipleOnly.addEventListener('change', (e) => {
                 this.showMultipleEntriesOnly = e.target.checked;
+                if(this.showMultipleEntriesOnly){
+                    this.showUniqueEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                }
+                showMultipleOnly.checked = this.showMultipleEntriesOnly;
+                showUniqueOnly.checked = this.showUniqueEntriesOnly;
                 this.clearCache();
                 this.batchUpdate();
             });
-        }
-        
-        const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
+        }      
         if (showUniqueOnly) {
             showUniqueOnly.addEventListener('change', (e) => {
-                this.showUniqueEntriesOnly = e.target.checked;
+                this.showUniqueEntriesOnly = e.target.checked;                
+                if(this.showUniqueEntriesOnly){
+                    this.showMultipleEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                }
+                showMultipleOnly.checked = this.showMultipleEntriesOnly;
+                showUniqueOnly.checked = this.showUniqueEntriesOnly;
                 this.clearCache();
                 this.batchUpdate();
             });
@@ -187,7 +201,30 @@ const SpielPreviewPage = {
             });
         }
         
+        // Sort controls
+        const sortByTitle = document.getElementById('sortByTitle');
+        if (sortByTitle) {
+            sortByTitle.addEventListener('click', () => {
+                this.handleSort('title');
+            });
+        }
+        
+        const sortByThumbs = document.getElementById('sortByThumbs');
+        if (sortByThumbs) {
+            sortByThumbs.addEventListener('click', () => {
+                this.handleSort('thumbs');
+            });
+        }
+
+        const sortByPublisher = document.getElementById('sortByPublisher');
+        if (sortByPublisher) {
+            sortByPublisher.addEventListener('click', () => {
+                this.handleSort('publisher');
+            });
+        }
+        
         // Event delegation for priority dropdowns and notes (on the grid)
+        /*Changes not made in Meeplewood
         const spielGrid = document.getElementById('spielGrid');
         if (spielGrid) {
             spielGrid.addEventListener('change', (e) => {
@@ -205,11 +242,12 @@ const SpielPreviewPage = {
                     this.updateGameNotes(gameId, entryKey, e.target.value);
                 }
             }, true); // Use capture phase for blur
-        }
+        }*/
+        
     },
     
     loadSpielFile: function() {
-        console.log('Loading Spiel Preview JSON file');
+        console.log('Loading GeekPreview-Combined JSON file');
         
         // Show loading screen
         this.showLoadingScreen();
@@ -290,7 +328,7 @@ const SpielPreviewPage = {
             const entryFilters = document.getElementById('entryFilters');
             if (entryFilters) entryFilters.style.display = 'block';
             
-            this.filteredGames = [...this.games];
+            this.filteredGames = [...this.games]; //uses the spread operator (...) to create a shallow copy of the this.games array.
             
             // Update file name display
             const fileNameEl = document.getElementById('currentFileName');
@@ -299,10 +337,12 @@ const SpielPreviewPage = {
             }
             
             // Show save button
+            /* Changes not made in Meeplewood
             const saveBtn = document.getElementById('saveChangesBtn');
             if (saveBtn) {
                 saveBtn.style.display = 'inline-block';
             }
+            */
             
             // Hide loading screen and show content
             this.hideLoadingScreen();
@@ -412,6 +452,50 @@ const SpielPreviewPage = {
         this.batchUpdate();
     },
     
+    handleSort: function(sortBy) {
+        // Toggle direction if clicking the same sort button
+        if (this.sortBy === sortBy) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            // Otherwise set to asc, except thumbs defaults to desc
+            this.sortBy = sortBy;
+            this.sortDirection = this.sortBy === 'thumbs' ? 'desc' : 'asc';
+        }
+        
+        // Update button states
+        this.updateSortButtonStates();
+        
+        // Re-render with new sort
+        this.renderGames();
+    },
+    
+    updateSortButtonStates: function() {
+        const sortByTitle = document.getElementById('sortByTitle');
+        const sortByThumbs = document.getElementById('sortByThumbs');
+        const sortByPublisher = document.getElementById('sortByPublisher');
+        
+        if (sortByTitle) {
+            sortByTitle.classList.toggle('active', this.sortBy === 'title');
+            sortByTitle.innerHTML = this.sortBy === 'title' 
+                ? `📝 Title ${this.sortDirection === 'asc' ? '↑' : '↓'}`
+                : '📝 Title';
+        }
+        
+        if (sortByThumbs) {
+            sortByThumbs.classList.toggle('active', this.sortBy === 'thumbs');
+            sortByThumbs.innerHTML = this.sortBy === 'thumbs'
+                ? `👍 Thumbs ${this.sortDirection === 'desc' ? '↓' : '↑'}`
+                : '👍 Thumbs';
+        }
+
+        if (sortByPublisher) {
+            sortByPublisher.classList.toggle('active', this.sortBy === 'publisher');
+            sortByPublisher.innerHTML = this.sortBy === 'publisher'
+                ? `🏢 Publisher ${this.sortDirection === 'asc' ? '↑' : '↓'}`
+                : '🏢 Publisher';
+        }   
+    },
+    
     batchUpdate: function() {
         // Single pass through data to filter, count, and gather metadata
         const counts = {
@@ -434,15 +518,10 @@ const SpielPreviewPage = {
             
             // Check if game has entries
             if (!game.entries || game.entries.length === 0) {
-                continue;
+                continue; //ToDO -> Create structure without continue?
             }
             
             // Multiple entries filter
-            if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
-                continue;
-            }
-
-                        // Multiple entries filter
             if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
                 continue;
             }
@@ -524,7 +603,7 @@ const SpielPreviewPage = {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
         }
-        /*
+        /* Overall metadata not displayed. Unneccessary clutter. Can be re-enabled if needed.
         if (metadataDisplay) metadataDisplay.style.display = 'block';
         
         const metaConvention = document.getElementById('metaConvention');
@@ -627,9 +706,9 @@ const SpielPreviewPage = {
             return;
         }
         
-        //ToDo: Add sorting options (by title, publisher, priority, etc.)
-
-
+        // Sort the filtered games
+        this.sortFilteredGames();
+        
         // Performance optimization: For large datasets, render in batches
         if (this.filteredGames.length > 500) {
             this.renderGamesInBatches(grid);
@@ -638,6 +717,36 @@ const SpielPreviewPage = {
         }
         
         // Event listeners are handled by event delegation in attachEventListeners
+    },
+    
+    sortFilteredGames: function() {
+        if (this.sortBy === 'title') {
+            this.filteredGames.sort((a, b) => {
+                const titleA = (a.Title || '').toLowerCase();
+                const titleB = (b.Title || '').toLowerCase();
+                return this.sortDirection === 'asc' 
+                    ? titleA.localeCompare(titleB)
+                    : titleB.localeCompare(titleA);
+            });
+        } else if (this.sortBy === 'thumbs') {
+            this.filteredGames.sort((a, b) => {
+                const entryA = this.getRelevantEntry(a);
+                const entryB = this.getRelevantEntry(b);
+                const thumbsA = parseInt(entryA.thumbs) || 0;
+                const thumbsB = parseInt(entryB.thumbs) || 0;
+                return this.sortDirection === 'desc'
+                    ? thumbsB - thumbsA
+                    : thumbsA - thumbsB;
+            });
+        } else if (this.sortBy === 'publisher') {
+            this.filteredGames.sort((a, b) => {
+                const publisherA = (a.Publisher || '').toLowerCase();
+                const publisherB = (b.Publisher || '').toLowerCase();
+                return this.sortDirection === 'asc' 
+                    ? publisherA.localeCompare(publisherB)
+                    : publisherB.localeCompare(publisherA);
+            });
+        }
     },
     
     renderGamesInBatches: function(grid) {
