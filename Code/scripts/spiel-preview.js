@@ -27,6 +27,11 @@ const SpielPreviewPage = {
     selectedUser: '',
     showHistoricalEntries: true,
     showMultipleEntriesOnly: false,
+    showUniqueEntriesOnly: false,
+    
+    // Sort settings
+    sortBy: 'title', // 'title', 'thumbs', 'publisher'
+    sortDirection: 'asc', // 'asc' or 'desc'
     
     // Available filter options
     availableYears: [],
@@ -39,6 +44,7 @@ const SpielPreviewPage = {
     init: function() {
         console.log('Spiel Preview page initialized');
         this.attachEventListeners();
+        this.updateSortButtonStates(); // Initialize sort button states
         this.renderGames();
         
         // Show loading screen and hide other elements initially
@@ -81,7 +87,7 @@ const SpielPreviewPage = {
     },
     
     autoLoadDefaultFile: function() {
-        const defaultPath = 'data/SPIEL-Combined.json';
+        const defaultPath = 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -91,8 +97,8 @@ const SpielPreviewPage = {
                 return response.json();
             })
             .then(data => {
-                this.processLoadedData(data, 'SPIEL-Combined.json');
-                console.log('Auto-loaded SPIEL-Combined.json from data folder');
+                this.processLoadedData(data, 'GeekPreview-Combined.json');
+                console.log('Auto-loaded GeekPreview-Combined.json from data folder');
             })
             .catch(error => {
                 console.log('Default file not found, waiting for manual load');
@@ -150,9 +156,27 @@ const SpielPreviewPage = {
         }
         
         const showMultipleOnly = document.getElementById('showMultipleEntriesOnly');
+        const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
         if (showMultipleOnly) {
             showMultipleOnly.addEventListener('change', (e) => {
                 this.showMultipleEntriesOnly = e.target.checked;
+                if(this.showMultipleEntriesOnly){
+                    this.showUniqueEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                }
+                showMultipleOnly.checked = this.showMultipleEntriesOnly;
+                showUniqueOnly.checked = this.showUniqueEntriesOnly;
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }      
+        if (showUniqueOnly) {
+            showUniqueOnly.addEventListener('change', (e) => {
+                this.showUniqueEntriesOnly = e.target.checked;                
+                if(this.showUniqueEntriesOnly){
+                    this.showMultipleEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                }
+                showMultipleOnly.checked = this.showMultipleEntriesOnly;
+                showUniqueOnly.checked = this.showUniqueEntriesOnly;
                 this.clearCache();
                 this.batchUpdate();
             });
@@ -177,7 +201,30 @@ const SpielPreviewPage = {
             });
         }
         
+        // Sort controls
+        const sortByTitle = document.getElementById('sortByTitle');
+        if (sortByTitle) {
+            sortByTitle.addEventListener('click', () => {
+                this.handleSort('title');
+            });
+        }
+        
+        const sortByThumbs = document.getElementById('sortByThumbs');
+        if (sortByThumbs) {
+            sortByThumbs.addEventListener('click', () => {
+                this.handleSort('thumbs');
+            });
+        }
+
+        const sortByPublisher = document.getElementById('sortByPublisher');
+        if (sortByPublisher) {
+            sortByPublisher.addEventListener('click', () => {
+                this.handleSort('publisher');
+            });
+        }
+        
         // Event delegation for priority dropdowns and notes (on the grid)
+        /*Changes not made in Meeplewood
         const spielGrid = document.getElementById('spielGrid');
         if (spielGrid) {
             spielGrid.addEventListener('change', (e) => {
@@ -195,17 +242,18 @@ const SpielPreviewPage = {
                     this.updateGameNotes(gameId, entryKey, e.target.value);
                 }
             }, true); // Use capture phase for blur
-        }
+        }*/
+        
     },
     
     loadSpielFile: function() {
-        console.log('Loading Spiel Preview JSON file');
+        console.log('Loading GeekPreview-Combined JSON file');
         
         // Show loading screen
         this.showLoadingScreen();
         
         // Try to load the default file first
-        const defaultPath = 'data/SPIEL-Combined.json';
+        const defaultPath = 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -215,7 +263,7 @@ const SpielPreviewPage = {
                 return response.json();
             })
             .then(data => {
-                this.processLoadedData(data, 'SPIEL-Combined.json');
+                this.processLoadedData(data, 'GeekPreview-Combined.json');
             })
             .catch(error => {
                 console.log('Default file not found, opening file picker:', error);
@@ -280,7 +328,7 @@ const SpielPreviewPage = {
             const entryFilters = document.getElementById('entryFilters');
             if (entryFilters) entryFilters.style.display = 'block';
             
-            this.filteredGames = [...this.games];
+            this.filteredGames = [...this.games]; //uses the spread operator (...) to create a shallow copy of the this.games array.
             
             // Update file name display
             const fileNameEl = document.getElementById('currentFileName');
@@ -289,10 +337,12 @@ const SpielPreviewPage = {
             }
             
             // Show save button
+            /* Changes not made in Meeplewood
             const saveBtn = document.getElementById('saveChangesBtn');
             if (saveBtn) {
                 saveBtn.style.display = 'inline-block';
             }
+            */
             
             // Hide loading screen and show content
             this.hideLoadingScreen();
@@ -402,6 +452,50 @@ const SpielPreviewPage = {
         this.batchUpdate();
     },
     
+    handleSort: function(sortBy) {
+        // Toggle direction if clicking the same sort button
+        if (this.sortBy === sortBy) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            // Otherwise set to asc, except thumbs defaults to desc
+            this.sortBy = sortBy;
+            this.sortDirection = this.sortBy === 'thumbs' ? 'desc' : 'asc';
+        }
+        
+        // Update button states
+        this.updateSortButtonStates();
+        
+        // Re-render with new sort
+        this.renderGames();
+    },
+    
+    updateSortButtonStates: function() {
+        const sortByTitle = document.getElementById('sortByTitle');
+        const sortByThumbs = document.getElementById('sortByThumbs');
+        const sortByPublisher = document.getElementById('sortByPublisher');
+        
+        if (sortByTitle) {
+            sortByTitle.classList.toggle('active', this.sortBy === 'title');
+            sortByTitle.innerHTML = this.sortBy === 'title' 
+                ? `📝 Title ${this.sortDirection === 'asc' ? '↑' : '↓'}`
+                : '📝 Title';
+        }
+        
+        if (sortByThumbs) {
+            sortByThumbs.classList.toggle('active', this.sortBy === 'thumbs');
+            sortByThumbs.innerHTML = this.sortBy === 'thumbs'
+                ? `👍 Thumbs ${this.sortDirection === 'desc' ? '↓' : '↑'}`
+                : '👍 Thumbs';
+        }
+
+        if (sortByPublisher) {
+            sortByPublisher.classList.toggle('active', this.sortBy === 'publisher');
+            sortByPublisher.innerHTML = this.sortBy === 'publisher'
+                ? `🏢 Publisher ${this.sortDirection === 'asc' ? '↑' : '↓'}`
+                : '🏢 Publisher';
+        }   
+    },
+    
     batchUpdate: function() {
         // Single pass through data to filter, count, and gather metadata
         const counts = {
@@ -424,11 +518,16 @@ const SpielPreviewPage = {
             
             // Check if game has entries
             if (!game.entries || game.entries.length === 0) {
-                continue;
+                continue; //ToDO -> Create structure without continue?
             }
             
             // Multiple entries filter
             if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
+                continue;
+            }
+            
+            // Unique entries filter
+            if (this.showUniqueEntriesOnly && game.entries.length > 1) {
                 continue;
             }
             
@@ -504,7 +603,7 @@ const SpielPreviewPage = {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
         }
-        /*
+        /* Overall metadata not displayed. Unneccessary clutter. Can be re-enabled if needed.
         if (metadataDisplay) metadataDisplay.style.display = 'block';
         
         const metaConvention = document.getElementById('metaConvention');
@@ -607,6 +706,9 @@ const SpielPreviewPage = {
             return;
         }
         
+        // Sort the filtered games
+        this.sortFilteredGames();
+        
         // Performance optimization: For large datasets, render in batches
         if (this.filteredGames.length > 500) {
             this.renderGamesInBatches(grid);
@@ -615,6 +717,36 @@ const SpielPreviewPage = {
         }
         
         // Event listeners are handled by event delegation in attachEventListeners
+    },
+    
+    sortFilteredGames: function() {
+        if (this.sortBy === 'title') {
+            this.filteredGames.sort((a, b) => {
+                const titleA = (a.Title || '').toLowerCase();
+                const titleB = (b.Title || '').toLowerCase();
+                return this.sortDirection === 'asc' 
+                    ? titleA.localeCompare(titleB)
+                    : titleB.localeCompare(titleA);
+            });
+        } else if (this.sortBy === 'thumbs') {
+            this.filteredGames.sort((a, b) => {
+                const entryA = this.getRelevantEntry(a);
+                const entryB = this.getRelevantEntry(b);
+                const thumbsA = parseInt(entryA.thumbs) || 0;
+                const thumbsB = parseInt(entryB.thumbs) || 0;
+                return this.sortDirection === 'desc'
+                    ? thumbsB - thumbsA
+                    : thumbsA - thumbsB;
+            });
+        } else if (this.sortBy === 'publisher') {
+            this.filteredGames.sort((a, b) => {
+                const publisherA = (a.Publisher || '').toLowerCase();
+                const publisherB = (b.Publisher || '').toLowerCase();
+                return this.sortDirection === 'asc' 
+                    ? publisherA.localeCompare(publisherB)
+                    : publisherB.localeCompare(publisherA);
+            });
+        }
     },
     
     renderGamesInBatches: function(grid) {
@@ -702,6 +834,10 @@ const SpielPreviewPage = {
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
                         <div class="info-row">
+                            <span class="label">Release:</span>
+                            <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
+                        </div>  
+                        <div class="info-row">
                             <span class="label">Thumbs:</span>
                             <span class="value">${this.escapeHtml(currentEntry.thumbs)}👍</span>
                         </div>                    
@@ -731,6 +867,7 @@ const SpielPreviewPage = {
         
         const entriesHtml = sortedEntries.map(entry => {
             const isCurrent = entry === currentEntry;
+            if (isCurrent) return ''; // Skip current entry in historical list
             const badgeClass = isCurrent ? 'current' : 'historical';
             const entryClass = isCurrent ? 'current' : '';
             const priorityLabel = this.getPriorityLabel(entry.priority);
@@ -749,6 +886,8 @@ const SpielPreviewPage = {
                     </div>
                     <div class="entry-details">
                         <span class=\"entry-priority priority-${entry.priority || 'none'}\">${priorityLabel}</span>
+                        ${entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.overrideReleaseDate)}</div>` : ''}  
+                        ${entry.releaseDate && !entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.releaseDate)}</div>` : ''}
                         ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}
                         ${entry.thumbs ? `<div class="entry-thumbs">👍 Thumbs: ${this.escapeHtml(entry.thumbs)}</div>` : ''}
                         <div class="entry-dates">
@@ -762,7 +901,7 @@ const SpielPreviewPage = {
         
         return `
             <div class="historical-entries">
-                <h4>📅 All Entries (${game.entries.length})</h4>
+                <h4>📅 Other Entries (${game.entries.length - 1})</h4>
                 ${entriesHtml}
             </div>
         `;
@@ -840,7 +979,7 @@ const SpielPreviewPage = {
         };
         
         const jsonContent = JSON.stringify(exportData, null, 2);
-        const filename = this.currentFileName || 'SPIEL-Combined.json';
+        const filename = this.currentFileName || 'GeekPreview-Combined.json';
         
         // Try File System Access API (Chrome, Edge, Opera)
         if ('showSaveFilePicker' in window) {

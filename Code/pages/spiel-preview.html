@@ -1,12 +1,12 @@
 <div class="page-header">
-    <h1>🎪 Spiel Preview Manager</h1>
+    <h1>🎪 Convention Geek-Preview List Manager</h1>
     <p>Plan your convention visits and track must-see games</p>
 </div>
 
 <div class="preview-controls">
     <div class="file-controls">
-        <button class="primary-button" id="loadSpielFileBtn">📂 Load Spiel Preview File</button>
-        <button class="secondary-button" id="saveChangesBtn" style="display: none;">💾 Save Changes</button>
+        <button class="primary-button" id="loadSpielFileBtn">📂 Load Combined GeekPreview File</button>
+        <!--<button class="secondary-button" id="saveChangesBtn" style="display: none;">💾 Save Changes</button>-->
         <span id="currentFileName" style="margin-left: 1rem; color: #666;"></span>
     </div>
     
@@ -33,18 +33,20 @@
                     <option value="">All</option>
                 </select>
             </div>
-            
+        </div>
+        <div class="filter-row">    
             <div class="filter-group">
                 <label>
-                    <input type="checkbox" id="showHistoricalEntries" checked>
-                    Show historical entries
+                    <input type="checkbox" id="showHistoricalEntries" checked>Show historical entries
                 </label>
             </div>
             
             <div class="filter-group">
                 <label>
-                    <input type="checkbox" id="showMultipleEntriesOnly">
-                    Only games with multiple entries
+                    <input type="checkbox" id="showMultipleEntriesOnly">Only games with multiple entries
+                </label>
+                <label>
+                    <input type="checkbox" id="showUniqueEntriesOnly">Only games with 1 entry
                 </label>
             </div>
         </div>
@@ -61,6 +63,13 @@
     
     <div class="search-bar">
         <input type="text" id="spielSearch" placeholder="Search by title, publisher, or location...">
+    </div>
+    
+    <div class="sort-controls">
+        <label>Sort by:</label>
+        <button class="sort-btn active" id="sortByTitle">📝 Title</button>
+        <button class="sort-btn" id="sortByThumbs">👍 Thumbs</button>
+        <button class="sort-btn" id="sortByPublisher">� Publisher</button>
     </div>
 </div>
 <!--Don't know if I want this block of info. Commented out for now.
