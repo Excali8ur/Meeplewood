@@ -281,6 +281,9 @@ const SettingsPage = {
         const themeSelect = document.getElementById('theme');
         const cardSizeSelect = document.getElementById('cardSize');
         
+        // Track old path to detect changes
+        const oldPath = this.settings.defaultDataPath;
+        
         this.settings = {
             userName: userNameInput?.value || '',
             defaultDataPath: defaultDataPathInput?.value || 'data/GeekPreview-Combined.json',
@@ -292,6 +295,18 @@ const SettingsPage = {
         
         localStorage.setItem('meeplewood_settings', JSON.stringify(this.settings));
         console.log('Settings saved:', this.settings);
+        
+        // If default path changed, reload the file
+        if (oldPath !== this.settings.defaultDataPath) {
+            console.log(`Default path changed from ${oldPath} to ${this.settings.defaultDataPath}, reloading...`);
+            this.autoLoadDefaultCombinedFile();
+        }
+        
+        // Update the metadata modal's user field if it's open
+        const userInput = document.getElementById('spielUser');
+        if (userInput && this.settings.userName) {
+            userInput.value = this.settings.userName;
+        }
         
         alert('Settings saved successfully!');
     },
@@ -331,7 +346,8 @@ const SettingsPage = {
         // Create file input for browsing
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json';
+        // Include MIME type for better Android compatibility
+        input.accept = 'application/json,.json';
         
         input.onchange = (e) => {
             const file = e.target.files[0];
@@ -359,7 +375,8 @@ const SettingsPage = {
         // Create file input
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json';
+        // Include MIME type for better Android compatibility
+        input.accept = 'application/json,.json';
         
         input.onchange = (e) => {
             const file = e.target.files[0];
@@ -388,7 +405,8 @@ const SettingsPage = {
         // Create file input
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.csv';
+        // Include MIME type for better Android compatibility
+        input.accept = 'text/csv,.csv,text/plain';
         
         input.onchange = (e) => {
             const file = e.target.files[0];
@@ -481,7 +499,8 @@ const SettingsPage = {
     openExistingFilePicker: function() {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json';
+        // Include MIME type for better Android compatibility
+        input.accept = 'application/json,.json';
         
         input.onchange = (e) => {
             const file = e.target.files[0];

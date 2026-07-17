@@ -270,7 +270,8 @@ const SpielPreviewPage = {
         // Create file input
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json';
+        // Include MIME type for better Android compatibility
+        input.accept = 'application/json,.json';
         
         input.onchange = (e) => {
             const file = e.target.files[0];
