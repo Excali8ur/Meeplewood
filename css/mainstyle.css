@@ -77,6 +77,26 @@ h1, h2, h3, h4, h5, h6 {
     gap: 10px;
 }
 
+.mobile-nav-toggle {
+    display: none;
+    background-color: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    width: 42px;
+    height: 42px;
+    font-size: 22px;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.mobile-nav-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
 .nav-button {
     background-color: transparent;
     color: white;
@@ -214,4 +234,102 @@ button:hover {
     width: 30px;
     height: 30px;
     vertical-align: middle;
+}
+
+.logo-icon img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+@media (max-width: 900px) {
+    .banner {
+        padding: 20px 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .banner-left {
+        width: 100%;
+        gap: 14px;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .logo-icon {
+        transform: none;
+        width: 120px;
+        height: auto;
+    }
+
+    .banner-nav {
+        width: 100%;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .nav-button {
+        font-size: 16px;
+        padding: 6px 12px;
+    }
+
+    .banner-right {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .banner {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 12px;
+    }
+
+    .banner-left {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 10px;
+        width: auto;
+    }
+
+    .logo {
+        grid-column: 1 / 2;
+    }
+
+    .logo-icon {
+        width: 96px;
+    }
+
+    .mobile-nav-toggle {
+        display: flex;
+        grid-column: 2 / 3;
+    }
+
+    .banner-nav {
+        display: none;
+        grid-column: 1 / -1;
+        width: 100%;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+    .banner-nav.is-open {
+        display: flex;
+    }
+
+    .nav-button {
+        width: 100%;
+        text-align: left;
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .banner-right {
+        margin-left: 0;
+        grid-column: 2 / 3;
+    }
 }
