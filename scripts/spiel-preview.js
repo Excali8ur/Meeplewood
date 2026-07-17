@@ -247,29 +247,10 @@ const SpielPreviewPage = {
     },
     
     loadSpielFile: function() {
-        console.log('Loading GeekPreview-Combined JSON file');
+        console.log('Opening file picker to load a different file');
         
-        // Show loading screen
-        this.showLoadingScreen();
-        
-        // Try to load the default file first
-        const defaultPath = 'data/GeekPreview-Combined.json';
-        
-        fetch(defaultPath)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Default file not found');
-                }
-                return response.json();
-            })
-            .then(data => {
-                this.processLoadedData(data, 'GeekPreview-Combined.json');
-            })
-            .catch(error => {
-                console.log('Default file not found, opening file picker:', error);
-                this.hideLoadingScreen();
-                this.openFilePicker();
-            });
+        // Always open file picker to let user choose a file
+        this.openFilePicker();
     },
     
     openFilePicker: function() {

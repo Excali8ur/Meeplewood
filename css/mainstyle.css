@@ -24,9 +24,15 @@
 
 /* Font Example - Headers only */
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Agbalumo", system-ui;
+  font-family: "Agbalumo", system-ui;  
   font-weight: 400;
   font-style: normal;
+  color: darkgreen;
+}
+
+h1 {
+    margin-bottom: 10px;
+    text-decoration: underline;
 }
 
 /* Banner Component */
@@ -45,6 +51,7 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 1000;
 }
 
+/* Banner Left: Logo and Navigation */
 .banner-left {
     display: flex;
     align-items: center;
@@ -53,23 +60,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .logo {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 40px;
-    /*font-weight: bold;*/
-}
-
-.logo-icon {
-    transform: translateY(-40px);
+    align-items: center; 
     width: 150px;
     height: 30px;
-    font-size: 32px;
-
-}
-
-.logo-text {
-    color: white;
-    text-decoration: none;
 }
 
 .banner-nav {
@@ -77,6 +70,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 10px;
 }
 
+/* Nav-buttons colapses into a hamburger menu on smaller screens */
 .mobile-nav-toggle {
     display: none;
     background-color: transparent;
@@ -119,6 +113,7 @@ h1, h2, h3, h4, h5, h6 {
     border-color: #4CAF50;
 }
 
+/* Banner right: Settings button */
 .banner-right {
     display: flex;
     align-items: center;
@@ -171,11 +166,6 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-h1 {
-    color: #333;
-    margin-bottom: 10px;
-}
-
 button {
     background-color: #4CAF50;
     color: white;
@@ -222,7 +212,6 @@ button:hover {
     background-color: #7f8c8d;
 }
 
-
 #output {
     margin-top: 20px;
     padding: 10px;
@@ -234,12 +223,6 @@ button:hover {
     width: 30px;
     height: 30px;
     vertical-align: middle;
-}
-
-.logo-icon img {
-    width: 100%;
-    height: auto;
-    display: block;
 }
 
 @media (max-width: 900px) {

@@ -91,3 +91,17 @@
     padding: 40px;
     font-style: italic;
 }
+
+.dashboard-intro{
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: darkgreen;
+    margin-bottom: 20px;
+}
+
+.dashboard-description {
+    font-family: "Lobster", sans-serif;
+    margin-top: 20px;
+    color: #555;    
+    line-height: 1.6;
+}
