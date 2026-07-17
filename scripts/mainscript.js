@@ -144,6 +144,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Banner navigation functionality
     const navButtons = document.querySelectorAll('.nav-button');
     const settingsButton = document.getElementById('settingsButton');
+    const mobileNavToggle = document.getElementById('mobileNavToggle');
+    const bannerNav = document.getElementById('bannerNav');
+
+    function closeMobileNav() {
+        if (!bannerNav || !mobileNavToggle) {
+            return;
+        }
+
+        bannerNav.classList.remove('is-open');
+        mobileNavToggle.setAttribute('aria-expanded', 'false');
+        mobileNavToggle.textContent = '☰';
+    }
+
+    if (mobileNavToggle && bannerNav) {
+        mobileNavToggle.addEventListener('click', function() {
+            const isOpen = bannerNav.classList.toggle('is-open');
+            mobileNavToggle.setAttribute('aria-expanded', String(isOpen));
+            mobileNavToggle.textContent = isOpen ? '✕' : '☰';
+        });
+    }
     
     // Handle navigation button clicks
     navButtons.forEach(button => {
@@ -156,6 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get route from data attribute
             const route = this.getAttribute('data-route');
             router.navigate(route);
+            closeMobileNav();
         });
     });
     
@@ -170,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const hash = window.location.hash.substring(1);
         if (hash && router.routes[hash]) {
             router.navigate(hash);
+            closeMobileNav();
             
             // Update active nav button
             navButtons.forEach(btn => {
@@ -178,6 +200,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     btn.classList.add('active');
                 }
             });
+        }
+    });
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 600) {
+            closeMobileNav();
         }
     });
     
