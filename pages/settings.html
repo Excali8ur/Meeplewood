@@ -2,35 +2,29 @@
 <p>Configure your Meeplewood preferences</p>
 
 <div class="settings-sections">
-    <!--<section class="settings-section">
+    <section class="settings-section">
         <h2>General Settings</h2>
         
         <div class="setting-item">
-            <label for="userName">Display Name</label>
+            <label for="userName">User Name</label>
             <input type="text" id="userName" placeholder="Your name">
+            <p class="setting-description">This will be used as the default user identifier when importing GeekPreview lists</p>
         </div>
         
         <div class="setting-item">
-            <label for="defaultView">Default View</label>
-            <select id="defaultView">
-                <option value="dashboard">Dashboard</option>
-                <option value="games">Games</option>
-                <option value="stats">Statistics</option>
-                <option value="groups">Groups</option>
-            </select>
+            <label for="defaultDataPath">Default Data Path</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="defaultDataPath" placeholder="data/GeekPreview-Combined.json" style="flex: 1;">
+                <button type="button" class="secondary-button" id="browseDataPathBtn">📁 Browse</button>
+            </div>
+            <p class="setting-description">The default location for your combined GeekPreview data file (relative to the Meeplewood folder)</p>
         </div>
         
-        <div class="setting-item">
-            <label class="checkbox-label">
-                <input type="checkbox" id="showWelcome">
-                Show welcome message on startup
-            </label>
-        </div>
         <div class="settings-actions">
             <button class="primary-button" id="saveSettingsBtn">Save Settings</button>
             <button class="secondary-button" id="cancelSettingsBtn">Cancel</button>
         </div>
-    </section>-->
+    </section>
     <section class="settings-section" style="display: none;">
         <h2>Display Preferences</h2>
         
@@ -56,6 +50,12 @@
     
     <section class="settings-section">
         <h2>Data & Import</h2>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="createNewFileBtn">📄 Create New Preview File</button>
+            <p class="setting-description">Start fresh with a new empty preview file. This will clear any loaded data and allow you to start importing from scratch.</p>
+            <p class="setting-description" style="color: #e74c3c; font-weight: bold;">⚠️ This doesn't delete your existing files, it just clears the current session.</p>
+        </div>
         
         <div class="setting-item">
             <button class="secondary-button" id="loadExistingSpielBtn">📂 Load Existing Combined File (other than default)</button>

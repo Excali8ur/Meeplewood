@@ -140,9 +140,7 @@ vite.config.ts.timestamp-*
 
 # Don't add the raw data
 /Code/data/raw
-#/Code/data/*.json
-#/Code/data/*.csv
-#/Code/data/*.xlsx
+data/GeekPreview-Combined copy.json
 
 # Ignore temporary files
 *.tmp
