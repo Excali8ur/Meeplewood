@@ -87,7 +87,20 @@ const SpielPreviewPage = {
     },
     
     autoLoadDefaultFile: function() {
-        const defaultPath = 'data/GeekPreview-Combined.json';
+        // Get default path from settings
+        const savedSettings = localStorage.getItem('meeplewood_settings');
+        let defaultPath = 'data/GeekPreview-Combined.json'; // fallback default
+        
+        if (savedSettings) {
+            try {
+                const settings = JSON.parse(savedSettings);
+                if (settings.defaultDataPath) {
+                    defaultPath = settings.defaultDataPath;
+                }
+            } catch (error) {
+                console.log('Error parsing settings, using default path');
+            }
+        }
         
         fetch(defaultPath)
             .then(response => {
@@ -97,8 +110,8 @@ const SpielPreviewPage = {
                 return response.json();
             })
             .then(data => {
-                this.processLoadedData(data, 'GeekPreview-Combined.json');
-                console.log('Auto-loaded GeekPreview-Combined.json from data folder');
+                this.processLoadedData(data, defaultPath.split('/').pop());
+                console.log(`Auto-loaded ${defaultPath}`);
             })
             .catch(error => {
                 console.log('Default file not found, waiting for manual load');
@@ -224,7 +237,7 @@ const SpielPreviewPage = {
         }
         
         // Event delegation for priority dropdowns and notes (on the grid)
-        /*Changes not made in Meeplewood
+        /*Changes not made in Meeplewood at the moment, but can be re-enabled if needed.
         const spielGrid = document.getElementById('spielGrid');
         if (spielGrid) {
             spielGrid.addEventListener('change', (e) => {

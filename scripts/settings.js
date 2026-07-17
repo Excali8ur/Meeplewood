@@ -3,6 +3,7 @@
 const SettingsPage = {
     settings: {
         userName: '',
+        defaultDataPath: 'data/GeekPreview-Combined.json',
         defaultView: 'dashboard',
         showWelcome: true,
         theme: 'light',
@@ -113,7 +114,7 @@ const SettingsPage = {
     },
     
     autoLoadDefaultCombinedFile: function() {
-        const defaultPath = 'data/GeekPreview-Combined.json';
+        const defaultPath = this.settings.defaultDataPath || 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -123,8 +124,8 @@ const SettingsPage = {
                 return response.json();
             })
             .then(data => {
-                this.processExistingCombinedData(data, 'GeekPreview-Combined.json');
-                console.log('Auto-loaded GeekPreview-Combined.json for merging');
+                this.processExistingCombinedData(data, defaultPath.split('/').pop());
+                console.log(`Auto-loaded ${defaultPath} for merging`);
             })
             .catch(error => {
                 console.log('Default combined file not found, will need manual load if merging');
@@ -141,12 +142,14 @@ const SettingsPage = {
     
     populateForm: function() {
         const userNameInput = document.getElementById('userName');
+        const defaultDataPathInput = document.getElementById('defaultDataPath');
         const defaultViewSelect = document.getElementById('defaultView');
         const showWelcomeCheck = document.getElementById('showWelcome');
         const themeSelect = document.getElementById('theme');
         const cardSizeSelect = document.getElementById('cardSize');
         
         if (userNameInput) userNameInput.value = this.settings.userName;
+        if (defaultDataPathInput) defaultDataPathInput.value = this.settings.defaultDataPath;
         if (defaultViewSelect) defaultViewSelect.value = this.settings.defaultView;
         if (showWelcomeCheck) showWelcomeCheck.checked = this.settings.showWelcome;
         if (themeSelect) themeSelect.value = this.settings.theme;
@@ -180,6 +183,12 @@ const SettingsPage = {
             console.log('Click listener attached to importSpielBtn');
         } else {
             console.error('importSpielBtn not found in DOM!');
+        }
+        
+        // Create new file
+        const createNewFileBtn = document.getElementById('createNewFileBtn');
+        if (createNewFileBtn) {
+            createNewFileBtn.addEventListener('click', this.createNewFile.bind(this));
         }
         
         // Load existing combined file
@@ -244,6 +253,12 @@ const SettingsPage = {
             });
         }
         
+        // Browse data path button
+        const browseDataPathBtn = document.getElementById('browseDataPathBtn');
+        if (browseDataPathBtn) {
+            browseDataPathBtn.addEventListener('click', this.browseDataPath.bind(this));
+        }
+        
         // Spiel metadata modal buttons
         const saveSpielJsonBtn = document.getElementById('saveSpielJsonBtn');
         if (saveSpielJsonBtn) {
@@ -260,6 +275,7 @@ const SettingsPage = {
     
     saveSettings: function() {
         const userNameInput = document.getElementById('userName');
+        const defaultDataPathInput = document.getElementById('defaultDataPath');
         const defaultViewSelect = document.getElementById('defaultView');
         const showWelcomeCheck = document.getElementById('showWelcome');
         const themeSelect = document.getElementById('theme');
@@ -267,6 +283,7 @@ const SettingsPage = {
         
         this.settings = {
             userName: userNameInput?.value || '',
+            defaultDataPath: defaultDataPathInput?.value || 'data/GeekPreview-Combined.json',
             defaultView: defaultViewSelect?.value || 'dashboard',
             showWelcome: showWelcomeCheck?.checked || false,
             theme: themeSelect?.value || 'light',
@@ -283,6 +300,57 @@ const SettingsPage = {
         console.log('Settings cancelled');
         this.loadSettings(); // Reload original settings
         alert('Changes discarded');
+    },
+    
+    createNewFile: function() {
+        console.log('Create new preview file');
+        
+        const confirmed = confirm('Start a fresh preview file? This will clear any currently loaded data in this session (your saved files won\'t be affected).');
+        
+        if (confirmed) {
+            // Clear existing data
+            this.existingCombinedData = null;
+            this.existingFileName = '';
+            
+            // Update status
+            const statusEl = document.getElementById('existingFileStatus');
+            if (statusEl) {
+                statusEl.textContent = '✓ New file created (empty)';
+                statusEl.style.display = 'block';
+                statusEl.style.color = '#4CAF50';
+            }
+            
+            console.log('New empty file created');
+            alert('New preview file started! You can now import GeekPreview lists without merging with existing data.');
+        }
+    },
+    
+    browseDataPath: function() {
+        console.log('Browse for data file path');
+        
+        // Create file input for browsing
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Since we can't get the full path in browsers, we'll suggest a path
+                // based on the filename, assuming it's in the data folder
+                const fileName = file.name;
+                const suggestedPath = `data/${fileName}`;
+                
+                const defaultDataPathInput = document.getElementById('defaultDataPath');
+                if (defaultDataPathInput) {
+                    defaultDataPathInput.value = suggestedPath;
+                }
+                
+                console.log(`Selected file: ${fileName}, suggested path: ${suggestedPath}`);
+            }
+        };
+        
+        input.click();
     },
     
     importBGStats: function() {
@@ -356,6 +424,7 @@ const SettingsPage = {
         const gamesCount = document.getElementById('gamesCount');
         const fileName = document.getElementById('fileName');
         const yearInput = document.getElementById('spielYear');
+        const userInput = document.getElementById('spielUser');
         
         if (modal) {
             modal.style.display = 'flex';
@@ -365,6 +434,11 @@ const SettingsPage = {
             
             // Set default year to current year
             if (yearInput) yearInput.value = new Date().getFullYear();
+            
+            // Pre-populate user field from settings
+            if (userInput && this.settings.userName) {
+                userInput.value = this.settings.userName;
+            }
         }
     },
     
@@ -380,8 +454,9 @@ const SettingsPage = {
     loadExistingCombinedFile: function() {
         console.log('Loading existing combined Spiel file');
         
-        // Try to load the default file first
-        const defaultPath = 'data/GeekPreview-Combined.json';
+        // Try to load the default file first using the configured path
+        /*
+        const defaultPath = this.settings.defaultDataPath || 'data/GeekPreview-Combined.json';
         
         fetch(defaultPath)
             .then(response => {
@@ -391,12 +466,16 @@ const SettingsPage = {
                 return response.json();
             })
             .then(data => {
-                this.processExistingCombinedData(data, 'GeekPreview-Combined.json');
+                this.processExistingCombinedData(data, defaultPath.split('/').pop());
             })
             .catch(error => {
                 console.log('Default file not found, opening file picker:', error);
                 this.openExistingFilePicker();
             });
+            */
+        
+        // Open file picker to select existing combined file
+        this.openExistingFilePicker();
     },
     
     openExistingFilePicker: function() {
