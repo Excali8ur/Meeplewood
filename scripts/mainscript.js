@@ -95,10 +95,6 @@ const router = {
         if (this.routes[routeName]) {
             this.currentRoute = routeName;
             this.render();
-            
-            // Update URL hash without page reload
-            window.location.hash = routeName;
-            
             console.log(`Navigated to: ${routeName}`);
         } else {
             console.error(`Route not found: ${routeName}`);
@@ -175,7 +171,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Get route from data attribute
             const route = this.getAttribute('data-route');
-            router.navigate(route);
+            // Just update the hash - let hashchange event handle navigation
+            window.location.hash = route;
             closeMobileNav();
         });
     });
@@ -183,10 +180,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle settings button click
     settingsButton.addEventListener('click', function() {
         console.log('Settings button clicked');
-        router.navigate('settings');
+        // Just update the hash - let hashchange event handle navigation
+        window.location.hash = 'settings';
     });
     
-    // Handle browser back/forward buttons
+    // Handle browser back/forward buttons and hash changes
     window.addEventListener('hashchange', function() {
         const hash = window.location.hash.substring(1);
         if (hash && router.routes[hash]) {
@@ -221,7 +219,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Navigate to initial route
-    router.navigate(initialRoute);
+    // If there's no hash or it needs to change, setting hash will trigger hashchange event
+    // If hash is already correct, we need to navigate manually
+    const currentHash = window.location.hash.substring(1);
+    if (currentHash === initialRoute) {
+        // Hash already set, navigate directly (won't trigger hashchange)
+        router.navigate(initialRoute);
+    } else {
+        // Setting hash will trigger hashchange event, which will navigate
+        window.location.hash = initialRoute;
+    }
 });
 
 // Example function

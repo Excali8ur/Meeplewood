@@ -20,6 +20,8 @@ const SpielPreviewPage = {
     searchTerm: '',
     metadata: null,
     currentFileName: null,
+    dbName: 'MeeplewoodDB',
+    dbVersion: 1,
     
     // Filter settings
     selectedYear: '', // '' = latest
@@ -54,6 +56,33 @@ const SpielPreviewPage = {
         this.autoLoadDefaultFile();
     },
     
+    // Open IndexedDB connection (shared with settings.js)
+    openDB: function() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, this.dbVersion);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    },
+    
+    // Retrieve file handle from IndexedDB
+    getStoredFileHandle: async function() {
+        try {
+            const db = await this.openDB();
+            const transaction = db.transaction(['fileHandles'], 'readonly');
+            const store = transaction.objectStore('fileHandles');
+            
+            return new Promise((resolve, reject) => {
+                const request = store.get('defaultCombinedFile');
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve(null);
+            });
+        } catch (error) {
+            console.error('Error retrieving file handle:', error);
+            return null;
+        }
+    },
+    
     showLoadingScreen: function() {
         const loadingScreen = document.getElementById('loadingScreen');
         const noGamesMessage = document.getElementById('noGamesMessage');
@@ -86,7 +115,7 @@ const SpielPreviewPage = {
         if (spielGrid) spielGrid.style.display = 'none';
     },
     
-    autoLoadDefaultFile: function() {
+    autoLoadDefaultFile: async function() {
         // Get default path from settings
         const savedSettings = localStorage.getItem('meeplewood_settings');
         let defaultPath = 'data/GeekPreview-Combined.json'; // fallback default
@@ -102,21 +131,49 @@ const SpielPreviewPage = {
             }
         }
         
-        fetch(defaultPath)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Default file not found');
+        // Check if it's a local file (stored in IndexedDB)
+        if (defaultPath.startsWith('local:')) {
+            const stored = await this.getStoredFileHandle();
+            if (stored && stored.handle) {
+                try {
+                    // Verify we still have permission
+                    const permission = await stored.handle.queryPermission({ mode: 'readwrite' });
+                    
+                    if (permission === 'granted' || permission === 'prompt') {
+                        const file = await stored.handle.getFile();
+                        const content = await file.text();
+                        const data = JSON.parse(content);
+                        
+                        this.processLoadedData(data, file.name);
+                        console.log(`Auto-loaded local file "${file.name}" from stored handle`);
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Could not load from stored handle:', error.message);
+                    this.showNoGamesMessage();
+                    return;
                 }
-                return response.json();
-            })
-            .then(data => {
-                this.processLoadedData(data, defaultPath.split('/').pop());
-                console.log(`Auto-loaded ${defaultPath}`);
-            })
-            .catch(error => {
-                console.log('Default file not found, waiting for manual load');
-                this.showNoGamesMessage();
-            });
+            }
+            
+            // Stored handle failed
+            console.log('Could not auto-load local file, please use the Load File button');
+            this.showNoGamesMessage();
+            return;
+        }
+        
+        // Try to fetch from server (for web-hosted files)
+        try {
+            const response = await fetch(defaultPath);
+            if (!response.ok) {
+                throw new Error('Default file not found');
+            }
+            const data = await response.json();
+            this.processLoadedData(data, defaultPath.split('/').pop());
+            console.log(`Auto-loaded ${defaultPath}`);
+        } catch (error) {
+            console.log('Default file not found, waiting for manual load');
+            this.showNoGamesMessage();
+        }
     },
     
     attachEventListeners: function() {
@@ -259,15 +316,55 @@ const SpielPreviewPage = {
         
     },
     
-    loadSpielFile: function() {
+    loadSpielFile: async function() {
         console.log('Opening file picker to load a different file');
         
         // Always open file picker to let user choose a file
-        this.openFilePicker();
+        await this.openFilePicker();
     },
     
-    openFilePicker: function() {
-        // Create file input
+    openFilePicker: async function() {
+        // Try File System Access API first (Chrome, Edge, Opera)
+        if ('showOpenFilePicker' in window) {
+            try {
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }],
+                    multiple: false,
+                    startIn: 'downloads'
+                });
+                
+                // Show loading screen
+                this.showLoadingScreen();
+                
+                const file = await fileHandle.getFile();
+                const content = await file.text();
+                
+                try {
+                    const data = JSON.parse(content);
+                    this.clearCache(); // Clear cache before processing new data
+                    this.processLoadedData(data, file.name);
+                    
+                    // Store the file handle for future auto-loading
+                    await this.storeFileHandle(fileHandle, file.name);
+                } catch (error) {
+                    console.error('Error parsing JSON file:', error);
+                    this.hideLoadingScreen();
+                    alert('Error parsing JSON file: ' + error.message);
+                    this.showNoGamesMessage();
+                }
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    return;  // User cancelled
+                }
+                console.log('File System Access API failed, falling back to input method:', err);
+            }
+        }
+        
+        // Fallback for browsers without File System Access API
         const input = document.createElement('input');
         input.type = 'file';
         // Include MIME type for better Android compatibility
@@ -301,6 +398,26 @@ const SpielPreviewPage = {
         };
         
         input.click();
+    },
+    
+    // Store file handle in IndexedDB
+    storeFileHandle: async function(handle, fileName) {
+        try {
+            const db = await this.openDB();
+            const transaction = db.transaction(['fileHandles'], 'readwrite');
+            const store = transaction.objectStore('fileHandles');
+            
+            await store.put({
+                id: 'defaultCombinedFile',
+                handle: handle,
+                fileName: fileName,
+                timestamp: Date.now()
+            });
+            
+            console.log('File handle stored in IndexedDB:', fileName);
+        } catch (error) {
+            console.error('Error storing file handle:', error);
+        }
     },
     
     processLoadedData: function(data, fileName) {
@@ -492,6 +609,7 @@ const SpielPreviewPage = {
     },
     
     batchUpdate: function() {
+        
         // Single pass through data to filter, count, and gather metadata
         const counts = {
             all: 0,
@@ -501,12 +619,11 @@ const SpielPreviewPage = {
             '4': 0,
             'none': 0
         };
-        
         const filteredYears = new Set();
         const filteredConventions = new Set();
         const filteredUsers = new Set();
         const filtered = [];
-        
+
         // Single iteration through all games
         for (let i = 0; i < this.games.length; i++) {
             const game = this.games[i];
@@ -593,7 +710,7 @@ const SpielPreviewPage = {
     
     updateMetadataDisplay: function(filteredYears, filteredConventions, filteredUsers, filteredGameCount) {
         const metadataDisplay = document.getElementById('metadataDisplay');
-        
+        console.log('Updating metadata display with filtered counts and sources');
         if (!this.metadata) {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
@@ -684,6 +801,7 @@ const SpielPreviewPage = {
     },
     
     renderGames: function() {
+        console.log('Rendering games with current filters and sort settings',this.filteredGames);
         const grid = document.getElementById('spielGrid');
         const noGamesMsg = document.getElementById('noGamesMessage');
         

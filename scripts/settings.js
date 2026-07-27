@@ -17,15 +17,90 @@ const SettingsPage = {
     // Existing combined data (if loaded)
     existingCombinedData: null,
     existingFileName: '',
+    existingFileHandle: null,  // Store file handle for direct save access
+    dbName: 'MeeplewoodDB',
+    dbVersion: 1,
     
-    init: function() {
+    init: async function() {
         console.log('Settings page initialized');
+        await this.initDB();
         this.loadSettings();
         this.setupHelpTooltips();
         this.attachEventListeners();
         
         // Try to auto-load the default combined file
-        this.autoLoadDefaultCombinedFile();
+        await this.autoLoadDefaultCombinedFile();
+    },
+    
+    // Initialize IndexedDB for storing file handles
+    initDB: async function() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, this.dbVersion);
+            
+            request.onerror = () => {
+                console.error('IndexedDB error:', request.error);
+                resolve(); // Continue even if DB fails
+            };
+            
+            request.onsuccess = () => {
+                console.log('IndexedDB initialized');
+                resolve();
+            };
+            
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('fileHandles')) {
+                    db.createObjectStore('fileHandles', { keyPath: 'id' });
+                }
+            };
+        });
+    },
+    
+    // Store file handle in IndexedDB
+    storeFileHandle: async function(handle, fileName) {
+        try {
+            const db = await this.openDB();
+            const transaction = db.transaction(['fileHandles'], 'readwrite');
+            const store = transaction.objectStore('fileHandles');
+            
+            await store.put({
+                id: 'defaultCombinedFile',
+                handle: handle,
+                fileName: fileName,
+                timestamp: Date.now()
+            });
+            
+            console.log('File handle stored in IndexedDB:', fileName);
+        } catch (error) {
+            console.error('Error storing file handle:', error);
+        }
+    },
+    
+    // Retrieve file handle from IndexedDB
+    getStoredFileHandle: async function() {
+        try {
+            const db = await this.openDB();
+            const transaction = db.transaction(['fileHandles'], 'readonly');
+            const store = transaction.objectStore('fileHandles');
+            
+            return new Promise((resolve, reject) => {
+                const request = store.get('defaultCombinedFile');
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => resolve(null);
+            });
+        } catch (error) {
+            console.error('Error retrieving file handle:', error);
+            return null;
+        }
+    },
+    
+    // Open IndexedDB connection
+    openDB: function() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, this.dbVersion);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
     },
 
     setupHelpTooltips: function() {
@@ -113,23 +188,107 @@ const SettingsPage = {
         });
     },
     
-    autoLoadDefaultCombinedFile: function() {
+    autoLoadDefaultCombinedFile: async function(promptOnFail = false) {
         const defaultPath = this.settings.defaultDataPath || 'data/GeekPreview-Combined.json';
         
-        fetch(defaultPath)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Default file not found');
+        // First, try to load from stored file handle (for local files)
+        if (defaultPath.startsWith('local:')) {
+            const stored = await this.getStoredFileHandle();
+            if (stored && stored.handle) {
+                try {
+                    // Verify we still have permission
+                    const permission = await stored.handle.queryPermission({ mode: 'readwrite' });
+                    
+                    if (permission === 'granted' || permission === 'prompt') {
+                        const file = await stored.handle.getFile();
+                        const content = await file.text();
+                        const data = JSON.parse(content);
+                        
+                        this.processExistingCombinedData(data, file.name, stored.handle);
+                        console.log(`Auto-loaded local file "${file.name}" from stored handle`);
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Could not load from stored handle:', error.message);
                 }
-                return response.json();
-            })
-            .then(data => {
-                this.processExistingCombinedData(data, defaultPath.split('/').pop());
-                console.log(`Auto-loaded ${defaultPath} for merging`);
-            })
-            .catch(error => {
-                console.log('Default combined file not found, will need manual load if merging');
+            }
+            
+            // Stored handle failed, prompt user to re-select
+            if (promptOnFail || confirm(`Could not auto-load your local file.\n\nWould you like to select it again?`)) {
+                await this.loadDefaultFileWithPicker(defaultPath);
+            }
+            return;
+        }
+        
+        // Try to fetch from server (for web-hosted files)
+        try {
+            const response = await fetch(defaultPath);
+            if (!response.ok) {
+                throw new Error('Default file not found on server');
+            }
+            const data = await response.json();
+            this.processExistingCombinedData(data, defaultPath.split('/').pop(), null);
+            console.log(`Auto-loaded ${defaultPath} from server (read-only, no file handle)`);
+            return;
+        } catch (error) {
+            console.log('Could not load default file from server:', error.message);
+            
+            // If called with promptOnFail (e.g., from settings change), offer to load via file picker
+            if (promptOnFail && 'showOpenFilePicker' in window) {
+                const shouldLoad = confirm(
+                    `Could not auto-load "${defaultPath}" from server.\n\n` +
+                    `Would you like to select the file from your local system?\n` +
+                    `(This will give the app write access for saving updates)`
+                );
+                
+                if (shouldLoad) {
+                    await this.loadDefaultFileWithPicker(defaultPath);
+                }
+            }
+        }
+    },
+    
+    loadDefaultFileWithPicker: async function(suggestedPath) {
+        try {
+            // Extract filename from path for suggestion
+            const fileName = suggestedPath.split('/').pop();
+            
+            // Try to determine a smart starting location based on the path
+            let startIn = 'downloads';  // Default fallback
+            const pathLower = suggestedPath.toLowerCase();
+            if (pathLower.includes('document')) {
+                startIn = 'documents';
+            } else if (pathLower.includes('desktop')) {
+                startIn = 'desktop';
+            } else if (pathLower.includes('download')) {
+                startIn = 'downloads';
+            }
+            
+            const [fileHandle] = await window.showOpenFilePicker({
+                types: [{
+                    description: 'JSON Files',
+                    accept: { 'application/json': ['.json'] }
+                }],
+                multiple: false,
+                startIn: startIn
             });
+            
+            const file = await fileHandle.getFile();
+            const content = await file.text();
+            const data = JSON.parse(content);
+            
+            this.processExistingCombinedData(data, file.name, fileHandle);
+            
+            // Store the file handle for future use
+            await this.storeFileHandle(fileHandle, file.name);
+            
+            console.log(`Loaded default file "${file.name}" via file picker with write access`);
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Error loading file:', error);
+                alert('Error loading file: ' + error.message);
+            }
+        }
     },
     
     loadSettings: function() {
@@ -299,7 +458,7 @@ const SettingsPage = {
         // If default path changed, reload the file
         if (oldPath !== this.settings.defaultDataPath) {
             console.log(`Default path changed from ${oldPath} to ${this.settings.defaultDataPath}, reloading...`);
-            this.autoLoadDefaultCombinedFile();
+            this.autoLoadDefaultCombinedFile(true);  // Pass true to prompt user on failure
         }
         
         // Update the metadata modal's user field if it's open
@@ -340,29 +499,87 @@ const SettingsPage = {
         }
     },
     
-    browseDataPath: function() {
+    browseDataPath: async function() {
         console.log('Browse for data file path');
         
-        // Create file input for browsing
+        // Try File System Access API first for better functionality
+        if ('showOpenFilePicker' in window) {
+            try {
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }],
+                    multiple: false,
+                    startIn: 'downloads'
+                });
+                
+                const file = await fileHandle.getFile();
+                const content = await file.text();
+                
+                try {
+                    const data = JSON.parse(content);
+                    
+                    // Load the file with write access
+                    this.processExistingCombinedData(data, file.name, fileHandle);
+                    
+                    // Store the file handle for persistence
+                    await this.storeFileHandle(fileHandle, file.name);
+                    
+                    // Update the path input to indicate local file
+                    const localPath = `local:${file.name}`;
+                    const defaultDataPathInput = document.getElementById('defaultDataPath');
+                    if (defaultDataPathInput) {
+                        defaultDataPathInput.value = localPath;
+                    }
+                    
+                    console.log(`Browsed and loaded file: ${file.name}, path: ${localPath}`);
+                    alert(`File loaded successfully!\n\nFile: ${file.name}\nPath: ${localPath}\n\nClick "Save Settings" to remember this file.`);
+                    
+                } catch (parseError) {
+                    console.error('Error parsing JSON:', parseError);
+                    alert('Error: Selected file is not valid JSON');
+                }
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    return;  // User cancelled
+                }
+                console.log('File System Access API failed, falling back:', err);
+            }
+        }
+        
+        // Fallback for browsers without File System Access API
         const input = document.createElement('input');
         input.type = 'file';
-        // Include MIME type for better Android compatibility
         input.accept = 'application/json,.json';
         
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
-                // Since we can't get the full path in browsers, we'll suggest a path
-                // based on the filename, assuming it's in the data folder
-                const fileName = file.name;
-                const suggestedPath = `data/${fileName}`;
-                
-                const defaultDataPathInput = document.getElementById('defaultDataPath');
-                if (defaultDataPathInput) {
-                    defaultDataPathInput.value = suggestedPath;
-                }
-                
-                console.log(`Selected file: ${fileName}, suggested path: ${suggestedPath}`);
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        
+                        // Load the file (without file handle in fallback mode)
+                        this.processExistingCombinedData(data, file.name, null);
+                        
+                        // Update the path input - use generic path since no handle available
+                        const suggestedPath = `data/${file.name}`;
+                        const defaultDataPathInput = document.getElementById('defaultDataPath');
+                        if (defaultDataPathInput) {
+                            defaultDataPathInput.value = suggestedPath;
+                        }
+                        
+                        console.log(`Selected file: ${file.name}, suggested path: ${suggestedPath}`);
+                        alert(`File loaded successfully!\n\nFile: ${file.name}\nNote: Your browser doesn't support persistent file access. You'll need to re-select this file after page reloads.\n\nClick "Save Settings" to remember the filename.`);
+                    } catch (parseError) {
+                        console.error('Error parsing JSON:', parseError);
+                        alert('Error: Selected file is not valid JSON');
+                    }
+                };
+                reader.readAsText(file);
             }
         };
         
@@ -484,7 +701,7 @@ const SettingsPage = {
                 return response.json();
             })
             .then(data => {
-                this.processExistingCombinedData(data, defaultPath.split('/').pop());
+                this.processExistingCombinedData(data, defaultPath.split('/').pop(), null);
             })
             .catch(error => {
                 console.log('Default file not found, opening file picker:', error);
@@ -496,7 +713,54 @@ const SettingsPage = {
         this.openExistingFilePicker();
     },
     
-    openExistingFilePicker: function() {
+    openExistingFilePicker: async function() {
+        // Try File System Access API first (Chrome, Edge, Opera)
+        if ('showOpenFilePicker' in window) {
+            try {
+                // Try to determine a smart starting location based on default path
+                let startIn = 'downloads';  // Default fallback
+                const defaultPath = (this.settings.defaultDataPath || '').toLowerCase();
+                if (defaultPath.includes('document')) {
+                    startIn = 'documents';
+                } else if (defaultPath.includes('desktop')) {
+                    startIn = 'desktop';
+                } else if (defaultPath.includes('download')) {
+                    startIn = 'downloads';
+                }
+                
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }],
+                    multiple: false,
+                    startIn: startIn  // Use smart starting point
+                });
+                
+                const file = await fileHandle.getFile();
+                const content = await file.text();
+                
+                try {
+                    const data = JSON.parse(content);
+                    this.processExistingCombinedData(data, file.name, fileHandle);
+                    
+                    // Store the file handle for auto-loading
+                    await this.storeFileHandle(fileHandle, file.name);
+                } catch (error) {
+                    console.error('Error parsing JSON:', error);
+                    alert('Error parsing JSON file: ' + error.message);
+                }
+                return;
+            } catch (err) {
+                // User cancelled or API not available, fall back to input method
+                if (err.name === 'AbortError') {
+                    return;  // User cancelled, just exit
+                }
+                console.log('File System Access API failed, falling back to input method:', err);
+            }
+        }
+        
+        // Fallback for browsers without File System Access API
         const input = document.createElement('input');
         input.type = 'file';
         // Include MIME type for better Android compatibility
@@ -509,7 +773,7 @@ const SettingsPage = {
                 reader.onload = (event) => {
                     try {
                         const data = JSON.parse(event.target.result);
-                        this.processExistingCombinedData(data, file.name);
+                        this.processExistingCombinedData(data, file.name, null);
                     } catch (error) {
                         console.error('Error parsing JSON:', error);
                         alert('Error parsing JSON file: ' + error.message);
@@ -522,29 +786,34 @@ const SettingsPage = {
         input.click();
     },
     
-    processExistingCombinedData: function(data, fileName) {
+    processExistingCombinedData: function(data, fileName, fileHandle = null) {
         // Validate structure
         if (data.games && Array.isArray(data.games)) {
             this.existingCombinedData = data;
             this.existingFileName = fileName;
+            this.existingFileHandle = fileHandle;  // Store handle for later save
             
             const statusEl = document.getElementById('existingFileStatus');
             if (statusEl) {
-                statusEl.textContent = `✓ Loaded: ${fileName}`;
+                const handleInfo = fileHandle ? ' (with write access)' : '';
+                statusEl.textContent = `✓ Loaded: ${fileName}${handleInfo}`;
                 statusEl.style.display = 'block';
             }
             
-            console.log(`Loaded existing file with ${data.games.length} games`);
+            console.log(`Loaded existing file with ${data.games.length} games`, fileHandle ? 'with file handle' : 'without file handle');
         } else {
             alert('Invalid file format. Expected JSON with "games" array.');
         }
     },
     
-    saveSpielAsJson: function() {
+    saveSpielAsJson: async function() {
         if (!this.tempSpielData) {
             alert('No data to save');
             return;
         }
+        
+        // Store the imported game count before any operations that might clear tempSpielData
+        const importedGameCount = this.tempSpielData.length;
         
         // Get metadata from form
         const year = document.getElementById('spielYear')?.value || '';
@@ -693,7 +962,7 @@ const SettingsPage = {
             notes: notes,
             sourceFile: this.tempSpielFileName,
             importedDate: now,
-            gameCount: this.tempSpielData.length
+            gameCount: importedGameCount
         });
         
         // Create filename - use convention name or keep existing name
@@ -707,10 +976,26 @@ const SettingsPage = {
         
         const jsonContent = JSON.stringify(exportData, null, 2);
         
-        // Try File System Access API (Chrome, Edge, Opera)
+        // Try to use existing file handle first
+        if (this.existingFileHandle) {
+            try {
+                const writable = await this.existingFileHandle.createWritable();
+                await writable.write(jsonContent);
+                await writable.close();
+                
+                this.showSuccessMessage(filename, finalGames.length, importedGameCount);
+                this.cancelSpielImport();
+                return;
+            } catch (err) {
+                console.log('Failed to write to existing file handle, will prompt for new location:', err);
+                this.existingFileHandle = null;  // Clear invalid handle
+            }
+        }
+        
+        // Try File System Access API with picker (Chrome, Edge, Opera)
         if ('showSaveFilePicker' in window) {
             try {
-                const handle = window.showSaveFilePicker({
+                const fileHandle = await window.showSaveFilePicker({
                     suggestedName: filename,
                     startIn: 'downloads',  // Change to 'documents', 'desktop', etc. (browser only allows these preset folders)
                     types: [{
@@ -719,35 +1004,35 @@ const SettingsPage = {
                     }]
                 });
                 
-                handle.then(async (fileHandle) => {
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(jsonContent);
-                    await writable.close();
-                    
-                    this.showSuccessMessage(filename, finalGames.length);
-                }).catch((err) => {
-                    if (err.name !== 'AbortError') {
-                        console.log('Save cancelled or failed, falling back to download');
-                        this.fallbackDownload(jsonContent, filename, finalGames.length);
-                    }
-                });
+                const writable = await fileHandle.createWritable();
+                await writable.write(jsonContent);
+                await writable.close();
                 
-                // Hide modal immediately
+                // Store the handle for future saves
+                this.existingFileHandle = fileHandle;
+                this.existingFileName = fileHandle.name;
+                
+                this.showSuccessMessage(filename, finalGames.length, importedGameCount);
                 this.cancelSpielImport();
                 return;
             } catch (err) {
-                console.log('File System Access API not available, using download');
+                if (err.name !== 'AbortError') {
+                    console.log('Save cancelled or failed, falling back to download');
+                    this.fallbackDownload(jsonContent, filename, finalGames.length, importedGameCount);
+                }
+                this.cancelSpielImport();
+                return;
             }
         }
         
         // Fallback: automatic download
-        this.fallbackDownload(jsonContent, filename, finalGames.length);
+        this.fallbackDownload(jsonContent, filename, finalGames.length, importedGameCount);
         
         // Hide modal
         this.cancelSpielImport();
     },
     
-    fallbackDownload: function(jsonContent, filename, totalGames) {
+    fallbackDownload: function(jsonContent, filename, totalGames, importedGameCount) {
         const blob = new Blob([jsonContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -756,13 +1041,14 @@ const SettingsPage = {
         a.click();
         URL.revokeObjectURL(url);
         
-        this.showSuccessMessage(filename, totalGames);
+        this.showSuccessMessage(filename, totalGames, importedGameCount);
     },
     
-    showSuccessMessage: function(filename, totalGames) {
-        // Clear existing file reference
+    showSuccessMessage: function(filename, totalGames, importedGameCount) {
+        // Clear existing file reference (but keep handle if we have one)
         this.existingCombinedData = null;
         this.existingFileName = '';
+        // Note: Don't clear existingFileHandle - keep it for next save
         const existingStatusEl = document.getElementById('existingFileStatus');
         if (existingStatusEl) {
             existingStatusEl.style.display = 'none';
@@ -771,7 +1057,7 @@ const SettingsPage = {
         // Show success message
         const statusEl = document.getElementById('spielImportStatus');
         if (statusEl) {
-            statusEl.textContent = `✓ Successfully saved ${this.tempSpielData.length} games to ${filename}`;
+            statusEl.textContent = `✓ Successfully saved ${importedGameCount} games to ${filename}`;
             statusEl.style.display = 'block';
             
             setTimeout(() => {
@@ -779,7 +1065,7 @@ const SettingsPage = {
             }, 5000);
         }
         
-        alert(`Successfully processed ${this.tempSpielData.length} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}\n\nLoad this file in the Spiel Preview page to view your data.`);
+        alert(`Successfully processed ${importedGameCount} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}\n\nLoad this file in the Spiel Preview page to view your data.`);
     },
     
     parseSpielCSV: function(csvText) {
