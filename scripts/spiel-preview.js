@@ -449,7 +449,7 @@ const SpielPreviewPage = {
             }
             
             // Show save button
-            /* Changes not made in Meeplewood
+            /* Changes not made in Meeplewood (yet?)
             const saveBtn = document.getElementById('saveChangesBtn');
             if (saveBtn) {
                 saveBtn.style.display = 'inline-block';
@@ -715,41 +715,6 @@ const SpielPreviewPage = {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
         }
-        /* Overall metadata not displayed. Unneccessary clutter. Can be re-enabled if needed.
-        if (metadataDisplay) metadataDisplay.style.display = 'block';
-        
-        const metaConvention = document.getElementById('metaConvention');
-        const metaYear = document.getElementById('metaYear');
-        const metaUser = document.getElementById('metaUser');
-        const metaGameCount = document.getElementById('metaGameCount');
-        const metaNotes = document.getElementById('metaNotes');
-        
-        // Show filtered conventions, years, and users
-        if (metaConvention) {
-            metaConvention.textContent = Array.from(filteredConventions).sort().join(', ') || '-';
-        }
-        if (metaYear) {
-            metaYear.textContent = Array.from(filteredYears).sort().join(', ') || '-';
-        }
-        if (metaUser) {
-            metaUser.textContent = Array.from(filteredUsers).sort().join(', ') || '-';
-        }
-        if (metaGameCount) {
-            metaGameCount.textContent = filteredGameCount;
-        }
-        
-        if (metaNotes) {
-            if (this.metadata.sources && this.metadata.sources.length > 0) {
-                const sourceInfo = this.metadata.sources.map(s => 
-                    `${s.year} ${s.convention} (${s.user})`
-                ).join(', ');
-                metaNotes.innerHTML = `<strong>Data sources:</strong> ${this.escapeHtml(sourceInfo)}`;
-                metaNotes.style.display = 'block';
-            } else {
-                metaNotes.style.display = 'none';
-            }
-        }
-        */
     },
     
     clearCache: function() {
@@ -931,14 +896,17 @@ const SpielPreviewPage = {
                 <div class="card-body">
                     <div class="game-info">
                         <div class="info-row">
-                            <span class="label">Publisher:</span>
-                            <span class="value">${this.escapeHtml(game.Publisher || '?')}</span>
+                            <span class="value">🏢 ${this.escapeHtml(game.Publisher || '?')}</span>
                         </div>
                         ${game.Type ? `
                         <div class="info-row">
                             <span class="label">Type:</span>
                             <span class="value">${this.escapeHtml(game.Type)}</span>
                         </div>` : ''}
+                        <div class="info-row">
+                            <span class="label">Release:</span>
+                            <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
+                        </div>
                     </div>
                     
                     <div class="entry-title"><h4>${currentEntry.convention} ${currentEntry.year}</h4>
@@ -947,12 +915,8 @@ const SpielPreviewPage = {
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
                         <div class="info-row">
-                            <span class="label">Release:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
-                        </div>  
-                        <div class="info-row">
                             <span class="label">Thumbs:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.thumbs)}👍</span>
+                            <span class="value">👍${this.escapeHtml(currentEntry.thumbs)}</span>
                         </div>                    
                         <div class="info-row">
                             <span class="label">Notes:</span>
@@ -981,8 +945,6 @@ const SpielPreviewPage = {
         const entriesHtml = sortedEntries.map(entry => {
             const isCurrent = entry === currentEntry;
             if (isCurrent) return ''; // Skip current entry in historical list
-            const badgeClass = isCurrent ? 'current' : 'historical';
-            const entryClass = isCurrent ? 'current' : '';
             const priorityLabel = this.getPriorityLabel(entry.priority);
             
             const insertedDate = new Date(entry.insertedDate).toLocaleDateString();
@@ -990,23 +952,16 @@ const SpielPreviewPage = {
                 `Modified: ${new Date(entry.lastModified).toLocaleDateString()}` : '';
             
             return `
-                <div class="historical-entry ${entryClass}">
+                <div class="historical-entry">
                     <div class="entry-header">
                         <div class="entry-meta">
-                            <strong>${entry.year}</strong> ${this.escapeHtml(entry.convention)} - ${this.escapeHtml(entry.user)}
+                            <strong>${entry.year}</strong> ${this.escapeHtml(entry.convention)} - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
+                            <br>${this.escapeHtml(entry.user)}    
                         </div>
-                        <span class="entry-badge ${badgeClass}">${isCurrent ? 'Current View' : 'Historical'}</span>
-                    </div>
-                    <div class="entry-details">
                         <span class=\"entry-priority priority-${entry.priority || 'none'}\">${priorityLabel}</span>
-                        ${entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.overrideReleaseDate)}</div>` : ''}  
-                        ${entry.releaseDate && !entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.releaseDate)}</div>` : ''}
-                        ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}
-                        ${entry.thumbs ? `<div class="entry-thumbs">👍 Thumbs: ${this.escapeHtml(entry.thumbs)}</div>` : ''}
-                        <div class="entry-dates">
-                            Added: ${insertedDate}
-                            ${modifiedDate ? `<br>${modifiedDate}` : ''}
-                        </div>
+                    </div>
+                    <div class="entry-details">                        
+                        ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}                        
                     </div>
                 </div>
             `;
