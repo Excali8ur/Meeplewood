@@ -891,12 +891,11 @@ const SpielPreviewPage = {
                 <div class="card-header">
                     <h3 class="game-title">${this.escapeHtml(game.Title || 'Untitled')}</h3>
                     ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
-                </div>
-                
+                </div>                
                 <div class="card-body">
                     <div class="game-info">
                         <div class="info-row">
-                            <span class="value">🏢 ${this.escapeHtml(game.Publisher || '?')}</span>
+                                <span class="value">🏢 ${this.escapeHtml(game.Publisher || '?')}</span>
                         </div>
                         ${game.Type ? `
                         <div class="info-row">
@@ -904,18 +903,18 @@ const SpielPreviewPage = {
                             <span class="value">${this.escapeHtml(game.Type)}</span>
                         </div>` : ''}
                         <div class="info-row">
+                            <span class="value">${this.escapeHtml(game.Type)}</span>
                             <span class="label">Release:</span>
                             <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
                         </div>
                     </div>
                     
-                    <div class="entry-title"><h4>${currentEntry.convention} ${currentEntry.year}</h4>
-                        <div class="info-row">                    
-                            <span class="label">Priority:</span>
+                    <div class="entry-title">
+                        <div class="entry-header">
+                            <h4>${currentEntry.convention} ${currentEntry.year}</h4>
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
                         <div class="info-row">
-                            <span class="label">Thumbs:</span>
                             <span class="value">👍${this.escapeHtml(currentEntry.thumbs)}</span>
                         </div>                    
                         <div class="info-row">
