@@ -1,0 +1,28 @@
+/* ToDo: 
+ - Select fewer colours from the palette 
+ - Rename to easy-to-read colour names, specific for MeepleWood 
+    (e.g. MorningCloud instead of SeaFog, MossyGrey instead of SpaceStation)
+ - Use the colour names in the CSS classes instead of hex values
+*/
+.MorningCloud           {color:#fffefd;}
+.MossyGrey              {color:#8A8C8E;}
+.ReseneSpicyPink        {color:#897578;}
+.ReseneAlpine           {color:#AD8A3B;}
+.ReseneAbelTasman       {color:#67592E;}
+.ReseneRichGold         {color:#A15226;}
+.ReseneHukanui          {color:#572A23;}
+.ReseneAmped            {color:#CD3D32;}
+.ReseneSimplyRed        {color:#9B2A2C;}
+.ReseneScorchedClay     {color:#7E3C2D;}
+.ReseneBiHoki           {color:#B56A39;}
+.ReseneCelebrate        {color:#E0A128;}
+.ReseneFestival         {color:#EACC4A;}
+.ReseneMeltingMoment    {color:#F4DE9E;}
+.ReseneSazerac          {color:#F5DEC4;}
+.ReseneCelery           {color:#B4C04C;}
+.ReseneKoru             {color:#778E46;}
+.ReseneDell             {color:#486531;}
+.ReseneAquarius         {color:#43A8C5;}
+.ReseneEndeavour        {color:#0080B9;}
+.ReseneWetNWild         {color:#00679F;}
+.ReseneDancingGirl      {color:#9470C4;}

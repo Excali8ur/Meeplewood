@@ -45,7 +45,7 @@ h1 {
 
 /* Banner Component */
 .banner {
-    background-color: #2c503f;
+    background-color: #486531; /* Resene Dell */
     color: white;        
     /* first  px = top/bottom padding (controls height)
        second px = left/right padding */
@@ -117,8 +117,8 @@ h1 {
 }
 
 .nav-button.active {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
+    background-color:#B4C04C; /* Resene Celery */
+    border-color: #B4C04C;
 }
 
 /* Banner right: Settings button */
