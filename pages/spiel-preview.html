@@ -1,9 +1,9 @@
 <div class="page-header">
     <h1>Geek-Preview List Manager</h1>
-    <p>Combine information from multiple GeekPreview List into one overview!</p>
+    <p class="font-main">Combine information from multiple GeekPreview List into one overview!</p>
 </div>
 
-<div class="preview-controls">
+<div class="preview-controls font-main">
     <div class="file-controls">
         <button class="primary-button" id="loadSpielFileBtn">📂 Load Combined GeekPreview File</button>
         <!--<button class="secondary-button" id="saveChangesBtn" style="display: none;">💾 Save Changes</button>-->
@@ -72,20 +72,6 @@
         <button class="sort-btn" id="sortByPublisher">� Publisher</button>
     </div>
 </div>
-<!--Don't know if I want this block of info. Commented out for now.
-<div id="metadataDisplay" class="metadata-display" style="display: none;">
-    <div class="metadata-card">
-        <h3>� Preview List Information</h3>
-        <div class="metadata-grid">
-            <div><strong>Convention:</strong> <span id="metaConvention">-</span></div>
-            <div><strong>Year:</strong> <span id="metaYear">-</span></div>
-            <div><strong>Owner:</strong> <span id="metaUser">-</span></div>
-            <div><strong>Games:</strong> <span id="metaGameCount">0</span></div>
-        </div>
-        <div id="metaNotes" style="margin-top: 0.5rem;"></div>
-    </div>
-</div>
--->
 <div id="loadingScreen" class="loading-screen">
     <div class="loading-content">
         <div class="loading-spinner"></div>
@@ -98,6 +84,6 @@
     <p>Don't have a JSON file? Go to <a href="#settings" onclick="router.navigate('settings')">Settings</a> to import a CSV and create one.</p>
 </div>
 
-<div id="spielGrid" class="spiel-grid">
+<div id="spielGrid" class="spiel-grid font-main">
     <!-- Game cards will be inserted here -->
 </div>

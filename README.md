@@ -46,4 +46,19 @@ In the future, Meeplewood may evolve into a broader tool for:
 
 ---
 
+## Technical Notes
+
+### BGG API Integration
+Meeplewood can automatically fetch detailed game information from BoardGameGeek (ratings, complexity, player counts, etc.) when importing preview lists. 
+
+**Important**: Due to browser CORS restrictions, the app uses a free CORS proxy service (allorigins.win) to access the BGG API. This means:
+- Your BGG API requests are routed through a third-party service
+- Only game IDs are sent (no personal data)
+- First imports may take a few minutes for large lists (rate-limited to 1 request/second)
+- Fetched data is cached locally to avoid repeated requests
+
+The CORS proxy can be configured or disabled in `scripts/game-database.js`.
+
+---
+
 For more details, see [MeepleWood Design](Design/MeepleWood_General%20Design.md)

@@ -92,6 +92,32 @@
         </div>
     </section>
     
+    <section class="settings-section">
+        <h2>Game Database Cache</h2>
+        <p class="setting-description">Manage cached game information from BoardGameGeek</p>
+        
+        <div class="setting-item">
+            <div id="gameDatabaseStats" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <p><strong>Cache Statistics:</strong></p>
+                <p id="cacheStatsContent">Loading...</p>
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="loadGameDatabaseBtn">📂 Load Game Database</button>
+            <p class="setting-description">Load a previously saved game database cache file</p>
+        </div>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="saveGameDatabaseBtn">💾 Save Game Database</button>
+            <p class="setting-description">Download the current game database cache</p>
+        </div>
+        
+        <div class="setting-item">
+            <button class="secondary-button" id="refreshGameDatabaseBtn">🔄 Refresh Cache Stats</button>
+            <p class="setting-description">Update the cache statistics display</p>
+        </div>
+    </section>
 
     
     <section class="settings-section">
@@ -112,8 +138,8 @@
         <h2>About</h2>
         
         <div class="about-info">
-            <p><strong>Meeplewood</strong></p>
-            <p>Version: 1.0.0</p>
+            <p>Github: <a href="https://github.com/Excali8ur/Meeplewood" target="_blank"><strong>Meeplewood</strong></a></p>
+            <p>Version: 0.2</p>
             <p>Your personal board game companion</p>
             <p style="margin-top: 10px;">
                 <a href="#" id="viewLicenseBtn">View License</a> | 
@@ -147,10 +173,35 @@
                 <input type="text" id="spielUser" placeholder="Your name or identifier">
             </div>
             
+            <div class="setting-item">
+                <label for="spielNotes">Notes (Optional)</label>
+                <textarea id="spielNotes" placeholder="Any additional notes about this import" rows="3"></textarea>
+            </div>
+            <!--
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="fetchBGGData">
+                    Fetch detailed game information from BGG
+                </label>
+                <p class="setting-description" style="font-size: 12px; margin-top: 5px;">
+                    Automatically fetches game details (ratings, complexity, mechanics, etc.) from BoardGameGeek for new games. 
+                    This may take a few minutes for large imports (rate-limited to 1 game/second).
+                    <br><strong>Note:</strong> Uses a CORS proxy service (allorigins.win) to access BGG API from the browser.
+                </p>
+            </div>
+            
+            <div id="bggFetchProgress" style="display: none; margin-top: 15px; padding: 10px; background: #f0f8ff; border-radius: 6px;">
+                <p style="margin: 0 0 10px 0; font-weight: bold; color: #2c3e50;">Fetching game data from BGG...</p>
+                <div style="background: #e0e0e0; height: 20px; border-radius: 10px; overflow: hidden;">
+                    <div id="bggFetchProgressBar" style="background: #3498db; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <p id="bggFetchProgressText" style="margin: 5px 0 0 0; font-size: 12px; color: #666;">0 / 0 games</p>
+            </div>
+            
             <div class="preview-info">
                 <p><strong>Games found:</strong> <span id="gamesCount">0</span></p>
                 <p><strong>File:</strong> <span id="fileName">-</span></p>
-            </div>
+            </div>-->
         </div>
         
         <div class="modal-actions">

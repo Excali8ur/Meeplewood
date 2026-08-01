@@ -43,11 +43,17 @@ const SpielPreviewPage = {
     // Performance: Cache for relevant entries
     relevantEntryCache: new Map(),
     
-    init: function() {
+    init: async function() {
         console.log('Spiel Preview page initialized');
         this.attachEventListeners();
         this.updateSortButtonStates(); // Initialize sort button states
         this.renderGames();
+        
+        // Initialize GameDatabase
+        if (window.GameDatabase) {
+            await window.GameDatabase.init();
+            console.log('Game Database initialized in preview page');
+        }
         
         // Show loading screen and hide other elements initially
         this.showLoadingScreen();
@@ -449,7 +455,7 @@ const SpielPreviewPage = {
             }
             
             // Show save button
-            /* Changes not made in Meeplewood
+            /* Changes not made in Meeplewood (yet?)
             const saveBtn = document.getElementById('saveChangesBtn');
             if (saveBtn) {
                 saveBtn.style.display = 'inline-block';
@@ -715,41 +721,6 @@ const SpielPreviewPage = {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
         }
-        /* Overall metadata not displayed. Unneccessary clutter. Can be re-enabled if needed.
-        if (metadataDisplay) metadataDisplay.style.display = 'block';
-        
-        const metaConvention = document.getElementById('metaConvention');
-        const metaYear = document.getElementById('metaYear');
-        const metaUser = document.getElementById('metaUser');
-        const metaGameCount = document.getElementById('metaGameCount');
-        const metaNotes = document.getElementById('metaNotes');
-        
-        // Show filtered conventions, years, and users
-        if (metaConvention) {
-            metaConvention.textContent = Array.from(filteredConventions).sort().join(', ') || '-';
-        }
-        if (metaYear) {
-            metaYear.textContent = Array.from(filteredYears).sort().join(', ') || '-';
-        }
-        if (metaUser) {
-            metaUser.textContent = Array.from(filteredUsers).sort().join(', ') || '-';
-        }
-        if (metaGameCount) {
-            metaGameCount.textContent = filteredGameCount;
-        }
-        
-        if (metaNotes) {
-            if (this.metadata.sources && this.metadata.sources.length > 0) {
-                const sourceInfo = this.metadata.sources.map(s => 
-                    `${s.year} ${s.convention} (${s.user})`
-                ).join(', ');
-                metaNotes.innerHTML = `<strong>Data sources:</strong> ${this.escapeHtml(sourceInfo)}`;
-                metaNotes.style.display = 'block';
-            } else {
-                metaNotes.style.display = 'none';
-            }
-        }
-        */
     },
     
     clearCache: function() {
@@ -762,19 +733,22 @@ const SpielPreviewPage = {
         }
         
         // Check cache first
-        const gameKey = game.BGGId || game.Title;
+        // Use BGGVersionId as primary key to distinguish different versions of the same game
+        const gameKey = game.BGGVersionId || game.BGGId || game.Title;
         const cacheKey = `${gameKey}-${this.selectedYear}-${this.selectedConvention}-${this.selectedUser}`;
         if (this.relevantEntryCache.has(cacheKey)) {
             return this.relevantEntryCache.get(cacheKey);
         }
         
-        // Filter entries based on selected filters
+        // Filter entries based on selected filters AND version ID
         let matchingEntries = game.entries.filter(entry => {
             const yearMatch = this.selectedYear === '' || entry.year === this.selectedYear;
             const conventionMatch = this.selectedConvention === '' || entry.convention === this.selectedConvention;
             const userMatch = this.selectedUser === '' || entry.user === this.selectedUser;
+            // Ensure entry belongs to this specific version of the game
+            const versionMatch = !entry.versionId || !game.BGGVersionId || entry.versionId === game.BGGVersionId;
             
-            return yearMatch && conventionMatch && userMatch;
+            return yearMatch && conventionMatch && userMatch && versionMatch;
         });
         
         if (matchingEntries.length === 0) {
@@ -915,6 +889,30 @@ const SpielPreviewPage = {
         const priorityLabel = this.getPriorityLabel(currentEntry.priority);
         const bggLink = game.BGGId ? `https://boardgamegeek.com/boardgame/${game.BGGId}` : '';
         
+        // Get BGG data if available
+        const bggData = game.BGGId && window.GameDatabase ? window.GameDatabase.cache[game.BGGId] : null;
+        
+        // Build BGG info section
+        let bggInfoHtml = '';
+        if (bggData && bggData.rating) {
+            const rating = bggData.rating.average ? bggData.rating.average.toFixed(1) : 'N/A';
+            const weight = bggData.weight ? bggData.weight.toFixed(1) : 'N/A';
+            const players = bggData.minPlayers && bggData.maxPlayers ? 
+                `${bggData.minPlayers}-${bggData.maxPlayers}` : 'N/A';
+            const playTime = bggData.playingTime || 'N/A';
+            
+            bggInfoHtml = `
+                <div class="bgg-info" style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <span title="BGG Rating">⭐ ${rating}</span>
+                        <span title="Complexity (1-5)">🧩 ${weight}</span>
+                        <span title="Players">👥 ${players}</span>
+                        <span title="Play Time (min)">⏱️ ${playTime}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
         // Get historical entries if enabled
         let historicalEntriesHtml = '';
         if (this.showHistoricalEntries && game.entries && game.entries.length > 0) {
@@ -926,37 +924,32 @@ const SpielPreviewPage = {
                 <div class="card-header">
                     <h3 class="game-title">${this.escapeHtml(game.Title || 'Untitled')}</h3>
                     ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
-                </div>
-                
+                </div>                
                 <div class="card-body">
                     <div class="game-info">
                         <div class="info-row">
-                            <span class="label">Publisher:</span>
-                            <span class="value">${this.escapeHtml(game.Publisher || '?')}</span>
+                                <span class="value">🏢 ${this.escapeHtml(game.Publisher || '?')}</span>
                         </div>
-                        ${game.Type ? `
                         <div class="info-row">
-                            <span class="label">Type:</span>
-                            <span class="value">${this.escapeHtml(game.Type)}</span>
-                        </div>` : ''}
+                             ${game.Type ? `<span class="value">${this.escapeHtml(game.Type)}</span>` : ''}
+                            <span class="label">Release:</span>
+                            <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
+                        </div>
                     </div>
                     
-                    <div class="entry-title"><h4>${currentEntry.convention} ${currentEntry.year}</h4>
-                        <div class="info-row">                    
-                            <span class="label">Priority:</span>
+                    ${bggInfoHtml}
+                    
+                    <div class="entry-title">
+                        <div class="entry-header">
+                            <h4>${currentEntry.convention} ${currentEntry.year}</h4>
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
                         <div class="info-row">
-                            <span class="label">Release:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
-                        </div>  
-                        <div class="info-row">
-                            <span class="label">Thumbs:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.thumbs)}👍</span>
+                            <span class="value">👍${this.escapeHtml(currentEntry.thumbs)}</span>
                         </div>                    
                         <div class="info-row">
                             <span class="label">Notes:</span>
-                            <span class="value" data-game-id="${game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
+                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
                         </div>
                     </div>
                     
@@ -981,8 +974,6 @@ const SpielPreviewPage = {
         const entriesHtml = sortedEntries.map(entry => {
             const isCurrent = entry === currentEntry;
             if (isCurrent) return ''; // Skip current entry in historical list
-            const badgeClass = isCurrent ? 'current' : 'historical';
-            const entryClass = isCurrent ? 'current' : '';
             const priorityLabel = this.getPriorityLabel(entry.priority);
             
             const insertedDate = new Date(entry.insertedDate).toLocaleDateString();
@@ -990,23 +981,16 @@ const SpielPreviewPage = {
                 `Modified: ${new Date(entry.lastModified).toLocaleDateString()}` : '';
             
             return `
-                <div class="historical-entry ${entryClass}">
+                <div class="historical-entry">
                     <div class="entry-header">
                         <div class="entry-meta">
-                            <strong>${entry.year}</strong> ${this.escapeHtml(entry.convention)} - ${this.escapeHtml(entry.user)}
+                            <strong>${entry.year}</strong> ${this.escapeHtml(entry.convention)} - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
+                            <br>${this.escapeHtml(entry.user)}    
                         </div>
-                        <span class="entry-badge ${badgeClass}">${isCurrent ? 'Current View' : 'Historical'}</span>
-                    </div>
-                    <div class="entry-details">
                         <span class=\"entry-priority priority-${entry.priority || 'none'}\">${priorityLabel}</span>
-                        ${entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.overrideReleaseDate)}</div>` : ''}  
-                        ${entry.releaseDate && !entry.overrideReleaseDate ? `<div class="entry-thumbs"><strong>Release:</strong> ${this.escapeHtml(entry.releaseDate)}</div>` : ''}
-                        ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}
-                        ${entry.thumbs ? `<div class="entry-thumbs">👍 Thumbs: ${this.escapeHtml(entry.thumbs)}</div>` : ''}
-                        <div class="entry-dates">
-                            Added: ${insertedDate}
-                            ${modifiedDate ? `<br>${modifiedDate}` : ''}
-                        </div>
+                    </div>
+                    <div class="entry-details">                        
+                        ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}                        
                     </div>
                 </div>
             `;
@@ -1034,8 +1018,8 @@ const SpielPreviewPage = {
     },
     
     updateGamePriority: function(gameId, entryKey, priority) {
-        // Find the game
-        const game = this.games.find(g => (g.BGGId || g.Title) === gameId);
+        // Find the game by BGGVersionId (primary), BGGId, or Title
+        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Title) === gameId);
         if (!game || !game.entries) return;
         
         // Parse entry key (format: year-convention-user)
@@ -1057,8 +1041,8 @@ const SpielPreviewPage = {
     },
     
     updateGameNotes: function(gameId, entryKey, notes) {
-        // Find the game
-        const game = this.games.find(g => (g.BGGId || g.Title) === gameId);
+        // Find the game by BGGVersionId (primary), BGGId, or Title
+        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Title) === gameId);
         if (!game || !game.entries) return;
         
         // Parse entry key (format: year-convention-user)
