@@ -922,7 +922,9 @@ const SpielPreviewPage = {
         return `
             <div class="spiel-card ${priorityClass}">
                 <div class="card-header">
-                    <h3 class="game-title">${this.escapeHtml(game.Title || 'Untitled')}</h3>
+                    
+                    <h3 class="game-title">${this.escapeHtml(game.Title || 'Untitled')}</h3>                    
+                    ${game.Type ? game.Type == 'Expansion' ? `<span class="value"><img src="img/icons/${this.escapeHtml(game.Type)}.png" alt="Expansion" title="Expansion" class="small-icon small-icon-img" /></span>` : '' : ''}
                     ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
                 </div>                
                 <div class="card-body">
@@ -931,7 +933,6 @@ const SpielPreviewPage = {
                                 <span class="value">🏢 ${this.escapeHtml(game.Publisher || '?')}</span>
                         </div>
                         <div class="info-row">
-                             ${game.Type ? `<span class="value">${this.escapeHtml(game.Type)}</span>` : ''}
                             <span class="label">Release:</span>
                             <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
                         </div>
