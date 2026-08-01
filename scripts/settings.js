@@ -28,6 +28,12 @@ const SettingsPage = {
         this.setupHelpTooltips();
         this.attachEventListeners();
         
+        // Initialize GameDatabase
+        if (window.GameDatabase) {
+            await window.GameDatabase.init();
+            console.log('Game Database initialized');
+        }
+        
         // Try to auto-load the default combined file
         await this.autoLoadDefaultCombinedFile();
     },
@@ -428,6 +434,25 @@ const SettingsPage = {
         if (cancelSpielImportBtn) {
             cancelSpielImportBtn.addEventListener('click', this.cancelSpielImport.bind(this));
         }
+        
+        // Game Database buttons
+        const loadGameDatabaseBtn = document.getElementById('loadGameDatabaseBtn');
+        if (loadGameDatabaseBtn) {
+            loadGameDatabaseBtn.addEventListener('click', this.loadGameDatabase.bind(this));
+        }
+        
+        const saveGameDatabaseBtn = document.getElementById('saveGameDatabaseBtn');
+        if (saveGameDatabaseBtn) {
+            saveGameDatabaseBtn.addEventListener('click', this.saveGameDatabase.bind(this));
+        }
+        
+        const refreshGameDatabaseBtn = document.getElementById('refreshGameDatabaseBtn');
+        if (refreshGameDatabaseBtn) {
+            refreshGameDatabaseBtn.addEventListener('click', this.updateGameDatabaseStats.bind(this));
+        }
+        
+        // Update game database stats on load
+        this.updateGameDatabaseStats();
         
         console.log('All event listeners attached successfully');
     },
@@ -838,11 +863,13 @@ const SettingsPage = {
         
         // Process each imported game
         this.tempSpielData.forEach(importedGame => {
-            // Find matching game by BGGId or Title
-            const matchKey = importedGame.BGGId || importedGame.Title;
+            // Find matching game by BGGVersionId (or BGGId or Title as fallback)
+            // This ensures different versions of the same game are stored separately
+            const matchKey = importedGame.BGGVersionId || importedGame.BGGId || importedGame.Title;
             let existingGame = finalGames.find(g => 
-                (g.BGGId && g.BGGId === importedGame.BGGId) || 
-                (g.Title === importedGame.Title)
+                (g.BGGVersionId && g.BGGVersionId === importedGame.BGGVersionId) ||
+                (!importedGame.BGGVersionId && g.BGGId && g.BGGId === importedGame.BGGId) || 
+                (!importedGame.BGGVersionId && !importedGame.BGGId && g.Title === importedGame.Title)
             );
             
             // Create new entry for this year/convention/user
@@ -856,6 +883,7 @@ const SettingsPage = {
                 year: year,
                 convention: convention,
                 user: user,
+                versionId: importedGame.BGGVersionId || '', // Store version ID in entry for proper filtering
                 priority: priorityValue,
                 notes: importedGame.Notes || importedGame.userNotes || '',
                 // Entry-specific data that can vary by year/convention
@@ -889,6 +917,7 @@ const SettingsPage = {
                     // Update existing entry
                     existingGame.entries[existingEntryIndex] = {
                         ...existingGame.entries[existingEntryIndex],
+                        versionId: newEntry.versionId, // Update version ID
                         priority: newEntry.priority,
                         notes: newEntry.notes,
                         availability: newEntry.availability,
@@ -943,6 +972,12 @@ const SettingsPage = {
                 finalGames.push(newGame);
             }
         });
+        
+        // Fetch BGG data if requested
+        const fetchBGGData = document.getElementById('fetchBGGData')?.checked;
+        if (fetchBGGData && window.GameDatabase) {
+            await this.fetchBGGDataForGames(finalGames);
+        }
         
         // Create final export structure
         const exportData = {
@@ -1179,6 +1214,159 @@ const SettingsPage = {
             alert('All data has been reset. The page will reload.');
             window.location.reload();
         }
+    },
+    
+    /**
+     * Fetch BGG data for games that don't have it yet
+     */
+    fetchBGGDataForGames: async function(games) {
+        if (!window.GameDatabase) {
+            console.warn('GameDatabase not available');
+            return;
+        }
+        
+        // Collect all unique BGG IDs that need fetching
+        const bggIdsToFetch = [];
+        games.forEach(game => {
+            if (game.BGGId && !window.GameDatabase.cache[game.BGGId]) {
+                bggIdsToFetch.push(game.BGGId);
+            }
+        });
+        
+        if (bggIdsToFetch.length === 0) {
+            console.log('All games already have BGG data cached');
+            return;
+        }
+        
+        // Remove duplicates
+        const uniqueIds = [...new Set(bggIdsToFetch)];
+        console.log(`Fetching ${uniqueIds.length} games from BGG using ${window.GameDatabase.corsProxyName}...`);
+        
+        // Show progress UI
+        const progressDiv = document.getElementById('bggFetchProgress');
+        const progressBar = document.getElementById('bggFetchProgressBar');
+        const progressText = document.getElementById('bggFetchProgressText');
+        const saveButton = document.getElementById('saveSpielJsonBtn');
+        
+        if (progressDiv) {
+            progressDiv.style.display = 'block';
+            progressDiv.style.background = '#f0f8ff';
+        }
+        if (saveButton) saveButton.disabled = true;
+        
+        // Show initial message with proxy info
+        if (progressText) {
+            progressText.textContent = `Starting fetch using ${window.GameDatabase.corsProxyName} proxy...`;
+        }
+        
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // Batch fetch with progress updates
+        const results = await window.GameDatabase.batchFetch(uniqueIds, (current, total) => {
+            const percent = (current / total) * 100;
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (progressText) {
+                progressText.textContent = `${current} / ${total} games (${successCount} ok, ${errorCount} errors)`;
+            }
+            
+            // Update counts
+            const lastResult = window.GameDatabase.cache[uniqueIds[current - 1]];
+            if (lastResult && !lastResult.fetchError) {
+                successCount++;
+            } else {
+                errorCount++;
+            }
+        });
+        
+        // Show results
+        if (progressDiv && progressText) {
+            if (errorCount > 0) {
+                progressDiv.style.background = '#fff3cd';
+                progressText.textContent = `Complete: ${successCount} games fetched successfully, ${errorCount} failed`;
+                progressText.style.color = '#856404';
+            } else {
+                progressDiv.style.background = '#d4edda';
+                progressText.textContent = `✓ All ${successCount} games fetched successfully!`;
+                progressText.style.color = '#155724';
+            }
+        }
+        
+        // Save the updated cache
+        await window.GameDatabase.saveCache();
+        
+        // Auto-hide progress after a moment
+        setTimeout(() => {
+            if (progressDiv) progressDiv.style.display = 'none';
+        }, 3000);
+        
+        if (saveButton) saveButton.disabled = false;
+        
+        console.log(`BGG data fetch complete: ${successCount} successful, ${errorCount} errors`);
+    },
+    
+    /**
+     * Load game database from file
+     */
+    loadGameDatabase: async function() {
+        if (!window.GameDatabase) {
+            alert('Game Database not available');
+            return;
+        }
+        
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json,.json';
+        
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const success = await window.GameDatabase.loadCacheFromFile(file);
+                if (success) {
+                    alert(`Successfully loaded ${Object.keys(window.GameDatabase.cache).length} games from cache`);
+                    this.updateGameDatabaseStats();
+                } else {
+                    alert('Error loading game database file');
+                }
+            }
+        };
+        
+        input.click();
+    },
+    
+    /**
+     * Save game database to file
+     */
+    saveGameDatabase: async function() {
+        if (!window.GameDatabase) {
+            alert('Game Database not available');
+            return;
+        }
+        
+        await window.GameDatabase.saveCache();
+        alert(`Saved ${Object.keys(window.GameDatabase.cache).length} games to file`);
+    },
+    
+    /**
+     * Update game database statistics display
+     */
+    updateGameDatabaseStats: function() {
+        if (!window.GameDatabase) {
+            return;
+        }
+        
+        const statsEl = document.getElementById('cacheStatsContent');
+        if (!statsEl) return;
+        
+        const stats = window.GameDatabase.getCacheStats();
+        
+        statsEl.innerHTML = `
+            <p style="margin: 5px 0;">📊 Total Games: <strong>${stats.totalGames}</strong></p>
+            <p style="margin: 5px 0;">✅ Games with Ratings: <strong>${stats.gamesWithRatings}</strong></p>
+            <p style="margin: 5px 0;">⭐ Average Rating: <strong>${stats.averageRating.toFixed(2)}</strong></p>
+            <p style="margin: 5px 0;">❌ Fetch Errors: <strong>${stats.gamesWithErrors}</strong></p>
+            ${stats.oldestFetch ? `<p style="margin: 5px 0;">🕐 Oldest Entry: <strong>${new Date(stats.oldestFetch).toLocaleDateString()}</strong></p>` : ''}
+        `;
     }
 };
 

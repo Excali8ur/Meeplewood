@@ -1,41 +1,34 @@
 /* Meeplewood Styles */
 
-/* All fonts */
-.agbalumo-regular {
-  font-family: "Agbalumo", system-ui;
-  font-weight: 400;
-  font-style: normal;
-}
-.chicle-regular {
-  font-family: "Chicle", serif;
-  font-weight: 400;
-  font-style: normal;
-}
-.kavoon-regular {
-  font-family: "Kavoon", serif;
-  font-weight: 400;
-  font-style: normal;
-}
-.lobster-regular {
-  font-family: "Lobster", sans-serif;
-  font-weight: 400;
-  font-style: normal;
-  color: #555;
+/* ========================================
+   FONT CONFIGURATION - Change fonts here!
+   ======================================== */
+:root {
+  /* Font Families - Change these to update fonts everywhere */
+  --font-header: "Agbalumo", sans-serif;
+  --font-main: "Handlee", cursive;
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+  
+  /* Font Colors */
+  --color-header: darkgreen;
+  --color-text-main: #555;
 }
 
-.font-main {
-  font-family: "Lobster", sans-serif;
-  font-weight: 400;
-  font-style: normal;
-  color: #555;
+/* Apply main font to body (cascades to all elements) */
+body {
+  font-family: var(--font-main);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-main);
 }
 
-/* Font Example - Headers only */
+/* Apply header font to headings and other key elements */
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Agbalumo", system-ui;  
-  font-weight: 400;
-  font-style: normal;
-  color: darkgreen;
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-header);
 }
 
 h1 {
@@ -106,7 +99,7 @@ h1 {
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
-    font-family: "Agbalumo", system-ui;
+    font-family: var(--font-header);
     font-size: 20px;
     transition: all 0.3s ease;
 }
@@ -149,8 +142,8 @@ h1 {
     transform: rotate(45deg);
 }
 
+/* Body font is set at the top with other font configurations */
 body {
-    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;

@@ -43,11 +43,17 @@ const SpielPreviewPage = {
     // Performance: Cache for relevant entries
     relevantEntryCache: new Map(),
     
-    init: function() {
+    init: async function() {
         console.log('Spiel Preview page initialized');
         this.attachEventListeners();
         this.updateSortButtonStates(); // Initialize sort button states
         this.renderGames();
+        
+        // Initialize GameDatabase
+        if (window.GameDatabase) {
+            await window.GameDatabase.init();
+            console.log('Game Database initialized in preview page');
+        }
         
         // Show loading screen and hide other elements initially
         this.showLoadingScreen();
@@ -727,19 +733,22 @@ const SpielPreviewPage = {
         }
         
         // Check cache first
-        const gameKey = game.BGGId || game.Title;
+        // Use BGGVersionId as primary key to distinguish different versions of the same game
+        const gameKey = game.BGGVersionId || game.BGGId || game.Title;
         const cacheKey = `${gameKey}-${this.selectedYear}-${this.selectedConvention}-${this.selectedUser}`;
         if (this.relevantEntryCache.has(cacheKey)) {
             return this.relevantEntryCache.get(cacheKey);
         }
         
-        // Filter entries based on selected filters
+        // Filter entries based on selected filters AND version ID
         let matchingEntries = game.entries.filter(entry => {
             const yearMatch = this.selectedYear === '' || entry.year === this.selectedYear;
             const conventionMatch = this.selectedConvention === '' || entry.convention === this.selectedConvention;
             const userMatch = this.selectedUser === '' || entry.user === this.selectedUser;
+            // Ensure entry belongs to this specific version of the game
+            const versionMatch = !entry.versionId || !game.BGGVersionId || entry.versionId === game.BGGVersionId;
             
-            return yearMatch && conventionMatch && userMatch;
+            return yearMatch && conventionMatch && userMatch && versionMatch;
         });
         
         if (matchingEntries.length === 0) {
@@ -880,6 +889,30 @@ const SpielPreviewPage = {
         const priorityLabel = this.getPriorityLabel(currentEntry.priority);
         const bggLink = game.BGGId ? `https://boardgamegeek.com/boardgame/${game.BGGId}` : '';
         
+        // Get BGG data if available
+        const bggData = game.BGGId && window.GameDatabase ? window.GameDatabase.cache[game.BGGId] : null;
+        
+        // Build BGG info section
+        let bggInfoHtml = '';
+        if (bggData && bggData.rating) {
+            const rating = bggData.rating.average ? bggData.rating.average.toFixed(1) : 'N/A';
+            const weight = bggData.weight ? bggData.weight.toFixed(1) : 'N/A';
+            const players = bggData.minPlayers && bggData.maxPlayers ? 
+                `${bggData.minPlayers}-${bggData.maxPlayers}` : 'N/A';
+            const playTime = bggData.playingTime || 'N/A';
+            
+            bggInfoHtml = `
+                <div class="bgg-info" style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <span title="BGG Rating">⭐ ${rating}</span>
+                        <span title="Complexity (1-5)">🧩 ${weight}</span>
+                        <span title="Players">👥 ${players}</span>
+                        <span title="Play Time (min)">⏱️ ${playTime}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
         // Get historical entries if enabled
         let historicalEntriesHtml = '';
         if (this.showHistoricalEntries && game.entries && game.entries.length > 0) {
@@ -897,17 +930,14 @@ const SpielPreviewPage = {
                         <div class="info-row">
                                 <span class="value">🏢 ${this.escapeHtml(game.Publisher || '?')}</span>
                         </div>
-                        ${game.Type ? `
                         <div class="info-row">
-                            <span class="label">Type:</span>
-                            <span class="value">${this.escapeHtml(game.Type)}</span>
-                        </div>` : ''}
-                        <div class="info-row">
-                            <span class="value">${this.escapeHtml(game.Type)}</span>
+                             ${game.Type ? `<span class="value">${this.escapeHtml(game.Type)}</span>` : ''}
                             <span class="label">Release:</span>
                             <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
                         </div>
                     </div>
+                    
+                    ${bggInfoHtml}
                     
                     <div class="entry-title">
                         <div class="entry-header">
@@ -919,7 +949,7 @@ const SpielPreviewPage = {
                         </div>                    
                         <div class="info-row">
                             <span class="label">Notes:</span>
-                            <span class="value" data-game-id="${game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
+                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
                         </div>
                     </div>
                     
@@ -988,8 +1018,8 @@ const SpielPreviewPage = {
     },
     
     updateGamePriority: function(gameId, entryKey, priority) {
-        // Find the game
-        const game = this.games.find(g => (g.BGGId || g.Title) === gameId);
+        // Find the game by BGGVersionId (primary), BGGId, or Title
+        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Title) === gameId);
         if (!game || !game.entries) return;
         
         // Parse entry key (format: year-convention-user)
@@ -1011,8 +1041,8 @@ const SpielPreviewPage = {
     },
     
     updateGameNotes: function(gameId, entryKey, notes) {
-        // Find the game
-        const game = this.games.find(g => (g.BGGId || g.Title) === gameId);
+        // Find the game by BGGVersionId (primary), BGGId, or Title
+        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Title) === gameId);
         if (!game || !game.entries) return;
         
         // Parse entry key (format: year-convention-user)
