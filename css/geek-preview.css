@@ -266,6 +266,10 @@
     flex: 1;
 }
 
+.small-icon-img{
+    opacity: 0.5;
+}
+
 .info-row .value.location {
     font-weight: 600;
     color: #3498db;
