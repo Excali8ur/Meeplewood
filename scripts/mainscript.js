@@ -76,16 +76,16 @@ const router = {
             }
         },
         
-        'spiel-preview': {
-            title: 'Spiel Preview',
+        'geek-preview': {
+            title: 'Geek Preview',
             render: async function() {
                 try {
-                    const response = await fetch('pages/spiel-preview.html');
+                    const response = await fetch('pages/geek-preview.html');
                     const html = await response.text();
                     return html;
                 } catch (error) {
-                    console.error('Error loading spiel-preview page:', error);
-                    return '<h1>Error loading spiel-preview page</h1>';
+                    console.error('Error loading geek-preview page:', error);
+                    return '<h1>Error loading geek-preview page</h1>';
                 }
             }
         }
@@ -127,8 +127,8 @@ const router = {
             GroupsPage.init();
         } else if (this.currentRoute === 'settings' && typeof SettingsPage !== 'undefined') {
             SettingsPage.init();
-        } else if (this.currentRoute === 'spiel-preview' && typeof SpielPreviewPage !== 'undefined') {
-            SpielPreviewPage.init();
+        } else if (this.currentRoute === 'geek-preview' && typeof GeekPreviewPage !== 'undefined') {
+            GeekPreviewPage.init();
         }
     }
 };

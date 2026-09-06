@@ -13,7 +13,7 @@ function debounce(func, wait) {
     };
 }
 
-const SpielPreviewPage = {
+const GeekPreviewPage = {
     games: [],
     filteredGames: [],
     selectedPriorityFilters: new Set(),
@@ -30,6 +30,9 @@ const SpielPreviewPage = {
     showHistoricalEntries: true,
     showExpansions: true,
     showExpansionsOnly: false,
+    showDemos: true,
+    showDemoOnly: false,
+    showAllEntries: true,
     showMultipleEntriesOnly: false,
     showUniqueEntriesOnly: false,
 
@@ -185,7 +188,7 @@ const SpielPreviewPage = {
             this.showNoGamesMessage();
         }
     },
-    
+
     attachEventListeners: function() {
         // Load file button
         const loadFileBtn = document.getElementById('loadSpielFileBtn');
@@ -237,6 +240,13 @@ const SpielPreviewPage = {
         
         const showExpansions = document.getElementById('showExpansions');
         const showExpansionsOnly = document.getElementById('showExpansionsOnly');
+        const showExpansionsOnlyWrapper = document.getElementById('showExpansionsOnlyWrapper');
+        const showDemos = document.getElementById('showDemos');
+        const showDemoOnly = document.getElementById('showDemoOnly');
+        const showDemoOnlyWrapper = document.getElementById('showDemoOnlyWrapper');
+
+        this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
+        this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
         if (showExpansions) {
             showExpansions.addEventListener('change', (e) => {
                 this.showExpansions = e.target.checked;
@@ -245,6 +255,7 @@ const SpielPreviewPage = {
                 }
                 showExpansionsOnly.checked = this.showExpansionsOnly;
                 showExpansions.checked = this.showExpansions;
+                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
                 this.clearCache();
                 this.batchUpdate();
             });
@@ -257,19 +268,71 @@ const SpielPreviewPage = {
                 }
                 showExpansionsOnly.checked = this.showExpansionsOnly;
                 showExpansions.checked = this.showExpansions;
+                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
                 this.clearCache();
                 this.batchUpdate();
             });
-        }      
+        }
 
+        if (showDemos) {
+            showDemos.addEventListener('change', (e) => {
+                this.showDemos = e.target.checked;
+                if(!this.showDemos){
+                    this.showDemoOnly = false; // Ensure "only demogames" is unchecked if demos are hidden
+                }
+                if (showDemoOnly) showDemoOnly.checked = this.showDemoOnly;
+                showDemos.checked = this.showDemos;
+                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
+
+        if (showDemoOnly) {
+            showDemoOnly.addEventListener('change', (e) => {
+                this.showDemoOnly = e.target.checked;
+                if(this.showDemoOnly){
+                    this.showDemos = e.target.checked; // Ensure demos are shown if "only demogames" is checked
+                }
+                showDemoOnly.checked = this.showDemoOnly;
+                if (showDemos) showDemos.checked = this.showDemos;
+                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
+
+        const showAllEntries = document.getElementById('showAllEntries');
         const showMultipleOnly = document.getElementById('showMultipleEntriesOnly');
         const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
+        if (showAllEntries) {            
+            showAllEntries.addEventListener('change', (e) => {                
+                this.showAllEntries = e.target.checked;
+                if(this.showAllEntries){
+                    this.showMultipleEntriesOnly = false;
+                    this.showUniqueEntriesOnly = false;
+                }
+                else {
+                    this.showMultipleEntriesOnly = true;
+                }
+                showAllEntries.checked = this.showAllEntries;
+                showMultipleOnly.checked = this.showMultipleEntriesOnly;
+                showUniqueOnly.checked = this.showUniqueEntriesOnly;
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
         if (showMultipleOnly) {
             showMultipleOnly.addEventListener('change', (e) => {
                 this.showMultipleEntriesOnly = e.target.checked;
                 if(this.showMultipleEntriesOnly){
                     this.showUniqueEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
                 }
+                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
+                    this.showAllEntries = true; // If both are unchecked, default to showing all
+                }
+                showAllEntries.checked = this.showAllEntries;
                 showMultipleOnly.checked = this.showMultipleEntriesOnly;
                 showUniqueOnly.checked = this.showUniqueEntriesOnly;
                 this.clearCache();
@@ -278,10 +341,15 @@ const SpielPreviewPage = {
         }      
         if (showUniqueOnly) {
             showUniqueOnly.addEventListener('change', (e) => {
-                this.showUniqueEntriesOnly = e.target.checked;                
+                this.showUniqueEntriesOnly = e.target.checked;   
                 if(this.showUniqueEntriesOnly){
                     this.showMultipleEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
                 }
+                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
+                    this.showAllEntries = true; // If both are unchecked, default to showing all
+                }
+                showAllEntries.checked = this.showAllEntries;
                 showMultipleOnly.checked = this.showMultipleEntriesOnly;
                 showUniqueOnly.checked = this.showUniqueEntriesOnly;
                 this.clearCache();
@@ -351,6 +419,14 @@ const SpielPreviewPage = {
             }, true); // Use capture phase for blur
         }*/
         
+    },
+
+    updateSubOptionUI: function(parentCheckbox, childCheckbox, childWrapper) {
+        if (!childCheckbox || !childWrapper) return;
+
+        const isVisible = !!(parentCheckbox && parentCheckbox.checked);
+        childCheckbox.disabled = !isVisible;
+        childWrapper.classList.toggle('is-hidden', !isVisible);
     },
     
     loadSpielFile: async function() {
@@ -670,11 +746,16 @@ const SpielPreviewPage = {
         if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') return false;
         if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') return false;
 
-        // Multiple entries filter
-        if (this.showMultipleEntriesOnly && game.entries.length <= 1) return false;
-        // Unique entries filter
-        if (this.showUniqueEntriesOnly && game.entries.length > 1) return false;
- 
+        if (this.showDemoOnly && !game.isDemo) return false;
+        if (!this.showDemos && game.isDemo) return false;
+
+        if (!this.showAllEntries){
+            // Multiple entries filter
+            if (this.showMultipleEntriesOnly && game.entries.length <= 1) return false;
+            // Unique entries filter
+            if (this.showUniqueEntriesOnly && game.entries.length > 1) return false;
+        }
+
         return  (this.searchTerm === '' ||
                 (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
                 (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)));
@@ -758,7 +839,7 @@ const SpielPreviewPage = {
     
     updateMetadataDisplay: function(filteredYears, filteredConventions, filteredUsers, filteredGameCount) {
         const metadataDisplay = document.getElementById('metadataDisplay');
-        console.log('Updating metadata display with filtered counts and sources');
+        //console.log('Updating metadata display with filtered counts and sources');
         if (!this.metadata) {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
@@ -817,7 +898,7 @@ const SpielPreviewPage = {
     },
     
     renderGames: function() {
-        console.log('Rendering games with current filters and sort settings',this.filteredGames);
+        //console.log('Rendering games with current filters and sort settings',this.filteredGames);
         const grid = document.getElementById('spielGrid');
         const noGamesMsg = document.getElementById('noGamesMessage');
         
@@ -1169,5 +1250,5 @@ const SpielPreviewPage = {
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SpielPreviewPage;
+    module.exports = GeekPreviewPage;
 }

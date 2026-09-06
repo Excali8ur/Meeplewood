@@ -44,6 +44,16 @@
     flex-wrap: wrap;
 }
 
+.entry-filters .filter-group .sub-option {
+    margin-left: 1.6rem;
+    opacity: 0.95;
+    transition: opacity 0.2s ease;
+}
+
+.entry-filters .filter-group .sub-option.is-hidden {
+    display: none;
+}
+
 .filter-btn {
     padding: 10px 20px;
     border: 2px solid lightgray;
@@ -484,10 +494,11 @@
 }
 
 .filter-row {
+    margin-top: 10px;
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
-    align-items: flex-end;
+    /*! align-items: flex-end; */
 }
 
 .filter-group {
