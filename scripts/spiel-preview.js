@@ -28,8 +28,11 @@ const SpielPreviewPage = {
     selectedConvention: '',
     selectedUser: '',
     showHistoricalEntries: true,
+    showExpansions: true,
+    showExpansionsOnly: false,
     showMultipleEntriesOnly: false,
     showUniqueEntriesOnly: false,
+
     
     // Sort settings
     sortBy: 'title', // 'title', 'thumbs', 'publisher'
@@ -231,6 +234,33 @@ const SpielPreviewPage = {
             });
         }
         
+        const showExpansions = document.getElementById('showExpansions');
+        const showExpansionsOnly = document.getElementById('showExpansionsOnly');
+        if (showExpansions) {
+            showExpansions.addEventListener('change', (e) => {
+                this.showExpansions = e.target.checked;
+                if(!this.showExpansions){
+                    this.showExpansionsOnly = false; // Ensure "only expansions" is unchecked if expansions are hidden
+                }
+                showExpansionsOnly.checked = this.showExpansionsOnly;
+                showExpansions.checked = this.showExpansions;
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }      
+        if (showExpansionsOnly) {
+            showExpansionsOnly.addEventListener('change', (e) => {
+                this.showExpansionsOnly = e.target.checked;
+                if(this.showExpansionsOnly){
+                    this.showExpansions = e.target.checked; // Ensure exapnsions are shown if "only expansions" is checked
+                }
+                showExpansionsOnly.checked = this.showExpansionsOnly;
+                showExpansions.checked = this.showExpansions;
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }      
+
         const showMultipleOnly = document.getElementById('showMultipleEntriesOnly');
         const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
         if (showMultipleOnly) {
@@ -638,17 +668,24 @@ const SpielPreviewPage = {
             if (!game.entries || game.entries.length === 0) {
                 continue; //ToDO -> Create structure without continue?
             }
-            
+                        
+            // Check if the game is an expansion and if it should be shown
+            if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') {
+                continue;
+            }
+            if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') {
+                continue;
+            }
+
             // Multiple entries filter
             if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
                 continue;
-            }
-            
+            }            
             // Unique entries filter
             if (this.showUniqueEntriesOnly && game.entries.length > 1) {
                 continue;
             }
-            
+
             // Get the relevant entry for this game
             const relevantEntry = this.getRelevantEntry(game);
             if (!relevantEntry) {
