@@ -16,7 +16,7 @@ function debounce(func, wait) {
 const SpielPreviewPage = {
     games: [],
     filteredGames: [],
-    currentFilter: 'all',
+    selectedPriorityFilters: new Set(),
     searchTerm: '',
     metadata: null,
     currentFileName: null,
@@ -42,6 +42,7 @@ const SpielPreviewPage = {
     availableYears: [],
     availableConventions: [],
     availableUsers: [],
+    allPriorityFilters: ['1', '2', '3', '4', ''],
     
     // Performance: Cache for relevant entries
     relevantEntryCache: new Map(),
@@ -582,13 +583,29 @@ const SpielPreviewPage = {
     },
     
     handleFilterChange: function(priority) {
-        this.currentFilter = priority;
+        // "All" clears any specific priority filters.
+        if (priority === 'all') {
+            this.selectedPriorityFilters.clear();
+        } else if (this.selectedPriorityFilters.has(priority)) {
+            this.selectedPriorityFilters.delete(priority);
+        } else {
+            this.selectedPriorityFilters.add(priority);
+        }
+
+        // If all specific priorities are selected, treat it as "All".
+        const hasAllSpecificPriorities = this.allPriorityFilters.every((filterValue) =>
+            this.selectedPriorityFilters.has(filterValue)
+        );
+        if (hasAllSpecificPriorities) {
+            this.selectedPriorityFilters.clear();
+        }
         
-        // Update active button
+        // Update active button states
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.priority === priority) {
-                btn.classList.add('active');
+            if (btn.dataset.priority === 'all') {
+                btn.classList.toggle('active', this.selectedPriorityFilters.size === 0);
+            } else {
+                btn.classList.toggle('active', this.selectedPriorityFilters.has(btn.dataset.priority));
             }
         });
         
@@ -644,6 +661,25 @@ const SpielPreviewPage = {
         }   
     },
     
+    //Filtering out games according to the current settings on Game level before checking entries.
+    isRelevantGame: function(game) {
+        // Check if game has entries
+        if (!game.entries || game.entries.length === 0) return false;
+
+        // Check if the game is an expansion and if it should be shown
+        if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') return false;
+        if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') return false;
+
+        // Multiple entries filter
+        if (this.showMultipleEntriesOnly && game.entries.length <= 1) return false;
+        // Unique entries filter
+        if (this.showUniqueEntriesOnly && game.entries.length > 1) return false;
+ 
+        return  (this.searchTerm === '' ||
+                (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
+                (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)));
+    },
+
     batchUpdate: function() {
         
         // Single pass through data to filter, count, and gather metadata
@@ -664,65 +700,34 @@ const SpielPreviewPage = {
         for (let i = 0; i < this.games.length; i++) {
             const game = this.games[i];
             
-            // Check if game has entries
-            if (!game.entries || game.entries.length === 0) {
-                continue; //ToDO -> Create structure without continue?
-            }
-                        
-            // Check if the game is an expansion and if it should be shown
-            if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') {
-                continue;
-            }
-            if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') {
-                continue;
-            }
-
-            // Multiple entries filter
-            if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
-                continue;
-            }            
-            // Unique entries filter
-            if (this.showUniqueEntriesOnly && game.entries.length > 1) {
-                continue;
-            }
-
-            // Get the relevant entry for this game
-            const relevantEntry = this.getRelevantEntry(game);
-            if (!relevantEntry) {
-                continue;
-            }
-            
-            // Search filter
-            const searchMatch = this.searchTerm === '' ||
-                               (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
-                               (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
-                               (relevantEntry.location && relevantEntry.location.toLowerCase().includes(this.searchTerm));
-            
-            if (!searchMatch) {
-                continue;
-            }
-            
-            // Game matches all filters except priority - count it
-            counts.all++;
-            const priority = relevantEntry.priority || '';
-            if (priority === '' || !priority || priority === 'N/A' || priority === '0') {
-                counts['none']++;
-            } else if (counts[priority] !== undefined) {
-                counts[priority]++;
-            }
-            
-            // Gather metadata
-            filteredYears.add(relevantEntry.year);
-            filteredConventions.add(relevantEntry.convention);
-            filteredUsers.add(relevantEntry.user);
-            
-            // Priority filter for display
-            const entryPriority = relevantEntry.priority || '';
-            const priorityMatch = this.currentFilter === 'all' || 
-                                  entryPriority === this.currentFilter;
-            
-            if (priorityMatch) {
-                filtered.push(game);
+            if (this.isRelevantGame(game)) {
+                // Get the relevant entry for this game
+                const relevantEntry = this.getRelevantEntry(game);
+                if (relevantEntry) {
+                
+                    // Game matches all filters (priority not yet considered)
+                    counts.all++;
+                    const priority = relevantEntry.priority || '';
+                    if (priority === '' || !priority || priority === 'N/A' || priority === '0') {
+                        counts['none']++;
+                    } else if (counts[priority] !== undefined) {
+                        counts[priority]++;
+                    }
+                    
+                    // Gather metadata
+                    filteredYears.add(relevantEntry.year);
+                    filteredConventions.add(relevantEntry.convention);
+                    filteredUsers.add(relevantEntry.user);
+                    
+                    // Priority filter for display
+                    const entryPriority = relevantEntry.priority || '';
+                    const priorityMatch = this.selectedPriorityFilters.size === 0 ||
+                        this.selectedPriorityFilters.has(entryPriority);
+                    
+                    if (priorityMatch) {
+                        filtered.push(game);
+                    }
+                }
             }
         }
         
@@ -749,7 +754,7 @@ const SpielPreviewPage = {
         
         // Render games
         this.renderGames();
-    },
+    },    
     
     updateMetadataDisplay: function(filteredYears, filteredConventions, filteredUsers, filteredGameCount) {
         const metadataDisplay = document.getElementById('metadataDisplay');
