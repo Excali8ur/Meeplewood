@@ -1,6 +1,6 @@
 <div class="page-header">
     <h1>Geek-Preview List Manager</h1>
-    <p class="font-main">Combine information from multiple GeekPreview List into one overview!</p>
+    <p class="font-main">Combine information from multiple GeekPreview Lists into one overview!</p>
 </div>
 
 <div class="preview-controls font-main">
@@ -36,12 +36,29 @@
         </div>
         <div class="filter-row">    
             <div class="filter-group">
-                <label>
+                <label>Show games:</label>
+                <!--<label>
                     <input type="checkbox" id="showHistoricalEntries" checked>Show historical entries
+                </label>-->
+                <label>
+                    <input type="checkbox" id="showExpansions" checked>Expansions
+                </label>
+                <label id="showExpansionsOnlyWrapper" class="sub-option">
+                    <input type="checkbox" id="showExpansionsOnly">Only expansions
+                </label>
+                <label>
+                    <input type="checkbox" id="showDemos" checked>Demo games
+                </label>
+                <label id="showDemoOnlyWrapper" class="sub-option">
+                    <input type="checkbox" id="showDemoOnly">Only demo games
                 </label>
             </div>
             
             <div class="filter-group">
+                <label>Show Entries:</label>
+                <label>
+                    <input type="checkbox" id="showAllEntries" checked>All entries
+                </label>
                 <label>
                     <input type="checkbox" id="showMultipleEntriesOnly">Only games with multiple entries
                 </label>
@@ -49,6 +66,8 @@
                     <input type="checkbox" id="showUniqueEntriesOnly">Only games with 1 entry
                 </label>
             </div>
+
+
         </div>
     </div>
     
@@ -62,7 +81,7 @@
     </div>
     
     <div class="search-bar">
-        <input type="text" id="spielSearch" placeholder="Search by title, publisher, or location...">
+        <input type="text" id="spielSearch" placeholder="Search by title or publisher">
     </div>
     
     <div class="sort-controls">

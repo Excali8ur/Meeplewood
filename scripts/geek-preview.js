@@ -13,10 +13,10 @@ function debounce(func, wait) {
     };
 }
 
-const SpielPreviewPage = {
+const GeekPreviewPage = {
     games: [],
     filteredGames: [],
-    currentFilter: 'all',
+    selectedPriorityFilters: new Set(),
     searchTerm: '',
     metadata: null,
     currentFileName: null,
@@ -28,8 +28,14 @@ const SpielPreviewPage = {
     selectedConvention: '',
     selectedUser: '',
     showHistoricalEntries: true,
+    showExpansions: true,
+    showExpansionsOnly: false,
+    showDemos: true,
+    showDemoOnly: false,
+    showAllEntries: true,
     showMultipleEntriesOnly: false,
     showUniqueEntriesOnly: false,
+
     
     // Sort settings
     sortBy: 'title', // 'title', 'thumbs', 'publisher'
@@ -39,6 +45,7 @@ const SpielPreviewPage = {
     availableYears: [],
     availableConventions: [],
     availableUsers: [],
+    allPriorityFilters: ['1', '2', '3', '4', ''],
     
     // Performance: Cache for relevant entries
     relevantEntryCache: new Map(),
@@ -181,7 +188,7 @@ const SpielPreviewPage = {
             this.showNoGamesMessage();
         }
     },
-    
+
     attachEventListeners: function() {
         // Load file button
         const loadFileBtn = document.getElementById('loadSpielFileBtn');
@@ -231,14 +238,101 @@ const SpielPreviewPage = {
             });
         }
         
+        const showExpansions = document.getElementById('showExpansions');
+        const showExpansionsOnly = document.getElementById('showExpansionsOnly');
+        const showExpansionsOnlyWrapper = document.getElementById('showExpansionsOnlyWrapper');
+        const showDemos = document.getElementById('showDemos');
+        const showDemoOnly = document.getElementById('showDemoOnly');
+        const showDemoOnlyWrapper = document.getElementById('showDemoOnlyWrapper');
+
+        this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
+        this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
+        if (showExpansions) {
+            showExpansions.addEventListener('change', (e) => {
+                this.showExpansions = e.target.checked;
+                if(!this.showExpansions){
+                    this.showExpansionsOnly = false; // Ensure "only expansions" is unchecked if expansions are hidden
+                }
+                showExpansionsOnly.checked = this.showExpansionsOnly;
+                showExpansions.checked = this.showExpansions;
+                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }      
+        if (showExpansionsOnly) {
+            showExpansionsOnly.addEventListener('change', (e) => {
+                this.showExpansionsOnly = e.target.checked;
+                if(this.showExpansionsOnly){
+                    this.showExpansions = e.target.checked; // Ensure exapnsions are shown if "only expansions" is checked
+                }
+                showExpansionsOnly.checked = this.showExpansionsOnly;
+                showExpansions.checked = this.showExpansions;
+                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
+
+        if (showDemos) {
+            showDemos.addEventListener('change', (e) => {
+                this.showDemos = e.target.checked;
+                if(!this.showDemos){
+                    this.showDemoOnly = false; // Ensure "only demogames" is unchecked if demos are hidden
+                }
+                if (showDemoOnly) showDemoOnly.checked = this.showDemoOnly;
+                showDemos.checked = this.showDemos;
+                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
+
+        if (showDemoOnly) {
+            showDemoOnly.addEventListener('change', (e) => {
+                this.showDemoOnly = e.target.checked;
+                if(this.showDemoOnly){
+                    this.showDemos = e.target.checked; // Ensure demos are shown if "only demogames" is checked
+                }
+                showDemoOnly.checked = this.showDemoOnly;
+                if (showDemos) showDemos.checked = this.showDemos;
+                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
+
+        const showAllEntries = document.getElementById('showAllEntries');
         const showMultipleOnly = document.getElementById('showMultipleEntriesOnly');
         const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
+        if (showAllEntries) {            
+            showAllEntries.addEventListener('change', (e) => {                
+                this.showAllEntries = e.target.checked;
+                if(this.showAllEntries){
+                    this.showMultipleEntriesOnly = false;
+                    this.showUniqueEntriesOnly = false;
+                }
+                else {
+                    this.showMultipleEntriesOnly = true;
+                }
+                showAllEntries.checked = this.showAllEntries;
+                showMultipleOnly.checked = this.showMultipleEntriesOnly;
+                showUniqueOnly.checked = this.showUniqueEntriesOnly;
+                this.clearCache();
+                this.batchUpdate();
+            });
+        }
         if (showMultipleOnly) {
             showMultipleOnly.addEventListener('change', (e) => {
                 this.showMultipleEntriesOnly = e.target.checked;
                 if(this.showMultipleEntriesOnly){
                     this.showUniqueEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
                 }
+                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
+                    this.showAllEntries = true; // If both are unchecked, default to showing all
+                }
+                showAllEntries.checked = this.showAllEntries;
                 showMultipleOnly.checked = this.showMultipleEntriesOnly;
                 showUniqueOnly.checked = this.showUniqueEntriesOnly;
                 this.clearCache();
@@ -247,10 +341,15 @@ const SpielPreviewPage = {
         }      
         if (showUniqueOnly) {
             showUniqueOnly.addEventListener('change', (e) => {
-                this.showUniqueEntriesOnly = e.target.checked;                
+                this.showUniqueEntriesOnly = e.target.checked;   
                 if(this.showUniqueEntriesOnly){
                     this.showMultipleEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
+                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
                 }
+                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
+                    this.showAllEntries = true; // If both are unchecked, default to showing all
+                }
+                showAllEntries.checked = this.showAllEntries;
                 showMultipleOnly.checked = this.showMultipleEntriesOnly;
                 showUniqueOnly.checked = this.showUniqueEntriesOnly;
                 this.clearCache();
@@ -320,6 +419,14 @@ const SpielPreviewPage = {
             }, true); // Use capture phase for blur
         }*/
         
+    },
+
+    updateSubOptionUI: function(parentCheckbox, childCheckbox, childWrapper) {
+        if (!childCheckbox || !childWrapper) return;
+
+        const isVisible = !!(parentCheckbox && parentCheckbox.checked);
+        childCheckbox.disabled = !isVisible;
+        childWrapper.classList.toggle('is-hidden', !isVisible);
     },
     
     loadSpielFile: async function() {
@@ -552,13 +659,29 @@ const SpielPreviewPage = {
     },
     
     handleFilterChange: function(priority) {
-        this.currentFilter = priority;
+        // "All" clears any specific priority filters.
+        if (priority === 'all') {
+            this.selectedPriorityFilters.clear();
+        } else if (this.selectedPriorityFilters.has(priority)) {
+            this.selectedPriorityFilters.delete(priority);
+        } else {
+            this.selectedPriorityFilters.add(priority);
+        }
+
+        // If all specific priorities are selected, treat it as "All".
+        const hasAllSpecificPriorities = this.allPriorityFilters.every((filterValue) =>
+            this.selectedPriorityFilters.has(filterValue)
+        );
+        if (hasAllSpecificPriorities) {
+            this.selectedPriorityFilters.clear();
+        }
         
-        // Update active button
+        // Update active button states
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.priority === priority) {
-                btn.classList.add('active');
+            if (btn.dataset.priority === 'all') {
+                btn.classList.toggle('active', this.selectedPriorityFilters.size === 0);
+            } else {
+                btn.classList.toggle('active', this.selectedPriorityFilters.has(btn.dataset.priority));
             }
         });
         
@@ -614,6 +737,30 @@ const SpielPreviewPage = {
         }   
     },
     
+    //Filtering out games according to the current settings on Game level before checking entries.
+    isRelevantGame: function(game) {
+        // Check if game has entries
+        if (!game.entries || game.entries.length === 0) return false;
+
+        // Check if the game is an expansion and if it should be shown
+        if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') return false;
+        if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') return false;
+
+        if (this.showDemoOnly && !game.isDemo) return false;
+        if (!this.showDemos && game.isDemo) return false;
+
+        if (!this.showAllEntries){
+            // Multiple entries filter
+            if (this.showMultipleEntriesOnly && game.entries.length <= 1) return false;
+            // Unique entries filter
+            if (this.showUniqueEntriesOnly && game.entries.length > 1) return false;
+        }
+
+        return  (this.searchTerm === '' ||
+                (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
+                (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)));
+    },
+
     batchUpdate: function() {
         
         // Single pass through data to filter, count, and gather metadata
@@ -634,58 +781,34 @@ const SpielPreviewPage = {
         for (let i = 0; i < this.games.length; i++) {
             const game = this.games[i];
             
-            // Check if game has entries
-            if (!game.entries || game.entries.length === 0) {
-                continue; //ToDO -> Create structure without continue?
-            }
-            
-            // Multiple entries filter
-            if (this.showMultipleEntriesOnly && game.entries.length <= 1) {
-                continue;
-            }
-            
-            // Unique entries filter
-            if (this.showUniqueEntriesOnly && game.entries.length > 1) {
-                continue;
-            }
-            
-            // Get the relevant entry for this game
-            const relevantEntry = this.getRelevantEntry(game);
-            if (!relevantEntry) {
-                continue;
-            }
-            
-            // Search filter
-            const searchMatch = this.searchTerm === '' ||
-                               (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
-                               (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
-                               (relevantEntry.location && relevantEntry.location.toLowerCase().includes(this.searchTerm));
-            
-            if (!searchMatch) {
-                continue;
-            }
-            
-            // Game matches all filters except priority - count it
-            counts.all++;
-            const priority = relevantEntry.priority || '';
-            if (priority === '' || !priority || priority === 'N/A' || priority === '0') {
-                counts['none']++;
-            } else if (counts[priority] !== undefined) {
-                counts[priority]++;
-            }
-            
-            // Gather metadata
-            filteredYears.add(relevantEntry.year);
-            filteredConventions.add(relevantEntry.convention);
-            filteredUsers.add(relevantEntry.user);
-            
-            // Priority filter for display
-            const entryPriority = relevantEntry.priority || '';
-            const priorityMatch = this.currentFilter === 'all' || 
-                                  entryPriority === this.currentFilter;
-            
-            if (priorityMatch) {
-                filtered.push(game);
+            if (this.isRelevantGame(game)) {
+                // Get the relevant entry for this game
+                const relevantEntry = this.getRelevantEntry(game);
+                if (relevantEntry) {
+                
+                    // Game matches all filters (priority not yet considered)
+                    counts.all++;
+                    const priority = relevantEntry.priority || '';
+                    if (priority === '' || !priority || priority === 'N/A' || priority === '0') {
+                        counts['none']++;
+                    } else if (counts[priority] !== undefined) {
+                        counts[priority]++;
+                    }
+                    
+                    // Gather metadata
+                    filteredYears.add(relevantEntry.year);
+                    filteredConventions.add(relevantEntry.convention);
+                    filteredUsers.add(relevantEntry.user);
+                    
+                    // Priority filter for display
+                    const entryPriority = relevantEntry.priority || '';
+                    const priorityMatch = this.selectedPriorityFilters.size === 0 ||
+                        this.selectedPriorityFilters.has(entryPriority);
+                    
+                    if (priorityMatch) {
+                        filtered.push(game);
+                    }
+                }
             }
         }
         
@@ -712,11 +835,11 @@ const SpielPreviewPage = {
         
         // Render games
         this.renderGames();
-    },
+    },    
     
     updateMetadataDisplay: function(filteredYears, filteredConventions, filteredUsers, filteredGameCount) {
         const metadataDisplay = document.getElementById('metadataDisplay');
-        console.log('Updating metadata display with filtered counts and sources');
+        //console.log('Updating metadata display with filtered counts and sources');
         if (!this.metadata) {
             if (metadataDisplay) metadataDisplay.style.display = 'none';
             return;
@@ -775,7 +898,7 @@ const SpielPreviewPage = {
     },
     
     renderGames: function() {
-        console.log('Rendering games with current filters and sort settings',this.filteredGames);
+        //console.log('Rendering games with current filters and sort settings',this.filteredGames);
         const grid = document.getElementById('spielGrid');
         const noGamesMsg = document.getElementById('noGamesMessage');
         
@@ -1127,5 +1250,5 @@ const SpielPreviewPage = {
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = SpielPreviewPage;
+    module.exports = GeekPreviewPage;
 }
