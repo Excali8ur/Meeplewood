@@ -23,6 +23,19 @@
             </p>
         </div>
         
+        <div class="setting-item">
+            <label for="defaultCollectionPath">Default Collection Path</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="defaultCollectionPath" placeholder="data/collection.json" style="flex: 1;">
+                <button type="button" class="secondary-button" id="browseCollectionPathBtn">📁 Browse</button>
+            </div>
+            <p class="setting-description">
+                Path to your imported BGG collection file, used to automatically load your games on the Games page.<br>
+                <strong>Recommended:</strong> Use the Browse button to select your local file (shows as "local:filename.json").<br>
+                Alternatively, enter a server path like "data/collection.json" for web-hosted files.
+            </p>
+        </div>
+        
         <div class="settings-actions">
             <button class="primary-button" id="saveSettingsBtn">Save Settings</button>
             <button class="secondary-button" id="cancelSettingsBtn">Cancel</button>
@@ -79,6 +92,18 @@
         <div class="setting-item">
             <button class="primary-button" id="importBGStatsBtn">Import from BGStats</button>
             <p class="setting-description">Import your board game collection and play history from BGStats export file</p>
+        </div>
+
+        <div class="setting-item">
+            <button class="primary-button" id="importCollectionBtn">📎 Import BGG Collection List</button>
+            <p class="setting-description">Import your BGG collection as .csv and save it in the Meeplewood "data" folder as "collection.json". Meeplewood will automatically load it on the Games page.</p>
+            <p class="setting-description" style="color: #3498db; font-weight: bold;">Where to find your BGG collection export?</p>
+            <p class="setting-description">Go to your <a href="https://boardgamegeek.com/collection" target="_blank">BGG collection</a>, apply any filters you want, then use "Export" to download the CSV file.<br>
+                No need to change anything in the file, just import it here. Games are merged with any existing collection data in Meeplewood, matched by BGG ID.
+            </p>
+            <p class="setting-description" id="collectionParsedStatus" style="display: none; color: #3498db; font-weight: bold;"></p>
+            <button class="primary-button" id="saveCollectionBtn" style="display: none;">💾 Save Collection JSON</button>
+            <p class="setting-description" id="collectionImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
         </div>
         
         <div class="setting-item">

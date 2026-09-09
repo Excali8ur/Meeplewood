@@ -1,30 +1,26 @@
 <h1>Games Library</h1>
 <div class="games-header">
-    <p>PLACEHOLDER not working (yet 😉)</p>
-</div>
-<div class="games-header">
     <input type="text" id="gameSearch" placeholder="Search games..." class="search-input">
     <button id="addGameBtn" class="primary-button">+ Add Game</button>
 </div>
 
-<div id="gamesGrid" class="games-grid">
-    <div class="game-card">
-        <div class="game-card-image">🎲</div>
-        <h3>Sample Game 1</h3>
-        <p class="game-info">Players: 2-4 | Time: 60 min</p>
-    </div>
-    <div class="game-card">
-        <div class="game-card-image">🎯</div>
-        <h3>Sample Game 2</h3>
-        <p class="game-info">Players: 3-6 | Time: 45 min</p>
-    </div>
-    <div class="game-card">
-        <div class="game-card-image">🃏</div>
-        <h3>Sample Game 3</h3>
-        <p class="game-info">Players: 2-5 | Time: 90 min</p>
-    </div>
+<div class="games-filters" id="gamesFilters">
+    <span class="games-filters-label">Show:</span>
+    <label><input type="checkbox" id="filterOwn">Own</label>
+    <label><input type="checkbox" id="filterWantToPlay">Want to Play</label>
+    <label><input type="checkbox" id="filterWantToBuy">Want to Buy</label>
+    <label><input type="checkbox" id="filterWant">Want</label>
+    <label><input type="checkbox" id="filterWishlist">Wishlist</label>
+    <label><input type="checkbox" id="filterForTrade">For Trade</label>
+    <label><input type="checkbox" id="filterPreOrdered">Preordered</label>
+    <label><input type="checkbox" id="filterPrevOwned">Previously Owned</label>
 </div>
 
-<div id="gameDetails" class="game-details" style="display: none;">
+<div id="gamesGrid" class="games-grid">
+    <p style="grid-column: 1/-1; text-align: center; color: #666;">Loading games...</p>
+</div>
+
+<div id="gameDetailsOverlay" class="game-details-overlay"></div>
+<div id="gameDetails" class="game-details">
     <!-- Game details will be shown here -->
 </div>

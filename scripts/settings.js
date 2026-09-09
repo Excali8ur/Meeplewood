@@ -4,6 +4,7 @@ const SettingsPage = {
     settings: {
         userName: '',
         defaultDataPath: 'data/GeekPreview-Combined.json',
+        defaultCollectionPath: 'data/collection.json',
         defaultView: 'dashboard',
         showWelcome: true,
         theme: 'light',
@@ -13,6 +14,10 @@ const SettingsPage = {
     // Temporary storage for imported Spiel data before saving
     tempSpielData: null,
     tempSpielFileName: '',
+
+    // Temporary storage for imported collection data before saving
+    tempCollectionExportData: null,
+    tempCollectionImportCount: 0,
     
     // Existing combined data (if loaded)
     existingCombinedData: null,
@@ -314,6 +319,7 @@ const SettingsPage = {
     populateForm: function() {
         const userNameInput = document.getElementById('userName');
         const defaultDataPathInput = document.getElementById('defaultDataPath');
+        const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
         const defaultViewSelect = document.getElementById('defaultView');
         const showWelcomeCheck = document.getElementById('showWelcome');
         const themeSelect = document.getElementById('theme');
@@ -321,6 +327,7 @@ const SettingsPage = {
         
         if (userNameInput) userNameInput.value = this.settings.userName;
         if (defaultDataPathInput) defaultDataPathInput.value = this.settings.defaultDataPath;
+        if (defaultCollectionPathInput) defaultCollectionPathInput.value = this.settings.defaultCollectionPath;
         if (defaultViewSelect) defaultViewSelect.value = this.settings.defaultView;
         if (showWelcomeCheck) showWelcomeCheck.checked = this.settings.showWelcome;
         if (themeSelect) themeSelect.value = this.settings.theme;
@@ -388,6 +395,18 @@ const SettingsPage = {
             importBGGBtn.addEventListener('click', this.importBGG.bind(this));
         }
         
+        // Import BGG Collection CSV
+        const importCollectionBtn = document.getElementById('importCollectionBtn');
+        if (importCollectionBtn) {
+            importCollectionBtn.addEventListener('click', this.importCollection.bind(this));
+        }
+
+        // Save parsed collection (separate gesture, required for the save file picker)
+        const saveCollectionBtn = document.getElementById('saveCollectionBtn');
+        if (saveCollectionBtn) {
+            saveCollectionBtn.addEventListener('click', this.saveParsedCollection.bind(this));
+        }
+        
         // Export data
         const exportDataBtn = document.getElementById('exportDataBtn');
         if (exportDataBtn) {
@@ -430,6 +449,12 @@ const SettingsPage = {
             browseDataPathBtn.addEventListener('click', this.browseDataPath.bind(this));
         }
         
+        // Browse collection path button
+        const browseCollectionPathBtn = document.getElementById('browseCollectionPathBtn');
+        if (browseCollectionPathBtn) {
+            browseCollectionPathBtn.addEventListener('click', this.browseCollectionPath.bind(this));
+        }
+        
         // Spiel metadata modal buttons
         const saveSpielJsonBtn = document.getElementById('saveSpielJsonBtn');
         if (saveSpielJsonBtn) {
@@ -466,17 +491,20 @@ const SettingsPage = {
     saveSettings: function() {
         const userNameInput = document.getElementById('userName');
         const defaultDataPathInput = document.getElementById('defaultDataPath');
+        const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
         const defaultViewSelect = document.getElementById('defaultView');
         const showWelcomeCheck = document.getElementById('showWelcome');
         const themeSelect = document.getElementById('theme');
         const cardSizeSelect = document.getElementById('cardSize');
         
-        // Track old path to detect changes
+        // Track old paths to detect changes
         const oldPath = this.settings.defaultDataPath;
+        const oldCollectionPath = this.settings.defaultCollectionPath;
         
         this.settings = {
             userName: userNameInput?.value || '',
             defaultDataPath: defaultDataPathInput?.value || 'data/GeekPreview-Combined.json',
+            defaultCollectionPath: defaultCollectionPathInput?.value || 'data/collection.json',
             defaultView: defaultViewSelect?.value || 'dashboard',
             showWelcome: showWelcomeCheck?.checked || false,
             theme: themeSelect?.value || 'light',
@@ -490,6 +518,12 @@ const SettingsPage = {
         if (oldPath !== this.settings.defaultDataPath) {
             console.log(`Default path changed from ${oldPath} to ${this.settings.defaultDataPath}, reloading...`);
             this.autoLoadDefaultCombinedFile(true);  // Pass true to prompt user on failure
+        }
+        
+        // If default collection path changed, refresh the cached collection data
+        if (oldCollectionPath !== this.settings.defaultCollectionPath && window.CollectionData) {
+            console.log(`Default collection path changed from ${oldCollectionPath} to ${this.settings.defaultCollectionPath}, reloading...`);
+            window.CollectionData.init();
         }
         
         // Update the metadata modal's user field if it's open
@@ -617,6 +651,100 @@ const SettingsPage = {
         input.click();
     },
     
+    browseCollectionPath: async function() {
+        console.log('Browse for collection file path');
+        
+        if (!window.CollectionData) {
+            alert('Collection module not loaded.');
+            return;
+        }
+        
+        // Try File System Access API first for better functionality
+        if ('showOpenFilePicker' in window) {
+            try {
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }],
+                    multiple: false,
+                    startIn: 'downloads'
+                });
+                
+                const file = await fileHandle.getFile();
+                const content = await file.text();
+                
+                try {
+                    const data = JSON.parse(content);
+                    if (!data.games || !Array.isArray(data.games)) {
+                        alert('Invalid file format. Expected JSON with a "games" array.');
+                        return;
+                    }
+                    
+                    // Store the file handle for auto-loading
+                    await window.CollectionData.storeFileHandle(fileHandle, file.name);
+                    
+                    // Update the path input to indicate local file
+                    const localPath = `local:${file.name}`;
+                    const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
+                    if (defaultCollectionPathInput) {
+                        defaultCollectionPathInput.value = localPath;
+                    }
+                    
+                    console.log(`Browsed and loaded collection file: ${file.name}, path: ${localPath}`);
+                    alert(`File loaded successfully!\n\nFile: ${file.name}\nPath: ${localPath}\n\nClick "Save Settings" to remember this file.`);
+                    
+                } catch (parseError) {
+                    console.error('Error parsing JSON:', parseError);
+                    alert('Error: Selected file is not valid JSON');
+                }
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    return;  // User cancelled
+                }
+                console.log('File System Access API failed, falling back:', err);
+            }
+        }
+        
+        // Fallback for browsers without File System Access API
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json,.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (!data.games || !Array.isArray(data.games)) {
+                            alert('Invalid file format. Expected JSON with a "games" array.');
+                            return;
+                        }
+                        
+                        // Update the path input - use generic path since no handle available
+                        const suggestedPath = `data/${file.name}`;
+                        const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
+                        if (defaultCollectionPathInput) {
+                            defaultCollectionPathInput.value = suggestedPath;
+                        }
+                        
+                        console.log(`Selected file: ${file.name}, suggested path: ${suggestedPath}`);
+                        alert(`File loaded successfully!\n\nFile: ${file.name}\nNote: Your browser doesn't support persistent file access. You'll need to re-select this file after page reloads.\n\nClick "Save Settings" to remember the filename.`);
+                    } catch (parseError) {
+                        console.error('Error parsing JSON:', parseError);
+                        alert('Error: Selected file is not valid JSON');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        
+        input.click();
+    },
+    
     importBGStats: function() {
         console.log('Import from BGStats');
         
@@ -647,6 +775,130 @@ const SettingsPage = {
         input.click();
     },
     
+    importCollection: async function() {
+        console.log('Import BGG Collection CSV');
+
+        if (!window.CollectionData) {
+            alert('Collection module not loaded.');
+            return;
+        }
+
+        // Load current collection.json (if any) up front, so no extra async work
+        // happens later, right before the save button's click (preserves user gesture).
+        await window.CollectionData.init();
+
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'text/csv,.csv,text/plain';
+
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const csvText = event.target.result;
+                    const importedGames = window.CollectionData.parseCSV(csvText);
+
+                    console.log(`Parsed ${importedGames.length} games from collection CSV`);
+
+                    const mergedGames = window.CollectionData.mergeGames(window.CollectionData.cache.games, importedGames);
+                    this.tempCollectionExportData = window.CollectionData.buildExportData(mergedGames, file.name);
+                    this.tempCollectionImportCount = importedGames.length;
+
+                    const parsedStatusEl = document.getElementById('collectionParsedStatus');
+                    if (parsedStatusEl) {
+                        parsedStatusEl.textContent = `Parsed ${importedGames.length} games. Click "Save Collection JSON" to write the file.`;
+                        parsedStatusEl.style.display = 'block';
+                    }
+                    const saveBtn = document.getElementById('saveCollectionBtn');
+                    if (saveBtn) saveBtn.style.display = 'inline-block';
+                } catch (error) {
+                    console.error('Error parsing collection CSV:', error);
+                    alert('Error parsing CSV file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        input.click();
+    },
+
+    // Called directly from the Save button click, so it's a fresh user gesture
+    // and showSaveFilePicker won't be rejected for missing activation.
+    saveParsedCollection: async function() {
+        if (!this.tempCollectionExportData) {
+            alert('No parsed collection data to save. Import a CSV file first.');
+            return;
+        }
+
+        await this.saveCollectionAsJson(this.tempCollectionExportData, this.tempCollectionImportCount);
+
+        this.tempCollectionExportData = null;
+        this.tempCollectionImportCount = 0;
+        const saveBtn = document.getElementById('saveCollectionBtn');
+        if (saveBtn) saveBtn.style.display = 'none';
+        const parsedStatusEl = document.getElementById('collectionParsedStatus');
+        if (parsedStatusEl) parsedStatusEl.style.display = 'none';
+    },
+
+    saveCollectionAsJson: async function(exportData, importedGameCount) {
+        const jsonContent = JSON.stringify(exportData, null, 2);
+        const filename = 'collection.json';
+
+        // Try File System Access API with picker (Chrome, Edge, Opera)
+        if ('showSaveFilePicker' in window) {
+            try {
+                const fileHandle = await window.showSaveFilePicker({
+                    suggestedName: filename,
+                    startIn: 'downloads',
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }]
+                });
+
+                const writable = await fileHandle.createWritable();
+                await writable.write(jsonContent);
+                await writable.close();
+
+                this.showCollectionSuccessMessage(filename, exportData.games.length, importedGameCount);
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    return; // User cancelled
+                }
+                console.log('Save picker failed, falling back to download:', err);
+            }
+        }
+
+        // Fallback: automatic download
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        this.showCollectionSuccessMessage(filename, exportData.games.length, importedGameCount);
+    },
+
+    showCollectionSuccessMessage: function(filename, totalGames, importedGameCount) {
+        const statusEl = document.getElementById('collectionImportStatus');
+        if (statusEl) {
+            statusEl.textContent = `✓ Successfully saved ${importedGameCount} games to ${filename}`;
+            statusEl.style.display = 'block';
+
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        alert(`Successfully processed ${importedGameCount} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}\n\nSave this file to the Meeplewood "data" folder (as "data/${filename}") so the Games page can load it automatically.`);
+    },
+
     importSpielPreview: function() {
         console.log('Import Spiel Preview CSV');
         
