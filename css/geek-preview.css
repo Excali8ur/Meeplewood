@@ -458,8 +458,8 @@
 }
 
 .primary-button {
-    padding: 10px 20px;
-    background-color: #3498db;
+    margin: 5px 5px;    
+    background-color: darkgreen;
     color: white;
     border: none;
     border-radius: 8px;
@@ -471,11 +471,6 @@
 
 .primary-button:hover {
     background-color: #2980b9;
-}
-
-#currentFileName {
-    font-size: 14px;
-    font-style: italic;
 }
 
 /* Entry Filters */

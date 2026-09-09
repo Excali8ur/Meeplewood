@@ -19,7 +19,7 @@ const SettingsPage = {
     existingFileName: '',
     existingFileHandle: null,  // Store file handle for direct save access
     dbName: 'MeeplewoodDB',
-    dbVersion: 1,
+    dbVersion: 2,
     
     init: async function() {
         console.log('Settings page initialized');
@@ -106,6 +106,12 @@ const SettingsPage = {
             const request = indexedDB.open(this.dbName, this.dbVersion);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('fileHandles')) {
+                    db.createObjectStore('fileHandles', { keyPath: 'id' });
+                }
+            };
         });
     },
 
