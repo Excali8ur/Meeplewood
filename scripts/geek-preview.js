@@ -21,7 +21,7 @@ const GeekPreviewPage = {
     metadata: null,
     currentFileName: null,
     dbName: 'MeeplewoodDB',
-    dbVersion: 1,
+    dbVersion: 2,
     
     // Filter settings
     selectedYear: '', // '' = latest
@@ -75,6 +75,12 @@ const GeekPreviewPage = {
             const request = indexedDB.open(this.dbName, this.dbVersion);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('fileHandles')) {
+                    db.createObjectStore('fileHandles', { keyPath: 'id' });
+                }
+            };
         });
     },
     
