@@ -1,41 +1,54 @@
 <h1>Settings</h1>
-<p>Configure your Meeplewood preferences</p>
+<p>Configure your Meeplewood preferences and data.</p>
 
 <div class="settings-sections">
+    
     <section class="settings-section">
-        <h2>General Settings</h2>
-        
+        <h2>Data Storage Settings</h2>
         <div class="setting-item">
-            <label for="userName">User Name</label>
-            <input type="text" id="userName" placeholder="Your name">
-            <p class="setting-description">This will be used as the default user identifier when importing GeekPreview lists</p>
+            <p>Meeplewood does not have a server or cloud storage at the moment.</p> 
+            <p>Instead, information is saved in your browser's storage (username and where the data is stored). If you clear your browser data or use a different device, your data will not be available.</p>
+            <p>Use the settings below to define your username (BGG name is preffered) and where MeepleWood can find the correct files.</p>
+            <p><strong>No data files yet?</strong> Create empty files with the desired names (e.g., 'GeekPreview-data.json' and 'collection-ExampleData.json') and use the 'Browse' buttons to select them. Or if you want to update the data, see <strong>'Manage Data Files'</strong>-section below.</p>
         </div>
-        
+        <div class="setting-item">            
+            
+            <p>If you just want to try out the application, without creating your own data files, you can use the example files. In that case, use the example files provided and <strong>don't change the paths!</strong>.</p>
+        </div>        
         <div class="setting-item">
-            <label for="defaultDataPath">Default Data Path</label>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="defaultDataPath" placeholder="data/GeekPreview-Combined.json" style="flex: 1;">
-                <button type="button" class="secondary-button" id="browseDataPathBtn">📁 Browse</button>
+                <label for="userName">User Name</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="userName" placeholder="<Your name>">
+                <p class="setting-description">This will be used as the default user identifier when importing GeekPreview lists</p>
             </div>
-            <p class="setting-description">
-                <strong>Recommended:</strong> Use the Browse button to select your local file (shows as "local:filename.json").<br>
-                Alternatively, enter a server path like "data/file.json" for web-hosted files.
-            </p>
         </div>
-        
         <div class="setting-item">
-            <label for="defaultCollectionPath">Default Collection Path</label>
+            <label for="defaultCollectionPath">Board Game Collection File</label>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="defaultCollectionPath" placeholder="data/collection.json" style="flex: 1;">
+                <input type="text" id="defaultCollectionPath" placeholder="<Select 'Browse' to choose a file>" style="flex: 1;">
                 <button type="button" class="secondary-button" id="browseCollectionPathBtn">📁 Browse</button>
             </div>
             <p class="setting-description">
-                Path to your imported BGG collection file, used to automatically load your games on the Games page.<br>
-                <strong>Recommended:</strong> Use the Browse button to select your local file (shows as "local:filename.json").<br>
-                Alternatively, enter a server path like "data/collection.json" for web-hosted files.
+                Path to your BGG collection file, created using the "BGG Collection Export" setting below.<br>
+                This file is used to automatically load your game collection and logged play sessions.<br>
+                Use the 'Browse' button to select your local file (shows as "local:filename.json").<br>
             </p>
         </div>
-        
+        <div class="setting-item">
+            <label for="defaultDataPath">Geek Preview List File</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="defaultDataPath" placeholder="<Select 'Browse' to choose a file>" style="flex: 1;">
+                <button type="button" class="secondary-button" id="browseDataPathBtn">📁 Browse</button>
+                <button class="secondary-button" id="createNewFileBtn">📄 Create Empty Preview File</button>
+                            <p class="setting-description">Select an existing file or create a new one.</p>
+            <p class="setting-description">When starting fresh with a new empty preview file, this will clear any loaded data and allow you to start importing from scratch.</p>
+            <p class="setting-description" style="color: #e74c3c; font-weight: bold;">⚠️ This doesn't delete your existing files on your device, it just clears the current session.</p>
+            </div>
+            <p class="setting-description">
+                Path to your Geek Preview list file, used to display the latest game previews.<br>
+                Use the 'Browse' button to select your local file (shows as "local:filename.json")
+            </p>
+        </div>        
         <div class="settings-actions">
             <button class="primary-button" id="saveSettingsBtn">Save Settings</button>
             <button class="secondary-button" id="cancelSettingsBtn">Cancel</button>
@@ -62,23 +75,9 @@
             </select>
         </div>
     </section>
-
     
     <section class="settings-section">
-        <h2>Data & Import</h2>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="createNewFileBtn">📄 Create New Preview File</button>
-            <p class="setting-description">Start fresh with a new empty preview file. This will clear any loaded data and allow you to start importing from scratch.</p>
-            <p class="setting-description" style="color: #e74c3c; font-weight: bold;">⚠️ This doesn't delete your existing files, it just clears the current session.</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="loadExistingSpielBtn">📂 Load Existing Combined File (other than default)</button>
-            <p class="setting-description">If you have previously saved a combined preview file in a different location than the default, you can load it here to merge new data into it.</p>         
-            <p class="setting-description">If you don't have an existing file or want to use the default file, you can skip this step.</p>
-            <p class="setting-description" id="existingFileStatus" style="display: none; color: #3498db; font-weight: bold;"></p>
-        </div>
+        <h2>Manage Data Files</h2>
         <div class="setting-item">
             <button class="primary-button" id="importSpielBtn">📎 Import BGG GeekPreview List</button>
             <p class="setting-description">Import BGG GeekPreview list as .csv, add metadata, and save the file in the Meeplewood "data" folder with the name "GeekPreview-Combined.json". Meeplewood will automatically load it on the next visit.</p>
@@ -198,11 +197,11 @@
                 <input type="text" id="spielUser" placeholder="Your name or identifier">
             </div>
             
-            <div class="setting-item">
+            <!--<div class="setting-item">
                 <label for="spielNotes">Notes (Optional)</label>
                 <textarea id="spielNotes" placeholder="Any additional notes about this import" rows="3"></textarea>
             </div>
-            <!--
+            
             <div class="setting-item">
                 <label>
                     <input type="checkbox" id="fetchBGGData">

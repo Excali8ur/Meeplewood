@@ -3,8 +3,8 @@
 const SettingsPage = {
     settings: {
         userName: '',
-        defaultDataPath: 'data/GeekPreview-Combined.json',
-        defaultCollectionPath: 'data/collection.json',
+        defaultDataPath: 'data/GeekPreview-ExampleData.json',
+        defaultCollectionPath: 'data/collection-ExampleData.json',
         defaultView: 'dashboard',
         showWelcome: true,
         theme: 'light',
