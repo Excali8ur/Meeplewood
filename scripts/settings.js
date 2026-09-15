@@ -207,16 +207,18 @@ const SettingsPage = {
     
     autoLoadDefaultCombinedFile: async function(promptOnFail = false) {
         const defaultPath = this.settings.defaultDataPath || 'data/GeekPreview-Combined.json';
-        
+        console.log(`Attempting to auto-load default combined file from path: ${defaultPath}`);
         // First, try to load from stored file handle (for local files)
         if (defaultPath.startsWith('local:')) {
             const stored = await this.getStoredFileHandle();
             if (stored && stored.handle) {
                 try {
-                    // Verify we still have permission
+                    // Browsers reset this to 'prompt' after a restart/new session, even though
+                    // the handle itself is still remembered - that's not a lost path, it's an
+                    // expired permission grant that requires a user gesture to renew.
                     const permission = await stored.handle.queryPermission({ mode: 'readwrite' });
                     
-                    if (permission === 'granted' || permission === 'prompt') {
+                    if (permission === 'granted') {
                         const file = await stored.handle.getFile();
                         const content = await file.text();
                         const data = JSON.parse(content);
@@ -225,12 +227,17 @@ const SettingsPage = {
                         console.log(`Auto-loaded local file "${file.name}" from stored handle`);
                         return;
                     }
+                    
+                    // Permission needs to be re-granted with a user gesture - offer a one-click
+                    // reconnect using the already-remembered handle instead of a full re-browse.
+                    this.showReconnectPrompt(stored.handle, stored.fileName);
+                    return;
                 } catch (error) {
                     console.log('Could not load from stored handle:', error.message);
                 }
             }
             
-            // Stored handle failed, prompt user to re-select
+            // No stored handle at all, prompt user to select the file
             if (promptOnFail || confirm(`Could not auto-load your local file.\n\nWould you like to select it again?`)) {
                 await this.loadDefaultFileWithPicker(defaultPath);
             }
@@ -306,6 +313,43 @@ const SettingsPage = {
                 alert('Error loading file: ' + error.message);
             }
         }
+    },
+    
+    // Show a one-click reconnect action that re-requests permission on an already
+    // remembered handle, avoiding a full re-browse just because permission expired.
+    showReconnectPrompt: function(handle, fileName) {
+        const statusEl = document.getElementById('existingFileStatus');
+        if (!statusEl) return;
+        
+        statusEl.innerHTML = '';
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#e67e22';
+        statusEl.appendChild(document.createTextNode(`⚠️ Access to "${fileName}" needs to be reconfirmed. `));
+        
+        const reconnectBtn = document.createElement('button');
+        reconnectBtn.type = 'button';
+        reconnectBtn.textContent = 'Reconnect';
+        reconnectBtn.className = 'secondary-button';
+        reconnectBtn.style.marginLeft = '8px';
+        reconnectBtn.addEventListener('click', async () => {
+            try {
+                const permission = await handle.requestPermission({ mode: 'readwrite' });
+                if (permission === 'granted') {
+                    const file = await handle.getFile();
+                    const content = await file.text();
+                    const data = JSON.parse(content);
+                    
+                    this.processExistingCombinedData(data, file.name, handle);
+                    console.log(`Reconnected to local file "${file.name}"`);
+                } else {
+                    alert('Permission was not granted. Use "Browse" to select the file again.');
+                }
+            } catch (error) {
+                console.error('Error reconnecting to file:', error);
+                alert('Error reconnecting to file: ' + error.message);
+            }
+        });
+        statusEl.appendChild(reconnectBtn);
     },
     
     loadSettings: function() {
@@ -541,27 +585,69 @@ const SettingsPage = {
         alert('Changes discarded');
     },
     
-    createNewFile: function() {
+    createNewFile: async function() {
         console.log('Create new preview file');
         
-        const confirmed = confirm('Start a fresh preview file? This will clear any currently loaded data in this session (your saved files won\'t be affected).');
+        const emptyData = {
+            metadata: { sources: [] },
+            games: []
+        };
+        const jsonContent = JSON.stringify(emptyData, null, 2);
         
-        if (confirmed) {
-            // Clear existing data
-            this.existingCombinedData = null;
-            this.existingFileName = '';
-            
-            // Update status
-            const statusEl = document.getElementById('existingFileStatus');
-            if (statusEl) {
-                statusEl.textContent = '✓ New file created (empty)';
-                statusEl.style.display = 'block';
-                statusEl.style.color = '#4CAF50';
+        // Prefer a save picker so the user can choose where the file lives
+        if ('showSaveFilePicker' in window) {
+            try {
+                const fileHandle = await window.showSaveFilePicker({
+                    suggestedName: 'GeekPreview-Combined.json',
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }]
+                });
+                
+                const writable = await fileHandle.createWritable();
+                await writable.write(jsonContent);
+                await writable.close();
+                
+                const file = await fileHandle.getFile();
+                this.processExistingCombinedData(emptyData, file.name, fileHandle);
+                await this.storeFileHandle(fileHandle, file.name);
+                
+                const localPath = `local:${file.name}`;
+                const defaultDataPathInput = document.getElementById('defaultDataPath');
+                if (defaultDataPathInput) {
+                    defaultDataPathInput.value = localPath;
+                }
+                
+                console.log(`New empty file created: ${file.name}, path: ${localPath}`);
+                alert(`New preview file created!\n\nFile: ${file.name}\nPath: ${localPath}\n\nClick "Save Settings" to remember this file.`);
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    return;  // User cancelled
+                }
+                console.log('Save picker failed, falling back to manual path entry:', err);
             }
-            
-            console.log('New empty file created');
-            alert('New preview file started! You can now import GeekPreview lists without merging with existing data.');
         }
+        
+        // Fallback for browsers without File System Access API
+        const fileName = prompt('Name for the new preview file (without extension):', 'GeekPreview-Combined');
+        if (!fileName) {
+            return;  // User cancelled or entered nothing
+        }
+        
+        const baseName = fileName.trim().replace(/\.json$/i, '');
+        const path = `data/${baseName}.json`;
+        
+        this.processExistingCombinedData(emptyData, `${baseName}.json`, null);
+        
+        const defaultDataPathInput = document.getElementById('defaultDataPath');
+        if (defaultDataPathInput) {
+            defaultDataPathInput.value = path;
+        }
+        
+        console.log(`New empty file created: ${path}`);
+        alert(`New preview file started: ${path}\n\nNote: Your browser doesn't support saving directly to a chosen location, so you'll need to download/save this file manually.\n\nClick "Save Settings" to remember this path.`);
     },
     
     browseDataPath: async function() {
