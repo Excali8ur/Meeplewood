@@ -21,7 +21,7 @@ const GeekPreviewPage = {
     metadata: null,
     currentFileName: null,
     dbName: 'MeeplewoodDB',
-    dbVersion: 1,
+    dbVersion: 2,
     
     // Filter settings
     selectedYear: '', // '' = latest
@@ -36,7 +36,6 @@ const GeekPreviewPage = {
     showMultipleEntriesOnly: false,
     showUniqueEntriesOnly: false,
 
-    
     // Sort settings
     sortBy: 'title', // 'title', 'thumbs', 'publisher'
     sortDirection: 'asc', // 'asc' or 'desc'
@@ -51,16 +50,10 @@ const GeekPreviewPage = {
     relevantEntryCache: new Map(),
     
     init: async function() {
-        console.log('Spiel Preview page initialized');
+        console.log('Geek Preview page initialized');
         this.attachEventListeners();
         this.updateSortButtonStates(); // Initialize sort button states
         this.renderGames();
-        
-        // Initialize GameDatabase
-        if (window.GameDatabase) {
-            await window.GameDatabase.init();
-            console.log('Game Database initialized in preview page');
-        }
         
         // Show loading screen and hide other elements initially
         this.showLoadingScreen();
@@ -75,6 +68,12 @@ const GeekPreviewPage = {
             const request = indexedDB.open(this.dbName, this.dbVersion);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('fileHandles')) {
+                    db.createObjectStore('fileHandles', { keyPath: 'id' });
+                }
+            };
         });
     },
     
@@ -131,13 +130,13 @@ const GeekPreviewPage = {
     autoLoadDefaultFile: async function() {
         // Get default path from settings
         const savedSettings = localStorage.getItem('meeplewood_settings');
-        let defaultPath = 'data/GeekPreview-Combined.json'; // fallback default
+        let defaultPreviewPath = 'data/GeekPreview-Combined.json'; // fallback default
         
         if (savedSettings) {
             try {
                 const settings = JSON.parse(savedSettings);
-                if (settings.defaultDataPath) {
-                    defaultPath = settings.defaultDataPath;
+                if (settings.defaultPreviewPath) {
+                    defaultPreviewPath = settings.defaultPreviewPath;
                 }
             } catch (error) {
                 console.log('Error parsing settings, using default path');
@@ -145,7 +144,7 @@ const GeekPreviewPage = {
         }
         
         // Check if it's a local file (stored in IndexedDB)
-        if (defaultPath.startsWith('local:')) {
+        if (defaultPreviewPath.startsWith('local:')) {
             const stored = await this.getStoredFileHandle();
             if (stored && stored.handle) {
                 try {
@@ -176,13 +175,13 @@ const GeekPreviewPage = {
         
         // Try to fetch from server (for web-hosted files)
         try {
-            const response = await fetch(defaultPath);
+            const response = await fetch(defaultPreviewPath);
             if (!response.ok) {
                 throw new Error('Default file not found');
             }
             const data = await response.json();
-            this.processLoadedData(data, defaultPath.split('/').pop());
-            console.log(`Auto-loaded ${defaultPath}`);
+            this.processLoadedData(data, defaultPreviewPath.split('/').pop());
+            console.log(`Auto-loaded ${defaultPreviewPath}`);
         } catch (error) {
             console.log('Default file not found, waiting for manual load');
             this.showNoGamesMessage();

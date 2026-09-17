@@ -1,0 +1,464 @@
+
+<!-------------------------------------------------------
+
+COPY PASTE FROM CHAT -> TODO: READ AND REWRITE before using
+
+----------------------------------------------------------->
+<h1>Settings</h1>
+<p>Configure MeepleWood and manage your game data.</p>
+
+<div class="settings-sections">
+<!-- ========================================================= -->
+<!-- GETTING STARTED                                           -->
+<!-- ========================================================= -->
+<section class="settings-section getting-started">
+    <h2>🚀 Getting Started</h2>
+    <div class="setting-item">
+        <h3>Just want to try MeepleWood?</h3>
+        <p>
+            Start with the included example data. You can explore the
+            application without creating or importing any files.
+        </p>
+        <button class="primary-button" id="useExampleDataBtn">
+            🎲 Use Example Data
+        </button>
+        <p class="setting-description">
+            You can switch to your own data at any time.
+        </p>
+    </div>
+    <div class="setting-item">
+        <h3>Ready to use your own data?</h3>
+        <p>
+            Create your data files, select them below, and then use
+            <strong>Manage Data Files</strong> to import or update your data.
+        </p>
+        <a href="#your-data" class="secondary-button">
+            Set Up My Own Data ↓
+        </a>
+    </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- YOUR DATA                                                  -->
+<!-- ========================================================= -->
+
+<section class="settings-section" id="your-data">
+    <h2>📁 Your Data</h2>
+    <p class="section-description">
+        Tell MeepleWood which files to use for your personal data.
+    </p>
+    <!-- Username -->
+    <div class="setting-item">
+        <label for="userName">Username</label>
+        <input type="text" id="userName" placeholder="Your BoardGameGeek username">
+        <p class="setting-description">
+            Your BGG username is recommended. It is used as the default
+            user when importing GeekPreview lists.
+        </p>
+    </div>
+
+    <!-- Collection file -->
+    <div class="setting-item">
+        <label for="defaultCollectionPath">Board Game Collection</label>
+        <div class="file-input-row">
+            <input type="text" id="defaultCollectionPath" placeholder="No collection file selected" readonly>
+            <button type="button" class="secondary-button" id="browseCollectionPathBtn">📁 Browse…</button>
+        </div>
+        <p class="setting-description">The JSON file containing your board game collection and logged plays.</p>
+    </div>
+
+    <!-- GeekPreview file -->
+    <div class="setting-item">
+        <label for="defaultDataPath">GeekPreview Data</label>
+        <div class="file-input-row">
+            <input type="text" id="defaultDataPath" placeholder="No GeekPreview file selected" readonly>
+            <button type="button" class="secondary-button" id="browseDataPathBtn">📁 Browse…</button>
+        </div>
+        <p class="setting-description">The JSON file containing your GeekPreview data.</p>
+    </div>
+
+    <!-- First-time setup help -->
+    <div class="info-box">
+        <strong>Setting up your own data for the first time?</strong>
+        <ol>
+            <li>Create the required JSON files on your device.</li>
+            <li>Select each file using <strong>Browse…</strong>.</li>
+            <li>Save your settings.</li>
+            <li>Go to <strong>Manage Data Files</strong> to import your data.</li>
+        </ol>
+
+    </div>
+
+    <!-- Settings actions -->
+    <div class="settings-actions">
+        <button
+            class="primary-button"
+            id="saveSettingsBtn"
+        >
+            Save Settings
+        </button>
+
+        <button
+            class="secondary-button"
+            id="cancelSettingsBtn"
+        >
+            Cancel
+        </button>
+
+    </div>
+
+
+    <!-- Main recurring-user action -->
+
+    <div class="manage-data-link">
+
+        <div>
+            <strong>Need to add or update your data?</strong>
+
+            <p class="setting-description">
+                Import new GeekPreview lists, update your collection,
+                import play history, or export your data.
+            </p>
+        </div>
+
+        <button
+            class="primary-button"
+            id="manageDataFilesBtn"
+        >
+            Manage Data Files →
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ========================================================= -->
+<!-- MANAGE DATA                                                -->
+<!-- ========================================================= -->
+
+<section class="settings-section" id="manage-data">
+
+    <h2>📥 Manage Data Files</h2>
+
+    <p class="section-description">
+        Use these tools to add or update your MeepleWood data.
+    </p>
+
+
+    <!-- GeekPreview -->
+
+    <div class="setting-item">
+
+        <h3>GeekPreview Lists</h3>
+
+        <p>
+            Import a GeekPreview list from BoardGameGeek.
+            MeepleWood will add the games to your existing data.
+        </p>
+
+        <button
+            class="primary-button"
+            id="importSpielBtn"
+        >
+            📎 Import GeekPreview List
+        </button>
+
+        <p class="setting-description">
+            Export a GeekPreview list as CSV from
+            <a
+                href="https://boardgamegeek.com/previews"
+                target="_blank"
+                rel="noopener"
+            >
+                BoardGameGeek Previews
+            </a>.
+            You can import the CSV here without editing it first.
+        </p>
+
+        <p
+            class="setting-description"
+            id="spielImportStatus"
+            style="display: none; color: #4CAF50; font-weight: bold;"
+        ></p>
+
+    </div>
+
+
+    <!-- BGStats -->
+
+    <div class="setting-item">
+
+        <h3>BGStats</h3>
+
+        <p>
+            Import your board game collection and play history from
+            a BGStats export file.
+        </p>
+
+        <button
+            class="primary-button"
+            id="importBGStatsBtn"
+        >
+            📊 Import from BGStats
+        </button>
+
+    </div>
+
+
+    <!-- BGG Collection -->
+
+    <div class="setting-item">
+
+        <h3>BoardGameGeek Collection</h3>
+
+        <p>
+            Update your board game collection using a BGG collection export.
+        </p>
+
+        <button
+            class="primary-button"
+            id="importCollectionBtn"
+        >
+            📎 Import BGG Collection
+        </button>
+
+        <p class="setting-description">
+
+            Export your collection from
+            <a
+                href="https://boardgamegeek.com/collection"
+                target="_blank"
+                rel="noopener"
+            >
+                BoardGameGeek Collection
+            </a>.
+
+            Apply any filters you want and choose
+            <strong>Export</strong>.
+            You don't need to edit the CSV before importing it.
+
+        </p>
+
+        <p
+            class="setting-description"
+            id="collectionParsedStatus"
+            style="display: none; color: #3498db; font-weight: bold;"
+        ></p>
+
+        <button
+            class="primary-button"
+            id="saveCollectionBtn"
+            style="display: none;"
+        >
+            💾 Save Collection
+        </button>
+
+        <p
+            class="setting-description"
+            id="collectionImportStatus"
+            style="display: none; color: #4CAF50; font-weight: bold;"
+        ></p>
+
+    </div>
+
+
+    <!-- Direct BGG -->
+
+    <div class="setting-item">
+
+        <h3>BoardGameGeek</h3>
+
+        <p>
+            Import your collection directly from BoardGameGeek.
+            Your BGG username is required.
+        </p>
+
+        <button
+            class="primary-button"
+            id="importBGGBtn"
+        >
+            🌐 Import from BoardGameGeek
+        </button>
+
+    </div>
+
+
+    <!-- Export -->
+
+    <div class="setting-item">
+
+        <h3>Backup</h3>
+
+        <p>
+            Save a copy of all your MeepleWood data.
+        </p>
+
+        <button
+            class="secondary-button"
+            id="exportDataBtn"
+        >
+            💾 Export All Data
+        </button>
+
+        <p class="setting-description">
+            Recommended as a backup before making major changes.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- ========================================================= -->
+<!-- DISPLAY PREFERENCES                                       -->
+<!-- ========================================================= -->
+
+<section class="settings-section" id="display-settings">
+
+    <h2>🎨 Display</h2>
+
+    <div class="setting-item">
+
+        <label for="theme">Theme</label>
+
+        <select id="theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="auto">Auto (System)</option>
+        </select>
+
+    </div>
+
+    <div class="setting-item">
+
+        <label for="cardSize">Game Card Size</label>
+
+        <select id="cardSize">
+            <option value="small">Small</option>
+            <option value="medium" selected>Medium</option>
+            <option value="large">Large</option>
+        </select>
+
+    </div>
+
+</section>
+
+
+<!-- ========================================================= -->
+<!-- GAME DATABASE                                             -->
+<!-- ========================================================= -->
+
+<section class="settings-section" id="game-database">
+
+    <h2>🗄️ Game Database</h2>
+
+    <p class="section-description">
+        Manage the locally cached BoardGameGeek game information.
+        Most users won't need to change these settings.
+    </p>
+
+    <div
+        id="gameDatabaseStats"
+        class="info-box"
+    >
+        <strong>Cache Statistics</strong>
+        <p id="cacheStatsContent">Loading...</p>
+    </div>
+
+    <div class="setting-item">
+
+        <button
+            class="secondary-button"
+            id="loadGameDatabaseBtn"
+        >
+            📂 Load Game Database
+        </button>
+
+        <p class="setting-description">
+            Load a previously saved game database cache.
+        </p>
+
+    </div>
+
+    <div class="setting-item">
+
+        <button
+            class="secondary-button"
+            id="saveGameDatabaseBtn"
+        >
+            💾 Save Game Database
+        </button>
+
+        <p class="setting-description">
+            Download the current game database cache.
+        </p>
+
+    </div>
+
+    <div class="setting-item">
+
+        <button
+            class="secondary-button"
+            id="refreshGameDatabaseBtn"
+        >
+            🔄 Refresh Cache Stats
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ========================================================= -->
+<!-- PRIVACY / DANGER ZONE                                     -->
+<!-- ========================================================= -->
+
+<section class="settings-section danger-zone" id="privacy-data">
+
+    <h2>⚙️ Privacy & Data</h2>
+
+    <div class="setting-item">
+
+        <h3>Clear Cache</h3>
+
+        <p>
+            Remove temporary data and cached images.
+        </p>
+
+        <button
+            class="secondary-button"
+            id="clearCacheBtn"
+        >
+            Clear Cache
+        </button>
+
+    </div>
+
+    <div class="setting-item">
+
+        <h3>Reset All Data</h3>
+
+        <p>
+            Permanently delete all games, plays, and groups stored
+            by MeepleWood.
+        </p>
+
+        <button
+            class="danger-button"
+            id="resetDataBtn"
+        >
+            ⚠️ Reset All Data
+        </button>
+
+        <p class="setting-description">
+            This cannot be undone. Export your data first if you want
+            to keep a backup.
+        </p>
+
+    </div>
+
+</section>
+```
+
+</div>

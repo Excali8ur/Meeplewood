@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "lastUpdated": "2026-08-01T21:09:14.630Z",
+    "totalGames": 5,
+    "sources": [
+      {
+        "year": "2026",
+        "convention": "Spiel",
+        "user": "Excali8ur",
+        "notes": "",
+        "sourceFile": "",
+        "importedDate": "2026-08-01T21:09:14.630Z",
+        "gameCount": 5
+      }
+    ]
+  },
+  "games": [
+    {
+      "Title": "-60°",
+      "Type": "Standalone",
+      "Publisher": "Nanox Games",
+      "BGGId": "474125",
+      "BGGVersionId": "807174",
+      "Mfg Product Code": "NXG 05 EN 01",
+      "imported": "2026-08-01T21:09:05.079Z",
+      "entries": [
+        {
+          "year": "2026",
+          "convention": "Spiel",
+          "user": "Excali8ur",
+          "versionId": "807174",
+          "priority": "4",
+          "notes": "",
+          "availability": "For Sale",
+          "msrpCurrency": "EUR",
+          "msrp": "85",
+          "showPriceCurrency": "EUR",
+          "showPrice": "80",
+          "location": "",
+          "thumbs": "396",
+          "releaseDate": "22/10/2026",
+          "overrideReleaseDate": "",
+          "events": "",
+          "insertedDate": "2026-08-01T21:09:14.630Z",
+          "lastModified": "2026-08-01T21:09:14.630Z"
+        }
+      ]
+    },
+    {
+      "Title": "Ada's Dream",
+      "Type": "Standalone",
+      "Publisher": "Alley Cat Games",
+      "BGGId": "413469",
+      "BGGVersionId": "700462",
+      "Mfg Product Code": "",
+      "imported": "2026-08-01T21:09:05.079Z",
+      "entries": [
+        {
+          "year": "2026",
+          "convention": "Spiel",
+          "user": "Excali8ur",
+          "versionId": "700462",
+          "priority": "3",
+          "notes": "",
+          "availability": "For Sale",
+          "msrpCurrency": "EUR",
+          "msrp": "95",
+          "showPriceCurrency": "EUR",
+          "showPrice": "95",
+          "location": "",
+          "thumbs": "126",
+          "releaseDate": "2025-10-00",
+          "overrideReleaseDate": "",
+          "events": "",
+          "insertedDate": "2026-08-01T21:09:14.630Z",
+          "lastModified": "2026-08-01T21:09:14.630Z"
+        }
+      ]
+    },
+    {
+      "Title": "Ashes & Amber",
+      "Type": "Standalone",
+      "Publisher": "David's Games",
+      "BGGId": "450286",
+      "BGGVersionId": "809623",
+      "Mfg Product Code": "",
+      "imported": "2026-08-01T21:09:05.079Z",
+      "entries": [
+        {
+          "year": "2026",
+          "convention": "Spiel",
+          "user": "Excali8ur",
+          "versionId": "809623",
+          "priority": "2",
+          "notes": "",
+          "availability": "For Sale",
+          "msrpCurrency": "N/A",
+          "msrp": "N/A",
+          "showPriceCurrency": "N/A",
+          "showPrice": "N/A",
+          "location": "4D125",
+          "thumbs": "29",
+          "releaseDate": "21/10/2026",
+          "overrideReleaseDate": "",
+          "events": "",
+          "insertedDate": "2026-08-01T21:09:14.630Z",
+          "lastModified": "2026-08-01T21:09:14.630Z"
+        }
+      ]
+    },
+    {
+      "Title": "Avalon: The Riven Veil",
+      "Type": "Standalone",
+      "Publisher": "Shadowborne Games",
+      "BGGId": "402276",
+      "BGGVersionId": "682464",
+      "Mfg Product Code": "",
+      "imported": "2026-08-01T21:09:05.079Z",
+      "entries": [
+        {
+          "year": "2026",
+          "convention": "Spiel",
+          "user": "Excali8ur",
+          "versionId": "682464",
+          "priority": "1",
+          "notes": "",
+          "availability": "For Sale",
+          "msrpCurrency": "USD",
+          "msrp": "79",
+          "showPriceCurrency": "EUR",
+          "showPrice": "79",
+          "location": "3.S217",
+          "thumbs": "1000",
+          "releaseDate": "20/07/2026",
+          "overrideReleaseDate": "",
+          "events": "",
+          "insertedDate": "2026-08-01T21:09:14.630Z",
+          "lastModified": "2026-08-01T21:09:14.630Z"
+        }
+      ]
+    },
+    {
+      "Title": "FLOE",
+      "Type": "Standalone",
+      "Publisher": "PIKA Games",
+      "BGGId": "363204",
+      "BGGVersionId": "615472",
+      "Mfg Product Code": "",
+      "imported": "2026-08-01T21:09:05.079Z",
+      "entries": [
+        {
+          "year": "2026",
+          "convention": "Spiel",
+          "user": "Excali8ur",
+          "versionId": "615472",
+          "priority": "2",
+          "notes": "",
+          "availability": "Demo",
+          "msrpCurrency": "N/A",
+          "msrp": "N/A",
+          "showPriceCurrency": "N/A",
+          "showPrice": "N/A",
+          "location": "3Q315",
+          "thumbs": "62",
+          "releaseDate": "2026-00-00",
+          "overrideReleaseDate": "",
+          "events": "",
+          "insertedDate": "2026-08-01T21:09:14.630Z",
+          "lastModified": "2026-08-01T21:09:14.630Z"
+        }
+      ]
+    }
+  ]
+}
