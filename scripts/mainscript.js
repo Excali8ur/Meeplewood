@@ -29,7 +29,7 @@ const router = {
                     return html;
                 } catch (error) {
                     console.error('Error loading games page:', error);
-                    return '<h1>Error loading games page</h1><p>Could not load games.html</p>';
+                    return '<h1>Error loading games page</h1>';
                 }
             }
         },

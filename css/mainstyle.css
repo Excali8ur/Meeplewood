@@ -197,6 +197,18 @@ button:hover {
     background-color: #45a049;
 }
 
+.primary-button:disabled,
+.secondary-button:disabled {
+    background-color: #cfd8dc;
+    color: #78909c;
+    cursor: not-allowed;
+}
+
+.primary-button:disabled:hover,
+.secondary-button:disabled:hover {
+    background-color: #cfd8dc;
+}
+
 .secondary-button {
     padding: 10px 20px;
     background-color: #95a5a6;

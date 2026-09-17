@@ -1,46 +1,67 @@
 <h1>Settings</h1>
-<p>Configure your Meeplewood preferences</p>
+<p>Configure your Meeplewood preferences and data.</p>
 
 <div class="settings-sections">
+    
     <section class="settings-section">
-        <h2>General Settings</h2>
-        
-        <div class="setting-item">
-            <label for="userName">User Name</label>
-            <input type="text" id="userName" placeholder="Your name">
-            <p class="setting-description">This will be used as the default user identifier when importing GeekPreview lists</p>
+        <div class="section-heading">
+            <h2>Data Storage<button type="button" class="setting-help-trigger" id="dataStorageIntroToggle" aria-expanded="false" aria-controls="dataStorageIntro" aria-label="Show info"><span aria-hidden="true">i</span></button></h2>
         </div>
-        
+        <div class="setting-item intro-info" id="dataStorageIntro">
+            <p>Meeplewood does not have a server or cloud storage. Instead, information is saved in your browser's storage (username and where the data is stored). If you clear your browser data or use a different device, your data will not be available.</p>            
+            <p>Use the settings below to define your username (BGG name is preffered) and where Meeplewood can find the correct files.</p>
+            <p><strong>No data files yet?</strong> Create empty files with the desired names (e.g., 'GeekPreview-data.json' and 'collection-data.json') and use the 'Browse' buttons to select them. Or if you want to update the data, see <strong>'Manage Data Files'</strong>-section below.</p>
+            <p>If you just want to try out the application, without creating your own data files, you can use the example files. In that case, use the example files provided and <strong>don't change the paths!</strong>.</p>
+        </div>        
         <div class="setting-item">
-            <label for="defaultDataPath">Default Data Path</label>
+            <label for="userName">Username</label>
+            <p class="setting-description">This will be used as the default username in Meeplewood</p>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="defaultDataPath" placeholder="data/GeekPreview-Combined.json" style="flex: 1;">
-                <button type="button" class="secondary-button" id="browseDataPathBtn">📁 Browse</button>
+                <input type="text" id="userName" placeholder="<Your name>">
+                <button type="button" class="secondary-button" id="saveUserNameBtn">💾 Save</button>
             </div>
-            <p class="setting-description">
-                <strong>Recommended:</strong> Use the Browse button to select your local file (shows as "local:filename.json").<br>
-                Alternatively, enter a server path like "data/file.json" for web-hosted files.
-            </p>
         </div>
-        
         <div class="setting-item">
-            <label for="defaultCollectionPath">Default Collection Path</label>
+            <label for="defaultCollectionPath">Meeplewood Board Game Collection File</label>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" id="defaultCollectionPath" placeholder="data/collection.json" style="flex: 1;">
-                <button type="button" class="secondary-button" id="browseCollectionPathBtn">📁 Browse</button>
+                <input readonly="true" type="text" id="defaultCollectionPath" placeholder="<Select 'Browse' to choose a file>" style="flex: 1;">
+                <button class="secondary-button" id="browseCollectionPathBtn">📁 Browse</button>
+                <button class="secondary-button" id="createNewCollectionFileBtn">📄 Create Empty File</button>
+                <button class="secondary-button" id="useExampleCollectionBtn">🧪 Use Example Data</button>
             </div>
-            <p class="setting-description">
-                Path to your imported BGG collection file, used to automatically load your games on the Games page.<br>
-                <strong>Recommended:</strong> Use the Browse button to select your local file (shows as "local:filename.json").<br>
-                Alternatively, enter a server path like "data/collection.json" for web-hosted files.
-            </p>
+            <p class="setting-description">Path to your Meeplewood collection file. This file is used to automatically load your game collection and logged play sessions.</p>
+            <p class="setting-description">⚠️ Starting with a new collection file will clear any loaded data and allow you to start importing from scratch. This doesn't delete existing files on your device, it just clears the current session.</p>
         </div>
-        
-        <div class="settings-actions">
-            <button class="primary-button" id="saveSettingsBtn">Save Settings</button>
-            <button class="secondary-button" id="cancelSettingsBtn">Cancel</button>
+        <div class="setting-item">
+            <button class="primary-button" id="importCollectionBtn">📎 Add BGG Collection Data</button>
+            <p class="setting-description" style="color: #3498db; font-weight: bold;">Where to find your BGG collection export?</p>
+            <p class="setting-description">Go to your <a href="https://boardgamegeek.com/collection" target="_blank">BGG collection</a>, apply any filters you want, then use "Export" to download the CSV file.<br>
+                No need to change anything in the file, just import it here. Games are merged with any existing collection data in Meeplewood, matched by BGG ID.
+            </p>
+            <p class="setting-description" id="collectionImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
+        </div>        
+        <div class="setting-item">
+            <label for="defaultPreviewPath">Meeplewood Geek Preview File</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input readonly="true" type="text" id="defaultPreviewPath" placeholder="<Select 'Browse' to choose a file>" style="flex: 1;">
+                <button class="secondary-button" id="browsePreviewPathBtn">📁 Browse</button>
+                <button class="secondary-button" id="createNewPreviewFileBtn">📄 Create Empty File</button>
+                <button class="secondary-button" id="useExamplePreviewBtn">🧪 Use Example Data</button>
+            <p class="setting-description">Path to your Meeplewood Geek Preview file, used to display the latest game previews. Use the 'Browse' button to select your local file (shows as "local:filename.json")</p>
+                <p class="setting-description">⚠️ Starting with a new preview file will clear any loaded data and allow you to start importing from scratch. This doesn't delete existing files on your device, it just clears the current session.</p>
+            </div>
+        </div>        
+        <div class="setting-item">
+            <button class="primary-button" id="importSpielBtn">📎 Add BGG GeekPreview Data</button>
+            <p class="setting-description" style="color: #3498db; font-weight: bold;">Where to find the BGG GeekPreview Lists?</p>
+            <p class="setting-description">See <a href="https://boardgamegeek.com/previews" target="_blank">all GeekPreview Lists on BGG</a>, select the convention you want to add
+                and choose "export" to download the CSV file.</br>
+                No need to change anything in the file, just import it here and add metadata when prompted. The games will be merged with any existing data you have in Meeplewood.
+            </p>
+            <p class="setting-description" id="spielImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
         </div>
     </section>
+    
     <section class="settings-section" style="display: none;">
         <h2>Display Preferences</h2>
         
@@ -62,100 +83,16 @@
             </select>
         </div>
     </section>
-
     
-    <section class="settings-section">
-        <h2>Data & Import</h2>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="createNewFileBtn">📄 Create New Preview File</button>
-            <p class="setting-description">Start fresh with a new empty preview file. This will clear any loaded data and allow you to start importing from scratch.</p>
-            <p class="setting-description" style="color: #e74c3c; font-weight: bold;">⚠️ This doesn't delete your existing files, it just clears the current session.</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="loadExistingSpielBtn">📂 Load Existing Combined File (other than default)</button>
-            <p class="setting-description">If you have previously saved a combined preview file in a different location than the default, you can load it here to merge new data into it.</p>         
-            <p class="setting-description">If you don't have an existing file or want to use the default file, you can skip this step.</p>
-            <p class="setting-description" id="existingFileStatus" style="display: none; color: #3498db; font-weight: bold;"></p>
-        </div>
-        <div class="setting-item">
-            <button class="primary-button" id="importSpielBtn">📎 Import BGG GeekPreview List</button>
-            <p class="setting-description">Import BGG GeekPreview list as .csv, add metadata, and save the file in the Meeplewood "data" folder with the name "GeekPreview-Combined.json". Meeplewood will automatically load it on the next visit.</p>
-            <p class="setting-description" style="color: #3498db; font-weight: bold;">Where to find the BGG GeekPreview Lists?</p>
-            <p class="setting-description">See <a href="https://boardgamegeek.com/previews" target="_blank">all GeekPreview Lists on BGG</a>, select the convention you want to add
-                and choose "export" to download the CSV file.</br>
-                No need to change anything in the file, just import it here and add metadata when prompted. The games will be merged with any existing data you have in Meeplewood.
-            </p>
-            <p class="setting-description" id="spielImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
-        </div>
-        <div class="setting-item">
-            <button class="primary-button" id="importBGStatsBtn">Import from BGStats</button>
+    <section class="settings-section" style="display: none;">
+        <h2>Add Data</h2>
+        <div class="setting-item" style="display: none;">
+            <button class="primary-button" id="importBGStatsBtn">📎 Import from BGStats</button>
             <p class="setting-description">Import your board game collection and play history from BGStats export file</p>
         </div>
-
-        <div class="setting-item">
-            <button class="primary-button" id="importCollectionBtn">📎 Import BGG Collection List</button>
-            <p class="setting-description">Import your BGG collection as .csv and save it in the Meeplewood "data" folder as "collection.json". Meeplewood will automatically load it on the Games page.</p>
-            <p class="setting-description" style="color: #3498db; font-weight: bold;">Where to find your BGG collection export?</p>
-            <p class="setting-description">Go to your <a href="https://boardgamegeek.com/collection" target="_blank">BGG collection</a>, apply any filters you want, then use "Export" to download the CSV file.<br>
-                No need to change anything in the file, just import it here. Games are merged with any existing collection data in Meeplewood, matched by BGG ID.
-            </p>
-            <p class="setting-description" id="collectionParsedStatus" style="display: none; color: #3498db; font-weight: bold;"></p>
-            <button class="primary-button" id="saveCollectionBtn" style="display: none;">💾 Save Collection JSON</button>
-            <p class="setting-description" id="collectionImportStatus" style="display: none; color: #4CAF50; font-weight: bold;"></p>
-        </div>
-        
-        <div class="setting-item">
+        <div class="setting-item" style="display: none;">
             <button class="primary-button" id="importBGGBtn">Import from BoardGameGeek</button>
             <p class="setting-description">Import your collection from BoardGameGeek (BGG username required)</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="exportDataBtn">Export All Data</button>
-            <p class="setting-description">Export all your Meeplewood data as JSON</p>
-        </div>
-    </section>
-    
-    <section class="settings-section">
-        <h2>Game Database Cache</h2>
-        <p class="setting-description">Manage cached game information from BoardGameGeek</p>
-        
-        <div class="setting-item">
-            <div id="gameDatabaseStats" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                <p><strong>Cache Statistics:</strong></p>
-                <p id="cacheStatsContent">Loading...</p>
-            </div>
-        </div>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="loadGameDatabaseBtn">📂 Load Game Database</button>
-            <p class="setting-description">Load a previously saved game database cache file</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="saveGameDatabaseBtn">💾 Save Game Database</button>
-            <p class="setting-description">Download the current game database cache</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="refreshGameDatabaseBtn">🔄 Refresh Cache Stats</button>
-            <p class="setting-description">Update the cache statistics display</p>
-        </div>
-    </section>
-
-    
-    <section class="settings-section">
-        <h2>Privacy & Data</h2>
-        
-        <div class="setting-item">
-            <button class="secondary-button" id="clearCacheBtn">Clear Cache</button>
-            <p class="setting-description">Clear temporary data and cached images</p>
-        </div>
-        
-        <div class="setting-item">
-            <button class="danger-button" id="resetDataBtn">Reset All Data</button>
-            <p class="setting-description">⚠️ Warning: This will delete all your games, plays, and groups permanently</p>
         </div>
     </section>
     
@@ -164,7 +101,7 @@
         
         <div class="about-info">
             <p>Github: <a href="https://github.com/Excali8ur/Meeplewood" target="_blank"><strong>Meeplewood</strong></a></p>
-            <p>Version: 0.2</p>
+            <p>Version: 0.42</p>
             <p>Your personal board game companion</p>
             <p style="margin-top: 10px;">
                 <a href="#" id="viewLicenseBtn">View License</a> | 
@@ -198,11 +135,7 @@
                 <input type="text" id="spielUser" placeholder="Your name or identifier">
             </div>
             
-            <div class="setting-item">
-                <label for="spielNotes">Notes (Optional)</label>
-                <textarea id="spielNotes" placeholder="Any additional notes about this import" rows="3"></textarea>
-            </div>
-            <!--
+            <!--            
             <div class="setting-item">
                 <label>
                     <input type="checkbox" id="fetchBGGData">
