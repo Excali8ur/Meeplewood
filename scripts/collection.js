@@ -234,12 +234,14 @@ const CollectionData = {
     /**
      * Merge newly imported games into an existing games array, matching on bggId.
      * Imported data takes precedence for collection-specific fields.
+     * Games without a bggId can't be reliably matched, so they're always added as new
+     * entries instead of being collapsed together by a shared empty/falsy id.
      */
     mergeGames: function(existingGames, newGames) {
         const merged = existingGames ? JSON.parse(JSON.stringify(existingGames)) : [];
 
         newGames.forEach(newGame => {
-            const index = merged.findIndex(g => g.bggId === newGame.bggId);
+            const index = newGame.bggId ? merged.findIndex(g => g.bggId === newGame.bggId) : -1;
             if (index >= 0) {
                 merged[index] = { ...merged[index], ...newGame };
             } else {

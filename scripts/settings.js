@@ -3,7 +3,7 @@
 const SettingsPage = {
     settings: {
         userName: '',
-        defaultDataPath: 'data/GeekPreview-ExampleData.json',
+        defaultPreviewPath: 'data/GeekPreview-ExampleData.json',
         defaultCollectionPath: 'data/collection-ExampleData.json',
         defaultView: 'dashboard',
         showWelcome: true,
@@ -15,11 +15,7 @@ const SettingsPage = {
     tempSpielData: null,
     tempSpielFileName: '',
 
-    // Temporary storage for imported collection data before saving
-    tempCollectionExportData: null,
-    tempCollectionImportCount: 0,
-    
-    // Existing combined data (if loaded)
+        // Existing combined data (if loaded)
     existingCombinedData: null,
     existingFileName: '',
     existingFileHandle: null,  // Store file handle for direct save access
@@ -31,13 +27,8 @@ const SettingsPage = {
         await this.initDB();
         this.loadSettings();
         this.setupHelpTooltips();
+        this.setupIntroInfo();
         this.attachEventListeners();
-        
-        // Initialize GameDatabase
-        if (window.GameDatabase) {
-            await window.GameDatabase.init();
-            console.log('Game Database initialized');
-        }
         
         // Try to auto-load the default combined file
         await this.autoLoadDefaultCombinedFile();
@@ -123,7 +114,7 @@ const SettingsPage = {
     setupHelpTooltips: function() {
         const settingItems = document.querySelectorAll('.setting-item');
 
-        settingItems.forEach((item, index) => {
+        settingItems.forEach((item) => {
             const helpDescriptions = Array.from(item.querySelectorAll('.setting-description'))
                 .filter((description) => !description.id);
 
@@ -133,80 +124,54 @@ const SettingsPage = {
 
             item.classList.add('has-help');
 
-            const anchor = item.querySelector('label, button, input, select, textarea');
-            if (!anchor) {
-                return;
-            }
-
-            const helpId = `setting-help-${index + 1}`;
-            const header = document.createElement('div');
-            header.className = 'setting-item-header';
-
-            anchor.parentNode.insertBefore(header, anchor);
-            header.appendChild(anchor);
-
-            const trigger = document.createElement('button');
-            trigger.type = 'button';
-            trigger.className = 'setting-help-trigger';
-            trigger.setAttribute('aria-label', 'Show help information');
-            trigger.setAttribute('aria-expanded', 'false');
-            trigger.setAttribute('aria-controls', helpId);
-            trigger.innerHTML = '<span aria-hidden="true">i</span>';
-            header.appendChild(trigger);
-
             const tooltip = document.createElement('div');
             tooltip.className = 'setting-help-content';
-            tooltip.id = helpId;
-            tooltip.setAttribute('role', 'tooltip');
 
             helpDescriptions.forEach((description) => {
                 tooltip.appendChild(description);
             });
 
             item.appendChild(tooltip);
-
-            const closeTooltip = () => {
-                item.classList.remove('is-help-open');
-                trigger.setAttribute('aria-expanded', 'false');
-            };
-
-            trigger.addEventListener('click', (event) => {
-                event.preventDefault();
-                const isOpen = item.classList.toggle('is-help-open');
-                trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            });
-
-            item.addEventListener('mouseleave', closeTooltip);
-
-            item.addEventListener('focusout', (event) => {
-                if (!item.contains(event.relatedTarget)) {
-                    closeTooltip();
-                }
-            });
-
-            trigger.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    closeTooltip();
-                    trigger.blur();
-                }
-            });
-        });
-
-        document.addEventListener('click', (event) => {
-            document.querySelectorAll('.setting-item.has-help.is-help-open').forEach((item) => {
-                if (!item.contains(event.target)) {
-                    item.classList.remove('is-help-open');
-                    const trigger = item.querySelector('.setting-help-trigger');
-                    if (trigger) {
-                        trigger.setAttribute('aria-expanded', 'false');
-                    }
-                }
-            });
         });
     },
     
+    // Show the data storage intro directly on the first visit, then keep it tucked behind an "i" button
+    setupIntroInfo: function() {
+        const intro = document.getElementById('dataStorageIntro');
+        const toggle = document.getElementById('dataStorageIntroToggle');
+        if (!intro || !toggle) {
+            return;
+        }
+
+        const storageKey = 'meeplewood_settingsIntroSeen';
+        const hasSeenIntro = localStorage.getItem(storageKey) === 'true';
+
+        const setVisible = (visible) => {
+            intro.classList.toggle('is-visible', visible);
+            toggle.setAttribute('aria-expanded', visible ? 'true' : 'false');
+
+            const section = intro.closest('.settings-section');
+            if (section) {
+                section.querySelectorAll('.setting-item.has-help').forEach((item) => {
+                    item.classList.toggle('is-help-open', visible);
+                });
+            }
+        };
+
+        setVisible(!hasSeenIntro);
+
+        if (!hasSeenIntro) {
+            localStorage.setItem(storageKey, 'true');
+        }
+
+        toggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+            setVisible(!intro.classList.contains('is-visible'));
+        });
+    },
+
     autoLoadDefaultCombinedFile: async function(promptOnFail = false) {
-        const defaultPath = this.settings.defaultDataPath || 'data/GeekPreview-Combined.json';
+        const defaultPath = this.settings.defaultPreviewPath || 'data/GeekPreview-Combined.json';
         console.log(`Attempting to auto-load default combined file from path: ${defaultPath}`);
         // First, try to load from stored file handle (for local files)
         if (defaultPath.startsWith('local:')) {
@@ -362,7 +327,7 @@ const SettingsPage = {
     
     populateForm: function() {
         const userNameInput = document.getElementById('userName');
-        const defaultDataPathInput = document.getElementById('defaultDataPath');
+        const defaultPreviewPathInput = document.getElementById('defaultPreviewPath');
         const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
         const defaultViewSelect = document.getElementById('defaultView');
         const showWelcomeCheck = document.getElementById('showWelcome');
@@ -370,28 +335,43 @@ const SettingsPage = {
         const cardSizeSelect = document.getElementById('cardSize');
         
         if (userNameInput) userNameInput.value = this.settings.userName;
-        if (defaultDataPathInput) defaultDataPathInput.value = this.settings.defaultDataPath;
+        if (defaultPreviewPathInput) defaultPreviewPathInput.value = this.settings.defaultPreviewPath;
         if (defaultCollectionPathInput) defaultCollectionPathInput.value = this.settings.defaultCollectionPath;
         if (defaultViewSelect) defaultViewSelect.value = this.settings.defaultView;
         if (showWelcomeCheck) showWelcomeCheck.checked = this.settings.showWelcome;
         if (themeSelect) themeSelect.value = this.settings.theme;
         if (cardSizeSelect) cardSizeSelect.value = this.settings.cardSize;
+
+        this.updateAddDataButtonsState();
+    },
+    
+    // Adding data only makes sense once a real local file is selected - example/server
+    // paths have no writable file handle to save merged data back into.
+    updateAddDataButtonsState: function() {
+        const isLocal = (path) => typeof path === 'string' && path.startsWith('local:');
+
+        const importCollectionBtn = document.getElementById('importCollectionBtn');
+        if (importCollectionBtn) {
+            const enabled = isLocal(this.settings.defaultCollectionPath);
+            importCollectionBtn.disabled = !enabled;
+            importCollectionBtn.title = enabled ? '' : 'Select or create a local collection file first (not the example data)';
+        }
+
+        const importSpielBtn = document.getElementById('importSpielBtn');
+        if (importSpielBtn) {
+            const enabled = isLocal(this.settings.defaultPreviewPath);
+            importSpielBtn.disabled = !enabled;
+            importSpielBtn.title = enabled ? '' : 'Select or create a local Geek Preview file first (not the example data)';
+        }
     },
     
     attachEventListeners: function() {
         console.log('Attaching event listeners...');
         
-        // Save button
-        const saveBtn = document.getElementById('saveSettingsBtn');
-        console.log('saveBtn found:', !!saveBtn);
-        if (saveBtn) {
-            saveBtn.addEventListener('click', this.saveSettings.bind(this));
-        }
-        
-        // Cancel button
-        const cancelBtn = document.getElementById('cancelSettingsBtn');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', this.cancelSettings.bind(this));
+        // Save username
+        const saveUserNameBtn = document.getElementById('saveUserNameBtn');
+        if (saveUserNameBtn) {
+            saveUserNameBtn.addEventListener('click', () => this.saveSettings());
         }
         
         // Import Spiel Preview
@@ -408,22 +388,26 @@ const SettingsPage = {
         }
         
         // Create new file
-        const createNewFileBtn = document.getElementById('createNewFileBtn');
-        if (createNewFileBtn) {
-            createNewFileBtn.addEventListener('click', this.createNewFile.bind(this));
+        const createNewPreviewFileBtn = document.getElementById('createNewPreviewFileBtn');
+        if (createNewPreviewFileBtn) {
+            createNewPreviewFileBtn.addEventListener('click', this.createNewPreviewFile.bind(this));
         }
         
-        // Load existing combined file
-        const loadExistingSpielBtn = document.getElementById('loadExistingSpielBtn');
-        console.log('loadExistingSpielBtn found:', !!loadExistingSpielBtn);
-        if (loadExistingSpielBtn) {
-            loadExistingSpielBtn.addEventListener('click', (e) => {
-                console.log('loadExistingSpielBtn clicked!', e);
-                this.loadExistingCombinedFile();
-            });
-            console.log('Click listener attached to loadExistingSpielBtn');
-        } else {
-            console.error('loadExistingSpielBtn not found in DOM!');
+        // Create new collection file
+        const createNewCollectionFileBtn = document.getElementById('createNewCollectionFileBtn');
+        if (createNewCollectionFileBtn) {
+            createNewCollectionFileBtn.addEventListener('click', this.createNewCollectionFile.bind(this));
+        }
+        
+        // Use example data
+        const useExamplePreviewBtn = document.getElementById('useExamplePreviewBtn');
+        if (useExamplePreviewBtn) {
+            useExamplePreviewBtn.addEventListener('click', () => this.useExampleData('defaultPreviewPath', 'data/GeekPreview-ExampleData.json'));
+        }
+        
+        const useExampleCollectionBtn = document.getElementById('useExampleCollectionBtn');
+        if (useExampleCollectionBtn) {
+            useExampleCollectionBtn.addEventListener('click', () => this.useExampleData('defaultCollectionPath', 'data/collection-ExampleData.json'));
         }
         
         // Import BGStats
@@ -445,12 +429,6 @@ const SettingsPage = {
             importCollectionBtn.addEventListener('click', this.importCollection.bind(this));
         }
 
-        // Save parsed collection (separate gesture, required for the save file picker)
-        const saveCollectionBtn = document.getElementById('saveCollectionBtn');
-        if (saveCollectionBtn) {
-            saveCollectionBtn.addEventListener('click', this.saveParsedCollection.bind(this));
-        }
-        
         // Export data
         const exportDataBtn = document.getElementById('exportDataBtn');
         if (exportDataBtn) {
@@ -483,14 +461,14 @@ const SettingsPage = {
         if (reportIssueBtn) {
             reportIssueBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                alert('Report issues on GitHub or contact support');
+                alert('Report issues on GitHub or contact Rianne Boumans');
             });
         }
         
         // Browse data path button
-        const browseDataPathBtn = document.getElementById('browseDataPathBtn');
-        if (browseDataPathBtn) {
-            browseDataPathBtn.addEventListener('click', this.browseDataPath.bind(this));
+        const browsePreviewPathBtn = document.getElementById('browsePreviewPathBtn');
+        if (browsePreviewPathBtn) {
+            browsePreviewPathBtn.addEventListener('click', this.browsePreviewPath.bind(this));
         }
         
         // Browse collection path button
@@ -510,31 +488,12 @@ const SettingsPage = {
             cancelSpielImportBtn.addEventListener('click', this.cancelSpielImport.bind(this));
         }
         
-        // Game Database buttons
-        const loadGameDatabaseBtn = document.getElementById('loadGameDatabaseBtn');
-        if (loadGameDatabaseBtn) {
-            loadGameDatabaseBtn.addEventListener('click', this.loadGameDatabase.bind(this));
-        }
-        
-        const saveGameDatabaseBtn = document.getElementById('saveGameDatabaseBtn');
-        if (saveGameDatabaseBtn) {
-            saveGameDatabaseBtn.addEventListener('click', this.saveGameDatabase.bind(this));
-        }
-        
-        const refreshGameDatabaseBtn = document.getElementById('refreshGameDatabaseBtn');
-        if (refreshGameDatabaseBtn) {
-            refreshGameDatabaseBtn.addEventListener('click', this.updateGameDatabaseStats.bind(this));
-        }
-        
-        // Update game database stats on load
-        this.updateGameDatabaseStats();
-        
         console.log('All event listeners attached successfully');
     },
     
     saveSettings: function() {
         const userNameInput = document.getElementById('userName');
-        const defaultDataPathInput = document.getElementById('defaultDataPath');
+        const defaultPreviewPathInput = document.getElementById('defaultPreviewPath');
         const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
         const defaultViewSelect = document.getElementById('defaultView');
         const showWelcomeCheck = document.getElementById('showWelcome');
@@ -542,12 +501,12 @@ const SettingsPage = {
         const cardSizeSelect = document.getElementById('cardSize');
         
         // Track old paths to detect changes
-        const oldPath = this.settings.defaultDataPath;
+        const oldPath = this.settings.defaultPreviewPath;
         const oldCollectionPath = this.settings.defaultCollectionPath;
         
         this.settings = {
             userName: userNameInput?.value || '',
-            defaultDataPath: defaultDataPathInput?.value || 'data/GeekPreview-Combined.json',
+            defaultPreviewPath: defaultPreviewPathInput?.value || 'data/GeekPreview-Combined.json',
             defaultCollectionPath: defaultCollectionPathInput?.value || 'data/collection.json',
             defaultView: defaultViewSelect?.value || 'dashboard',
             showWelcome: showWelcomeCheck?.checked || false,
@@ -559,8 +518,8 @@ const SettingsPage = {
         console.log('Settings saved:', this.settings);
         
         // If default path changed, reload the file
-        if (oldPath !== this.settings.defaultDataPath) {
-            console.log(`Default path changed from ${oldPath} to ${this.settings.defaultDataPath}, reloading...`);
+        if (oldPath !== this.settings.defaultPreviewPath) {
+            console.log(`Default path changed from ${oldPath} to ${this.settings.defaultPreviewPath}, reloading...`);
             this.autoLoadDefaultCombinedFile(true);  // Pass true to prompt user on failure
         }
         
@@ -576,16 +535,11 @@ const SettingsPage = {
             userInput.value = this.settings.userName;
         }
         
-        alert('Settings saved successfully!');
+        this.updateAddDataButtonsState();
+        console.log('Settings saved successfully.');
     },
     
-    cancelSettings: function() {
-        console.log('Settings cancelled');
-        this.loadSettings(); // Reload original settings
-        alert('Changes discarded');
-    },
-    
-    createNewFile: async function() {
+    createNewPreviewFile: async function() {
         console.log('Create new preview file');
         
         const emptyData = {
@@ -614,13 +568,14 @@ const SettingsPage = {
                 await this.storeFileHandle(fileHandle, file.name);
                 
                 const localPath = `local:${file.name}`;
-                const defaultDataPathInput = document.getElementById('defaultDataPath');
-                if (defaultDataPathInput) {
-                    defaultDataPathInput.value = localPath;
+                const defaultPreviewPathInput = document.getElementById('defaultPreviewPath');
+                if (defaultPreviewPathInput) {
+                    defaultPreviewPathInput.value = localPath;
                 }
                 
-                console.log(`New empty file created: ${file.name}, path: ${localPath}`);
-                alert(`New preview file created!\n\nFile: ${file.name}\nPath: ${localPath}\n\nClick "Save Settings" to remember this file.`);
+                this.saveSettings();
+                console.log(`New empty preview file created: ${file.name}, path: ${localPath}`);                
+                //alert(`New preview file named ${file.name} created.`);
                 return;
             } catch (err) {
                 if (err.name === 'AbortError') {
@@ -641,16 +596,94 @@ const SettingsPage = {
         
         this.processExistingCombinedData(emptyData, `${baseName}.json`, null);
         
-        const defaultDataPathInput = document.getElementById('defaultDataPath');
-        if (defaultDataPathInput) {
-            defaultDataPathInput.value = path;
+        const defaultPreviewPathInput = document.getElementById('defaultPreviewPath');
+        if (defaultPreviewPathInput) {
+            defaultPreviewPathInput.value = path;
         }
-        
-        console.log(`New empty file created: ${path}`);
-        alert(`New preview file started: ${path}\n\nNote: Your browser doesn't support saving directly to a chosen location, so you'll need to download/save this file manually.\n\nClick "Save Settings" to remember this path.`);
+
+        this.saveSettings();
+        console.log(`New empty preview file created: ${file.name}, path: ${localPath}`);                
+        alert(`New preview file named ${file.name} created.\n\nNote: Your browser doesn't support saving directly to a chosen location, so you'll need to download/save this file manually.`);
     },
     
-    browseDataPath: async function() {
+    createNewCollectionFile: async function() {
+        console.log('Create new collection file');
+        
+        const emptyData = {
+            metadata: { lastUpdated: new Date().toISOString(), totalGames: 0, sourceFile: null },
+            games: []
+        };
+        const jsonContent = JSON.stringify(emptyData, null, 2);
+        
+        // Prefer a save picker so the user can choose where the file lives
+        if ('showSaveFilePicker' in window) {
+            try {
+                const fileHandle = await window.showSaveFilePicker({
+                    suggestedName: 'collection.json',
+                    types: [{
+                        description: 'JSON Files',
+                        accept: { 'application/json': ['.json'] }
+                    }]
+                });
+                
+                const writable = await fileHandle.createWritable();
+                await writable.write(jsonContent);
+                await writable.close();
+                
+                const file = await fileHandle.getFile();
+                
+                if (window.CollectionData) {
+                    await window.CollectionData.storeFileHandle(fileHandle, file.name);
+                }
+                
+                const localPath = `local:${file.name}`;
+                const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
+                if (defaultCollectionPathInput) {
+                    defaultCollectionPathInput.value = localPath;
+                }
+                
+                this.saveSettings();
+                console.log(`New empty collection file created: ${file.name}, path: ${localPath}`);
+                //alert(`New collection file named ${file.name} created.`);
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    return;  // User cancelled
+                }
+                console.log('Save picker failed, falling back to manual path entry:', err);
+            }
+        }
+        
+        // Fallback for browsers without File System Access API
+        const fileName = prompt('Name for the new collection file (without extension):', 'collection');
+        if (!fileName) {
+            return;  // User cancelled or entered nothing
+        }
+        
+        const baseName = fileName.trim().replace(/\.json$/i, '');
+        const path = `data/${baseName}.json`;
+        
+        const defaultCollectionPathInput = document.getElementById('defaultCollectionPath');
+        if (defaultCollectionPathInput) {
+            defaultCollectionPathInput.value = path;
+        }
+        
+        this.saveSettings();
+        console.log(`New empty collection file created: ${path}`);
+        alert(`New collection file named ${path} created.\n\nNote: Your browser doesn't support saving directly to a chosen location, so you'll need to download/save this file manually.`);
+    },
+    
+    // Point the given path input at the bundled example file and save/reload immediately
+    useExampleData: function(inputId, examplePath) {
+        const input = document.getElementById(inputId);
+        if (!input) {
+            return;
+        }
+        input.value = examplePath;
+        this.saveSettings();
+    },
+    
+    browsePreviewPath: async function() {
         console.log('Browse for data file path');
         
         // Try File System Access API first for better functionality
@@ -679,13 +712,15 @@ const SettingsPage = {
                     
                     // Update the path input to indicate local file
                     const localPath = `local:${file.name}`;
-                    const defaultDataPathInput = document.getElementById('defaultDataPath');
-                    if (defaultDataPathInput) {
-                        defaultDataPathInput.value = localPath;
+                    const defaultPreviewPathInput = document.getElementById('defaultPreviewPath');
+                    if (defaultPreviewPathInput) {
+                        defaultPreviewPathInput.value = localPath;
                     }
                     
+                    this.saveSettings();
                     console.log(`Browsed and loaded file: ${file.name}, path: ${localPath}`);
-                    alert(`File loaded successfully!\n\nFile: ${file.name}\nPath: ${localPath}\n\nClick "Save Settings" to remember this file.`);
+                    //alert(`File ${file.name} saved and loaded successfully.`);
+                    
                     
                 } catch (parseError) {
                     console.error('Error parsing JSON:', parseError);
@@ -718,13 +753,15 @@ const SettingsPage = {
                         
                         // Update the path input - use generic path since no handle available
                         const suggestedPath = `data/${file.name}`;
-                        const defaultDataPathInput = document.getElementById('defaultDataPath');
-                        if (defaultDataPathInput) {
-                            defaultDataPathInput.value = suggestedPath;
+                        const defaultPreviewPathInput = document.getElementById('defaultPreviewPath');
+                        if (defaultPreviewPathInput) {
+                            defaultPreviewPathInput.value = suggestedPath;
                         }
                         
+                        this.saveSettings();
                         console.log(`Selected file: ${file.name}, suggested path: ${suggestedPath}`);
-                        alert(`File loaded successfully!\n\nFile: ${file.name}\nNote: Your browser doesn't support persistent file access. You'll need to re-select this file after page reloads.\n\nClick "Save Settings" to remember the filename.`);
+                        alert(`File ${file.name} loaded successfully!\nNote: Your browser doesn't support persistent file access. You'll need to re-select this file after page reloads.`);
+                        
                     } catch (parseError) {
                         console.error('Error parsing JSON:', parseError);
                         alert('Error: Selected file is not valid JSON');
@@ -777,8 +814,9 @@ const SettingsPage = {
                         defaultCollectionPathInput.value = localPath;
                     }
                     
+                    this.saveSettings();
                     console.log(`Browsed and loaded collection file: ${file.name}, path: ${localPath}`);
-                    alert(`File loaded successfully!\n\nFile: ${file.name}\nPath: ${localPath}\n\nClick "Save Settings" to remember this file.`);
+                    //alert(`File ${file.name} saved and loaded successfully.`);
                     
                 } catch (parseError) {
                     console.error('Error parsing JSON:', parseError);
@@ -816,9 +854,10 @@ const SettingsPage = {
                         if (defaultCollectionPathInput) {
                             defaultCollectionPathInput.value = suggestedPath;
                         }
-                        
-                        console.log(`Selected file: ${file.name}, suggested path: ${suggestedPath}`);
-                        alert(`File loaded successfully!\n\nFile: ${file.name}\nNote: Your browser doesn't support persistent file access. You'll need to re-select this file after page reloads.\n\nClick "Save Settings" to remember the filename.`);
+
+                        this.saveSettings();
+                        console.log(`Selected file: ${file.name}, suggested path: ${suggestedPath}`);                        
+                        alert(`File ${file.name} saved and loaded successfully.\nNote: Your browser doesn't support persistent file access. You'll need to re-select this file after page reloads.`);
                     } catch (parseError) {
                         console.error('Error parsing JSON:', parseError);
                         alert('Error: Selected file is not valid JSON');
@@ -882,24 +921,21 @@ const SettingsPage = {
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 try {
                     const csvText = event.target.result;
                     const importedGames = window.CollectionData.parseCSV(csvText);
 
                     console.log(`Parsed ${importedGames.length} games from collection CSV`);
+                    const missingIdCount = importedGames.filter(g => !g.bggId).length;
+                    if (missingIdCount > 0) {
+                        console.warn(`${missingIdCount} of ${importedGames.length} parsed games are missing a bggId (check the CSV has an "objectid" column)`);
+                    }
 
                     const mergedGames = window.CollectionData.mergeGames(window.CollectionData.cache.games, importedGames);
-                    this.tempCollectionExportData = window.CollectionData.buildExportData(mergedGames, file.name);
-                    this.tempCollectionImportCount = importedGames.length;
+                    const exportData = window.CollectionData.buildExportData(mergedGames, file.name);
 
-                    const parsedStatusEl = document.getElementById('collectionParsedStatus');
-                    if (parsedStatusEl) {
-                        parsedStatusEl.textContent = `Parsed ${importedGames.length} games. Click "Save Collection JSON" to write the file.`;
-                        parsedStatusEl.style.display = 'block';
-                    }
-                    const saveBtn = document.getElementById('saveCollectionBtn');
-                    if (saveBtn) saveBtn.style.display = 'inline-block';
+                    await this.saveCollectionAsJson(exportData, importedGames.length);
                 } catch (error) {
                     console.error('Error parsing collection CSV:', error);
                     alert('Error parsing CSV file: ' + error.message);
@@ -911,27 +947,34 @@ const SettingsPage = {
         input.click();
     },
 
-    // Called directly from the Save button click, so it's a fresh user gesture
-    // and showSaveFilePicker won't be rejected for missing activation.
-    saveParsedCollection: async function() {
-        if (!this.tempCollectionExportData) {
-            alert('No parsed collection data to save. Import a CSV file first.');
-            return;
-        }
-
-        await this.saveCollectionAsJson(this.tempCollectionExportData, this.tempCollectionImportCount);
-
-        this.tempCollectionExportData = null;
-        this.tempCollectionImportCount = 0;
-        const saveBtn = document.getElementById('saveCollectionBtn');
-        if (saveBtn) saveBtn.style.display = 'none';
-        const parsedStatusEl = document.getElementById('collectionParsedStatus');
-        if (parsedStatusEl) parsedStatusEl.style.display = 'none';
-    },
-
     saveCollectionAsJson: async function(exportData, importedGameCount) {
         const jsonContent = JSON.stringify(exportData, null, 2);
         const filename = 'collection.json';
+
+        // Prefer writing straight back to the already-configured local file (if we still
+        // hold write permission for it) - this doesn't need a fresh user gesture, unlike
+        // showSaveFilePicker, so it works even after the async CSV parsing/merge above.
+        if (window.CollectionData) {
+            const stored = await window.CollectionData.getStoredFileHandle();
+            if (stored && stored.handle) {
+                try {
+                    const permission = await stored.handle.queryPermission({ mode: 'readwrite' });
+                    console.log(`Existing collection file handle "${stored.fileName}" permission: ${permission}`);
+                    if (permission === 'granted') {
+                        const writable = await stored.handle.createWritable();
+                        await writable.write(jsonContent);
+                        await writable.close();
+
+                        window.CollectionData.cache = { metadata: exportData.metadata, games: exportData.games };
+                        console.log(`Saved ${exportData.games.length} games directly to "${stored.fileName}"`);
+                        this.showCollectionSuccessMessage(stored.fileName, exportData.games.length, importedGameCount, true);
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Could not write to existing collection file handle, falling back:', error.message);
+                }
+            }
+        }
 
         // Try File System Access API with picker (Chrome, Edge, Opera)
         if ('showSaveFilePicker' in window) {
@@ -949,7 +992,12 @@ const SettingsPage = {
                 await writable.write(jsonContent);
                 await writable.close();
 
-                this.showCollectionSuccessMessage(filename, exportData.games.length, importedGameCount);
+                if (window.CollectionData) {
+                    await window.CollectionData.storeFileHandle(fileHandle, fileHandle.name);
+                    window.CollectionData.cache = { metadata: exportData.metadata, games: exportData.games };
+                }
+                console.log(`Saved ${exportData.games.length} games to "${fileHandle.name}" via save picker`);
+                this.showCollectionSuccessMessage(fileHandle.name, exportData.games.length, importedGameCount, true);
                 return;
             } catch (err) {
                 if (err.name === 'AbortError') {
@@ -968,10 +1016,11 @@ const SettingsPage = {
         a.click();
         URL.revokeObjectURL(url);
 
-        this.showCollectionSuccessMessage(filename, exportData.games.length, importedGameCount);
+        console.log(`Downloaded ${exportData.games.length} games as "${filename}" (not written to an existing local file)`);
+        this.showCollectionSuccessMessage(filename, exportData.games.length, importedGameCount, false);
     },
 
-    showCollectionSuccessMessage: function(filename, totalGames, importedGameCount) {
+    showCollectionSuccessMessage: function(filename, totalGames, importedGameCount, savedDirectly) {
         const statusEl = document.getElementById('collectionImportStatus');
         if (statusEl) {
             statusEl.textContent = `✓ Successfully saved ${importedGameCount} games to ${filename}`;
@@ -982,8 +1031,13 @@ const SettingsPage = {
             }, 5000);
         }
 
-        alert(`Successfully processed ${importedGameCount} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}\n\nSave this file to the Meeplewood "data" folder (as "data/${filename}") so the Games page can load it automatically.`);
+        const message = savedDirectly
+            ? `Successfully processed ${importedGameCount} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}\n\nThe file was updated directly - no further action needed.`
+            : `Successfully processed ${importedGameCount} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}\n\nThis file was downloaded (your browser couldn't write directly to the configured file). Save it to the Meeplewood "data" folder (as "data/${filename}") so the Games page can load it automatically.`;
+
+        alert(message);
     },
+
 
     importSpielPreview: function() {
         console.log('Import Spiel Preview CSV');
@@ -1055,40 +1109,13 @@ const SettingsPage = {
         this.tempSpielFileName = '';
     },
     
-    loadExistingCombinedFile: function() {
-        console.log('Loading existing combined Spiel file');
-        
-        // Try to load the default file first using the configured path
-        /*
-        const defaultPath = this.settings.defaultDataPath || 'data/GeekPreview-Combined.json';
-        
-        fetch(defaultPath)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Default file not found');
-                }
-                return response.json();
-            })
-            .then(data => {
-                this.processExistingCombinedData(data, defaultPath.split('/').pop(), null);
-            })
-            .catch(error => {
-                console.log('Default file not found, opening file picker:', error);
-                this.openExistingFilePicker();
-            });
-            */
-        
-        // Open file picker to select existing combined file
-        this.openExistingFilePicker();
-    },
-    
     openExistingFilePicker: async function() {
         // Try File System Access API first (Chrome, Edge, Opera)
         if ('showOpenFilePicker' in window) {
             try {
                 // Try to determine a smart starting location based on default path
                 let startIn = 'downloads';  // Default fallback
-                const defaultPath = (this.settings.defaultDataPath || '').toLowerCase();
+                const defaultPath = (this.settings.defaultPreviewPath || '').toLowerCase();
                 if (defaultPath.includes('document')) {
                     startIn = 'documents';
                 } else if (defaultPath.includes('desktop')) {
@@ -1316,12 +1343,6 @@ const SettingsPage = {
                 finalGames.push(newGame);
             }
         });
-        
-        // Fetch BGG data if requested
-        const fetchBGGData = document.getElementById('fetchBGGData')?.checked;
-        if (fetchBGGData && window.GameDatabase) {
-            await this.fetchBGGDataForGames(finalGames);
-        }
         
         // Create final export structure
         const exportData = {
@@ -1558,159 +1579,6 @@ const SettingsPage = {
             alert('All data has been reset. The page will reload.');
             window.location.reload();
         }
-    },
-    
-    /**
-     * Fetch BGG data for games that don't have it yet
-     */
-    fetchBGGDataForGames: async function(games) {
-        if (!window.GameDatabase) {
-            console.warn('GameDatabase not available');
-            return;
-        }
-        
-        // Collect all unique BGG IDs that need fetching
-        const bggIdsToFetch = [];
-        games.forEach(game => {
-            if (game.BGGId && !window.GameDatabase.cache[game.BGGId]) {
-                bggIdsToFetch.push(game.BGGId);
-            }
-        });
-        
-        if (bggIdsToFetch.length === 0) {
-            console.log('All games already have BGG data cached');
-            return;
-        }
-        
-        // Remove duplicates
-        const uniqueIds = [...new Set(bggIdsToFetch)];
-        console.log(`Fetching ${uniqueIds.length} games from BGG using ${window.GameDatabase.corsProxyName}...`);
-        
-        // Show progress UI
-        const progressDiv = document.getElementById('bggFetchProgress');
-        const progressBar = document.getElementById('bggFetchProgressBar');
-        const progressText = document.getElementById('bggFetchProgressText');
-        const saveButton = document.getElementById('saveSpielJsonBtn');
-        
-        if (progressDiv) {
-            progressDiv.style.display = 'block';
-            progressDiv.style.background = '#f0f8ff';
-        }
-        if (saveButton) saveButton.disabled = true;
-        
-        // Show initial message with proxy info
-        if (progressText) {
-            progressText.textContent = `Starting fetch using ${window.GameDatabase.corsProxyName} proxy...`;
-        }
-        
-        let successCount = 0;
-        let errorCount = 0;
-        
-        // Batch fetch with progress updates
-        const results = await window.GameDatabase.batchFetch(uniqueIds, (current, total) => {
-            const percent = (current / total) * 100;
-            if (progressBar) progressBar.style.width = `${percent}%`;
-            if (progressText) {
-                progressText.textContent = `${current} / ${total} games (${successCount} ok, ${errorCount} errors)`;
-            }
-            
-            // Update counts
-            const lastResult = window.GameDatabase.cache[uniqueIds[current - 1]];
-            if (lastResult && !lastResult.fetchError) {
-                successCount++;
-            } else {
-                errorCount++;
-            }
-        });
-        
-        // Show results
-        if (progressDiv && progressText) {
-            if (errorCount > 0) {
-                progressDiv.style.background = '#fff3cd';
-                progressText.textContent = `Complete: ${successCount} games fetched successfully, ${errorCount} failed`;
-                progressText.style.color = '#856404';
-            } else {
-                progressDiv.style.background = '#d4edda';
-                progressText.textContent = `✓ All ${successCount} games fetched successfully!`;
-                progressText.style.color = '#155724';
-            }
-        }
-        
-        // Save the updated cache
-        await window.GameDatabase.saveCache();
-        
-        // Auto-hide progress after a moment
-        setTimeout(() => {
-            if (progressDiv) progressDiv.style.display = 'none';
-        }, 3000);
-        
-        if (saveButton) saveButton.disabled = false;
-        
-        console.log(`BGG data fetch complete: ${successCount} successful, ${errorCount} errors`);
-    },
-    
-    /**
-     * Load game database from file
-     */
-    loadGameDatabase: async function() {
-        if (!window.GameDatabase) {
-            alert('Game Database not available');
-            return;
-        }
-        
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'application/json,.json';
-        
-        input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const success = await window.GameDatabase.loadCacheFromFile(file);
-                if (success) {
-                    alert(`Successfully loaded ${Object.keys(window.GameDatabase.cache).length} games from cache`);
-                    this.updateGameDatabaseStats();
-                } else {
-                    alert('Error loading game database file');
-                }
-            }
-        };
-        
-        input.click();
-    },
-    
-    /**
-     * Save game database to file
-     */
-    saveGameDatabase: async function() {
-        if (!window.GameDatabase) {
-            alert('Game Database not available');
-            return;
-        }
-        
-        await window.GameDatabase.saveCache();
-        alert(`Saved ${Object.keys(window.GameDatabase.cache).length} games to file`);
-    },
-    
-    /**
-     * Update game database statistics display
-     */
-    updateGameDatabaseStats: function() {
-        if (!window.GameDatabase) {
-            return;
-        }
-        
-        const statsEl = document.getElementById('cacheStatsContent');
-        if (!statsEl) return;
-        
-        const stats = window.GameDatabase.getCacheStats();
-        
-        statsEl.innerHTML = `
-            <p style="margin: 5px 0;">📊 Total Games: <strong>${stats.totalGames}</strong></p>
-            <p style="margin: 5px 0;">✅ Games with Ratings: <strong>${stats.gamesWithRatings}</strong></p>
-            <p style="margin: 5px 0;">⭐ Average Rating: <strong>${stats.averageRating.toFixed(2)}</strong></p>
-            <p style="margin: 5px 0;">❌ Fetch Errors: <strong>${stats.gamesWithErrors}</strong></p>
-            ${stats.oldestFetch ? `<p style="margin: 5px 0;">🕐 Oldest Entry: <strong>${new Date(stats.oldestFetch).toLocaleDateString()}</strong></p>` : ''}
-        `;
     }
 };
 

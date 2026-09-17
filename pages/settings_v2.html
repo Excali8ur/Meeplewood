@@ -1,168 +1,85 @@
 
-
-
 <!-------------------------------------------------------
 
 COPY PASTE FROM CHAT -> TODO: READ AND REWRITE before using
 
 ----------------------------------------------------------->
-
-
 <h1>Settings</h1>
 <p>Configure MeepleWood and manage your game data.</p>
 
 <div class="settings-sections">
-
-```
 <!-- ========================================================= -->
 <!-- GETTING STARTED                                           -->
 <!-- ========================================================= -->
-
 <section class="settings-section getting-started">
-
     <h2>🚀 Getting Started</h2>
-
     <div class="setting-item">
         <h3>Just want to try MeepleWood?</h3>
-
         <p>
             Start with the included example data. You can explore the
             application without creating or importing any files.
         </p>
-
         <button class="primary-button" id="useExampleDataBtn">
             🎲 Use Example Data
         </button>
-
         <p class="setting-description">
             You can switch to your own data at any time.
         </p>
     </div>
-
     <div class="setting-item">
         <h3>Ready to use your own data?</h3>
-
         <p>
             Create your data files, select them below, and then use
             <strong>Manage Data Files</strong> to import or update your data.
         </p>
-
         <a href="#your-data" class="secondary-button">
             Set Up My Own Data ↓
         </a>
     </div>
-
 </section>
-
 
 <!-- ========================================================= -->
 <!-- YOUR DATA                                                  -->
 <!-- ========================================================= -->
 
 <section class="settings-section" id="your-data">
-
     <h2>📁 Your Data</h2>
-
     <p class="section-description">
         Tell MeepleWood which files to use for your personal data.
     </p>
-
-
     <!-- Username -->
-
     <div class="setting-item">
-
         <label for="userName">Username</label>
-
-        <input
-            type="text"
-            id="userName"
-            placeholder="Your BoardGameGeek username"
-        >
-
+        <input type="text" id="userName" placeholder="Your BoardGameGeek username">
         <p class="setting-description">
             Your BGG username is recommended. It is used as the default
             user when importing GeekPreview lists.
         </p>
-
     </div>
-
 
     <!-- Collection file -->
-
     <div class="setting-item">
-
-        <label for="defaultCollectionPath">
-            Board Game Collection
-        </label>
-
+        <label for="defaultCollectionPath">Board Game Collection</label>
         <div class="file-input-row">
-
-            <input
-                type="text"
-                id="defaultCollectionPath"
-                placeholder="No collection file selected"
-                readonly
-            >
-
-            <button
-                type="button"
-                class="secondary-button"
-                id="browseCollectionPathBtn"
-            >
-                📁 Browse…
-            </button>
-
+            <input type="text" id="defaultCollectionPath" placeholder="No collection file selected" readonly>
+            <button type="button" class="secondary-button" id="browseCollectionPathBtn">📁 Browse…</button>
         </div>
-
-        <p class="setting-description">
-            The JSON file containing your board game collection and
-            logged plays.
-        </p>
-
+        <p class="setting-description">The JSON file containing your board game collection and logged plays.</p>
     </div>
-
 
     <!-- GeekPreview file -->
-
     <div class="setting-item">
-
-        <label for="defaultDataPath">
-            GeekPreview Data
-        </label>
-
+        <label for="defaultDataPath">GeekPreview Data</label>
         <div class="file-input-row">
-
-            <input
-                type="text"
-                id="defaultDataPath"
-                placeholder="No GeekPreview file selected"
-                readonly
-            >
-
-            <button
-                type="button"
-                class="secondary-button"
-                id="browseDataPathBtn"
-            >
-                📁 Browse…
-            </button>
-
+            <input type="text" id="defaultDataPath" placeholder="No GeekPreview file selected" readonly>
+            <button type="button" class="secondary-button" id="browseDataPathBtn">📁 Browse…</button>
         </div>
-
-        <p class="setting-description">
-            The JSON file containing your GeekPreview data.
-        </p>
-
+        <p class="setting-description">The JSON file containing your GeekPreview data.</p>
     </div>
 
-
     <!-- First-time setup help -->
-
     <div class="info-box">
-
         <strong>Setting up your own data for the first time?</strong>
-
         <ol>
             <li>Create the required JSON files on your device.</li>
             <li>Select each file using <strong>Browse…</strong>.</li>
@@ -172,11 +89,8 @@ COPY PASTE FROM CHAT -> TODO: READ AND REWRITE before using
 
     </div>
 
-
     <!-- Settings actions -->
-
     <div class="settings-actions">
-
         <button
             class="primary-button"
             id="saveSettingsBtn"
