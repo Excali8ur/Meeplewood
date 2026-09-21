@@ -62,7 +62,7 @@ const GeekPreviewPage = {
         this.autoLoadDefaultFile();
     },
     
-    // Open IndexedDB connection (shared with settings.js)
+    // Open indexedDB connection (shared with settings.js)
     openDB: function() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(this.dbName, this.dbVersion);
@@ -77,7 +77,7 @@ const GeekPreviewPage = {
         });
     },
     
-    // Retrieve file handle from IndexedDB
+    // Retrieve file handles from indexedDB
     getStoredFileHandle: async function() {
         try {
             const db = await this.openDB();
@@ -143,7 +143,7 @@ const GeekPreviewPage = {
             }
         }
         
-        // Check if it's a local file (stored in IndexedDB)
+        // Check if it's a local file (stored in indexedDB)
         if (defaultPreviewPath.startsWith('local:')) {
             const stored = await this.getStoredFileHandle();
             if (stored && stored.handle) {
@@ -512,7 +512,7 @@ const GeekPreviewPage = {
         input.click();
     },
     
-    // Store file handle in IndexedDB
+    // Store file handle in indexedDB
     storeFileHandle: async function(handle, fileName) {
         try {
             const db = await this.openDB();
@@ -526,7 +526,7 @@ const GeekPreviewPage = {
                 timestamp: Date.now()
             });
             
-            console.log('File handle stored in IndexedDB:', fileName);
+            console.log('File handle stored in indexedDB:', fileName);
         } catch (error) {
             console.error('Error storing file handle:', error);
         }
