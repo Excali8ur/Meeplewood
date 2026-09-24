@@ -18,15 +18,15 @@
 
 ### Data Sources and structure
 
-The data is a dynamic dataset, manually exported or collected from 3 different sources.
+The data is split in several dynamic datasets. The data is converted from manually exported or collected data from different sources.
 
-### BGG Data
+### Logged plays
 
-An export can be made directly from the BoardGameGeek website, this is however limited to a certain amount of records. From an [external tool](http://www.sheltonsonline.net/bggtools/getplays), the data can be retrieved per user with a few clicks. This export has the following naming structure:
+Play sessions are logged via BGStats, which is automatically synchronized with a BGG account. An export can be made directly from the BoardGameGeek website, this is however limited to a certain amount of records. From an [external tool](http://www.sheltonsonline.net/bggtools/getplays), the data can be retrieved per user with a few clicks. This export has the following naming structure:
 
 `<username>-plays-<date retrieved>.csv`
 
-For the following explanation and range description, the export `excali8ur-plays-2025-03-23.csv` is used.
+For the following explanation and range description, the export `excali8ur-plays-2025-03-23.csv` is used. Content will vary a lot, depending on how (in)complete an user is logging their sessions.
 
 | Column name | Datatype | Range | Description |
 | --- | --- | --- | --- |
@@ -42,10 +42,13 @@ For the following explanation and range description, the export `excali8ur-plays
 | player 1 startposition | Integer | 1 - 8 | Starting position or turn order of player 1. |
 | player 1 color | Text | up to 10 chars | Color assigned to player 1 in the game. |
 | player 1 score | Integer | -9 - 336 | Numeric score for player 1. |
-| player 1 new | Float | Binary flag (1=yes) | Indicating whether player 1 was new to the game. |
+| player 1 new | Float | Binary flag (1=yes) | Indicating whether this was the first time player 1 played this game. |
 | player 1 win | Boolean | Binary flag (1=yes). | Indicating whether player 1 won the game. |
 
 The columns "player 1 username" till "player 1 win" are repeated for player 2 to player 8.
+
+This data is however limited, since more information is stored in the BGStats app. An export from BGStats is also possible as a json file.
+
 
 ## Visual Encoding
 
