@@ -47,7 +47,145 @@ For the following explanation and range description, the export `excali8ur-plays
 
 The columns "player 1 username" till "player 1 win" are repeated for player 2 to player 8.
 
-This data is however limited, since more information is stored in the BGStats app. An export from BGStats is also possible as a json file.
+This data is however limited and not easy to retreive. An export from BGStats is also possible as a json file. This file is easy to export and contains more information. The BGStats export is therefor the preffered data source for logged plays.
+
+The file `data/BGStatsExport.json` is a nested JSON object. The following tables describes per main collection the data.
+
+//| Collection | Records | Main fields | Description |
+
+#### Tags
+
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| uuid | | | |
+| id | | | |
+| name | | | |
+| type | | | |
+| group | | | |
+| status flags | | | |
+| modificationDate | | | |
+Labels that can be assigned to games or plays.
+
+#### Groups
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| uuid | | | |
+| id | | | |
+| name | | | |
+| type | | | |
+| status flags | | | |
+| metaData | | | |
+Saved BGStats filters and collections, such as owned, wishlist and played games.
+
+#### Players
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| uuid | | | |
+| id | | | |
+| name | | | |
+| isAnonymous | | | |
+| bggUsername | | | |
+| metaData | | | |
+People and anonymous or non-player participants that can occur in play records.
+
+#### Locations
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| uuid | | | |
+| id | | | |
+| name | | | |
+| modificationDate | | | |
+| metaData | | | |
+Places where a play session took place.
+
+#### Games
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| identity | | | |
+| BGG data | | | |
+| play characteristics | | | |
+| rating | | | |
+| copies | | | |
+| tags | | | |
+Board games and expansions, including player-count, duration, age, images, designers and collection information. Each game can contain one or more collection copies.
+
+#### Games[].copies
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| variable | | | |
+| collection status flags | | | |
+| edition data | | | |
+| bggCollId | | | |
+| versionName | | | |
+| metaData | | | |
+Individual owned, wished-for or previously owned copies or editions of a game.
+
+#### Plays
+| dates | | | |
+| durationMin | | | |
+| bggId | | | |
+| locationRefId | | | |
+| gameRefId | | | |
+| comments | | | |
+| rating, playerScores | | | |
+| expansionPlays | | | |
+Logged game sessions. References connect each play to a game and location.
+
+#### Plays[].playerScores
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| variable | | | |
+| score | | | |
+| winner | | | |
+| newPlayer | | | |
+| playerRefId | | | |
+| rank | | | |
+| seatOrder | | | |
+| team | | | |
+| startPosition | | | |
+Player-specific results and participation details for a play.
+
+#### Plays[].expansionPlays
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| variable | | | |
+| gameRefId | | | |
+| bggId | | | |
+| metaData | | | |
+Expansions used during a play session.
+
+#### Challenges
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
+| name | | | |
+| type | | | |
+| dates | | | |
+| completion fields | | | |
+| playerUuids, games | | | |
+BGStats challenges, including their period, target values, participants and included games.
+
+challenges[].games
+| gameRefId, dontInclude | Games included in or excluded from a challenge. |
+|
+deletedObjects
+| uuid | | | |
+| objectType | | | |
+| externalId | | | |
+| modificationDate, lastCloudSync | | | |
+Records deleted in BGStats but retained so synchronisation can be tracked.
+
+userInfo
+| meRefId | | | |
+| bggUsername | | | |
+| exportDate | | | |
+| appVersion | | | |
+| systemVersion | | | |
+| device | | | |
+Information about the account, export and device that produced the file.
+
+uuid values identify records globally, while id values identify records within BGStats. Fields ending in RefId refer to another collection, for example plays.gameRefId refers to games.id and plays.locationRefId refers to locations.id. The metaData fields contain additional JSON stored as text and may differ between records.
+
+
 
 
 ## Visual Encoding
