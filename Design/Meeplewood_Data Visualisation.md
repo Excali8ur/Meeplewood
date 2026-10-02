@@ -51,54 +51,64 @@ This data is however limited and not easy to retreive. An export from BGStats is
 
 The file `data/BGStatsExport.json` is a nested JSON object. The following tables describes per main collection the data.
 
-//| Collection | Records | Main fields | Description |
-
 #### Tags
 
+Labels that can be assigned to games or plays. Recent functionality (since 2025), has low priority in current Meeplewood version.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
-| uuid | | | |
-| id | | | |
-| name | | | |
-| type | | | |
-| group | | | |
-| status flags | | | |
+| uuid | string | - | Unique identifier for internal use in BGStats |
+| id | integer | 1 - 3 | Autoincremented identifier |
+| name | string | - | Name for the tag, chosen by user |
+| type | string | Game, Player, Location, Play | Type of tag, only these 4 option possible |
+| group | string | Default | ?? |
+| isInternal | boolean | true/false | ?? |
+| isDefault | boolean | true/false | ?? |
+| isHidden | boolean | true/false | ?? |
 | modificationDate | | | |
-Labels that can be assigned to games or plays.
 
 #### Groups
+
+Saved BGStats filters and collections, such as owned, wishlist and played games.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
-| uuid | | | |
-| id | | | |
+| uuid | string | - | Unique identifier for internal use in BGStats |
+| id |  | | |
 | name | | | |
 | type | | | |
 | status flags | | | |
 | metaData | | | |
-Saved BGStats filters and collections, such as owned, wishlist and played games.
 
 #### Players
+
+People and anonymous or non-player participants that can occur in play records.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
-| uuid | | | |
+| uuid | string | - | Unique identifier for internal use in BGStats |
 | id | | | |
 | name | | | |
 | isAnonymous | | | |
 | bggUsername | | | |
 | metaData | | | |
-People and anonymous or non-player participants that can occur in play records.
 
 #### Locations
+
+Places where a play session took place.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
-| uuid | | | |
+| uuid | string | - | Unique identifier for internal use in BGStats |
 | id | | | |
 | name | | | |
 | modificationDate | | | |
 | metaData | | | |
-Places where a play session took place.
 
 #### Games
+
+Board games and expansions, including player-count, duration, age, images, designers and collection information. Each game can contain one or more collection copies.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
 | identity | | | |
@@ -107,9 +117,11 @@ Places where a play session took place.
 | rating | | | |
 | copies | | | |
 | tags | | | |
-Board games and expansions, including player-count, duration, age, images, designers and collection information. Each game can contain one or more collection copies.
 
 #### Games[].copies
+
+Individual owned, wished-for or previously owned copies or editions of a game.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
 | variable | | | |
@@ -118,9 +130,13 @@ Board games and expansions, including player-count, duration, age, images, desig
 | bggCollId | | | |
 | versionName | | | |
 | metaData | | | |
-Individual owned, wished-for or previously owned copies or editions of a game.
 
 #### Plays
+
+Logged game sessions. References connect each play to a game and location.
+
+| Column name | Datatype | Range | Description |
+| --- | ---: | --- | --- |
 | dates | | | |
 | durationMin | | | |
 | bggId | | | |
@@ -129,9 +145,12 @@ Individual owned, wished-for or previously owned copies or editions of a game.
 | comments | | | |
 | rating, playerScores | | | |
 | expansionPlays | | | |
-Logged game sessions. References connect each play to a game and location.
+
 
 #### Plays[].playerScores
+
+Player-specific results and participation details for a play.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
 | variable | | | |
@@ -143,16 +162,17 @@ Logged game sessions. References connect each play to a game and location.
 | seatOrder | | | |
 | team | | | |
 | startPosition | | | |
-Player-specific results and participation details for a play.
 
 #### Plays[].expansionPlays
+
+Expansions used during a play session.
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
-| variable | | | |
 | gameRefId | | | |
 | bggId | | | |
 | metaData | | | |
-Expansions used during a play session.
+
 
 #### Challenges
 | Column name | Datatype | Range | Description |
