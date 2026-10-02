@@ -65,7 +65,7 @@ Labels that can be assigned to games or plays. Recent functionality (since 2025)
 | isInternal | boolean | true/false | ?? |
 | isDefault | boolean | true/false | ?? |
 | isHidden | boolean | true/false | ?? |
-| modificationDate | | | |
+| modificationDate | date time | 01-12-2021 - present | Last modification date |
 
 #### Groups
 
@@ -146,7 +146,6 @@ Logged game sessions. References connect each play to a game and location.
 | rating, playerScores | | | |
 | expansionPlays | | | |
 
-
 #### Plays[].playerScores
 
 Player-specific results and participation details for a play.
@@ -173,8 +172,8 @@ Expansions used during a play session.
 | bggId | | | |
 | metaData | | | |
 
-
 #### Challenges
+
 | Column name | Datatype | Range | Description |
 | --- | ---: | --- | --- |
 | name | | | |
