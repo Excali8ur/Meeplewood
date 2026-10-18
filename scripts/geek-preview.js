@@ -168,7 +168,7 @@ const GeekPreviewPage = {
             }
             
             // Stored handle failed
-            console.log('Could not auto-load local file, please use the Load File button');
+            console.log('Could not load local file, please go to settings to select a different file.');
             this.showNoGamesMessage();
             return;
         }
@@ -193,12 +193,6 @@ const GeekPreviewPage = {
         const loadFileBtn = document.getElementById('loadSpielFileBtn');
         if (loadFileBtn) {
             loadFileBtn.addEventListener('click', this.loadSpielFile.bind(this));
-        }
-        
-        // Save changes button
-        const saveChangesBtn = document.getElementById('saveChangesBtn');
-        if (saveChangesBtn) {
-            saveChangesBtn.addEventListener('click', this.exportUpdatedJson.bind(this));
         }
         
         // Entry filter controls - no debouncing for dropdowns (single selection events)
@@ -396,28 +390,6 @@ const GeekPreviewPage = {
                 this.handleSort('publisher');
             });
         }
-        
-        // Event delegation for priority dropdowns and notes (on the grid)
-        /*Changes not made in Meeplewood at the moment, but can be re-enabled if needed.
-        const spielGrid = document.getElementById('spielGrid');
-        if (spielGrid) {
-            spielGrid.addEventListener('change', (e) => {
-                if (e.target.classList.contains('priority-select')) {
-                    const gameId = e.target.dataset.gameId;
-                    const entryKey = e.target.dataset.entryKey;
-                    this.updateGamePriority(gameId, entryKey, e.target.value);
-                }
-            });
-            
-            spielGrid.addEventListener('blur', (e) => {
-                if (e.target.classList.contains('notes-input')) {
-                    const gameId = e.target.dataset.gameId;
-                    const entryKey = e.target.dataset.entryKey;
-                    this.updateGameNotes(gameId, entryKey, e.target.value);
-                }
-            }, true); // Use capture phase for blur
-        }*/
-        
     },
 
     updateSubOptionUI: function(parentCheckbox, childCheckbox, childWrapper) {
@@ -540,11 +512,9 @@ const GeekPreviewPage = {
             this.currentFileName = fileName;
             
             // Extract available filter options from entries
-            this.extractFilterOptions();
-            
+            this.extractFilterOptions();        
             // Set default filters (latest year, first user)
-            this.setDefaultFilters();
-            
+            this.setDefaultFilters();            
             // Populate filter dropdowns
             this.populateFilterDropdowns();
             
@@ -560,21 +530,12 @@ const GeekPreviewPage = {
                 fileNameEl.textContent = `📄 ${fileName}`;
             }
             
-            // Show save button
-            /* Changes not made in Meeplewood (yet?)
-            const saveBtn = document.getElementById('saveChangesBtn');
-            if (saveBtn) {
-                saveBtn.style.display = 'inline-block';
-            }
-            */
-            
             // Hide loading screen and show content
-            this.hideLoadingScreen();
-            
+            this.hideLoadingScreen();            
             // Update UI with batch update (includes metadata, counts, and rendering)
             this.batchUpdate();
             
-            console.log(`Loaded ${this.games.length} games from ${fileName}`);
+            console.log(`Processed ${fileName}\nFound games: ${this.games.length}\nLoaded after filtering: ${this.filteredGames.length}`);
         } else {
             this.hideLoadingScreen();
             alert('Invalid file format. Expected JSON with "games" array.');
@@ -741,13 +702,7 @@ const GeekPreviewPage = {
         // Check if game has entries
         if (!game.entries || game.entries.length === 0) return false;
 
-        // Check if the game is an expansion and if it should be shown
-        if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') return false;
-        if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') return false;
-
-        if (this.showDemoOnly && !game.isDemo) return false;
-        if (!this.showDemos && game.isDemo) return false;
-
+        // If not showing all entries, apply filtering
         if (!this.showAllEntries){
             // Multiple entries filter
             if (this.showMultipleEntriesOnly && game.entries.length <= 1) return false;
@@ -755,10 +710,38 @@ const GeekPreviewPage = {
             if (this.showUniqueEntriesOnly && game.entries.length > 1) return false;
         }
 
-        return  (this.searchTerm === '' ||
-                (game.Name && game.Name.toLowerCase().includes(this.searchTerm)) ||
-                (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
-                game.entries.some(e => (e.exhibitors || []).some(x => (x.publisher || '').toLowerCase().includes(this.searchTerm))));
+        // Check if the game is an expansion and if it should be shown
+        if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') return false;
+        if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') return false;
+
+        // Check if a search term is provided and if it matches the game name, publisher, or any exhibitor's publisher.
+        if (this.searchTerm !== '' && !(            
+            (game.Name && game.Name.toLowerCase().includes(this.searchTerm)) ||
+            (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
+            (game.entries.some(e => (e.exhibitors || []).some(x => (x.publisher || '').toLowerCase().includes(this.searchTerm))))
+           )) {
+            return false;
+        }
+
+        //Check if there is an entry for the selected year, convention, and user. If not, the game is not relevant.
+        const hasRelevantEntry = game.entries.some(entry => {
+            const yearMatch = this.selectedYear === '' || entry.year === this.selectedYear;
+            const conventionMatch = this.selectedConvention === '' || entry.convention === this.selectedConvention;
+            const userMatch = this.selectedUser === '' || entry.user === this.selectedUser;
+            return yearMatch && conventionMatch && userMatch;
+        });
+        if (!hasRelevantEntry) return false;
+
+        // Check if the entry for the selected year is a demo
+        for (let entry of game.entries) {            
+            if (this.selectedYear === '' || entry.year === this.selectedYear) {
+                if (this.showDemoOnly && entry.availability.toLowerCase() !== 'demo') return false;
+                if (!this.showDemos && entry.availability.toLowerCase() === 'demo') return false;
+            }
+        }        
+
+        // If all checks passed, the game is relevant
+        return true;
     },
 
     batchUpdate: function() {
@@ -780,12 +763,11 @@ const GeekPreviewPage = {
         // Single iteration through all games
         for (let i = 0; i < this.games.length; i++) {
             const game = this.games[i];
-            
+
             if (this.isRelevantGame(game)) {
                 // Get the relevant entry for this game
                 const relevantEntry = this.getRelevantEntry(game);
-                if (relevantEntry) {
-                
+                if (relevantEntry) {                
                     // Game matches all filters (priority not yet considered)
                     counts.all++;
                     const priority = this.getPriorityKey(relevantEntry);
@@ -851,9 +833,7 @@ const GeekPreviewPage = {
     },
     
     getRelevantEntry: function(game) {
-        if (!game.entries || game.entries.length === 0) {
-            return null;
-        }
+        if (!game.entries || game.entries.length === 0) return null;
         
         // Check cache first
         // Use BGGVersionId as primary key to distinguish different versions of the same game
@@ -1038,14 +1018,13 @@ const GeekPreviewPage = {
         
         // Get historical entries if enabled
         let historicalEntriesHtml = '';
-        if (this.showHistoricalEntries && game.entries && game.entries.length > 0) {
+        if (this.showHistoricalEntries && game.entries && game.entries.length > 1) {
             historicalEntriesHtml = this.createHistoricalEntriesHtml(game, currentEntry);
         }
         
         return `
             <div class="spiel-card ${priorityClass}">
-                <div class="card-header">
-                    
+                <div class="card-header">                    
                     <h3 class="game-title">${this.escapeHtml(game.Name || 'Untitled')}</h3>                    
                     ${game.Type ? game.Type == 'Expansion' ? `<span class="value"><img src="img/icons/${this.escapeHtml(game.Type)}.png" alt="Expansion" title="Expansion" class="small-icon small-icon-img" /></span>` : '' : ''}
                     ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
@@ -1053,13 +1032,15 @@ const GeekPreviewPage = {
                 <div class="card-body">
                     <div class="game-info">
                         <div class="info-row">
-                            <span class="value">🏢 ${this.getPublishersHtml(game, currentEntry)}</span>
+                            <span class="value">🏢 ${game.Publisher
+                                //this.getPublishersHtml(game, currentEntry)}</span>
+                            }
                         </div>
-                        <div class="info-row">
-                            <span class="label">Release:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.releaseDate || '')}</span>
-                        </div>
-                        ${game.Version ? `<div class="info-row"><span class="label">Version:</span> <span class="value">${this.escapeHtml(game.Version)}</span></div>` : ''}
+                        ${game.Version ? 
+                            `<div class="info-row">
+                                <span class="label">Version:</span>
+                                <span class="value">${this.escapeHtml(game.Version)}</span>
+                            </div>` : ''}
                     </div>
                     
                     ${bggInfoHtml}
@@ -1069,9 +1050,22 @@ const GeekPreviewPage = {
                             <h4>${currentEntry.convention} ${currentEntry.year}</h4>
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
+                        <div class="info-row">                            
+                            <span class="label">👍Thumbs:</span>
+                            <span class="value">${this.escapeHtml(currentEntry.thumbs)}</span>                            
+                        </div>
                         <div class="info-row">
-                            <span class="value">👍${this.escapeHtml(currentEntry.thumbs)}</span>
-                        </div>                    
+                            <span class="label">📍 Location:</span>
+                            <span class="value">${currentEntry.location || '?'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Availability:</span>
+                                ${currentEntry.availability.toLowerCase() === 'demo' ?                             
+                                `<span class="value">📝 Demo</span>                                                    
+                                <span class="label">🗓️ ${currentEntry.releaseDate || '?'}</span>`
+                            : `<span class="value">💰 For Sale</span>`}                              
+                        </div>                        
+
                         <div class="info-row">
                             <span class="label">Notes:</span>
                             <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Name}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
@@ -1084,15 +1078,12 @@ const GeekPreviewPage = {
         `;
     },
     
-    // All distinct publishers (with booth location when there are several) for the entry
+    // All distinct exhibitors (with booth location if available) for the entry
     getPublishersHtml: function(game, entry) {
         const exhibitors = entry && Array.isArray(entry.exhibitors) ? entry.exhibitors : [];
         const publishers = exhibitors.filter(x => x.publisher);
-        if (publishers.length <= 1) {
-            return this.escapeHtml((publishers[0] && publishers[0].publisher) || game.Publisher || '?');
-        }
-        return publishers.map(x =>
-            this.escapeHtml(x.publisher) + (x.location ? ` <small>(${this.escapeHtml(x.location)})</small>` : '')
+        return exhibitors.map(x =>
+            this.escapeHtml(x.publisher) + (x.location ? ` <small>-📍${this.escapeHtml(x.location)}</small>` : '')
         ).join('<br>');
     },
 
@@ -1113,20 +1104,18 @@ const GeekPreviewPage = {
             if (isCurrent) return ''; // Skip current entry in historical list
             const priorityLabel = this.getPriorityLabel(entry);
             
-            const insertedDate = new Date(entry.insertedDate).toLocaleDateString();
-            const modifiedDate = entry.lastModified !== entry.insertedDate ? 
-                `Modified: ${new Date(entry.lastModified).toLocaleDateString()}` : '';
-            
             return `
                 <div class="historical-entry">
                     <div class="entry-header">
                         <div class="entry-meta">
-                            <strong>${entry.year}</strong> ${this.escapeHtml(entry.convention)} - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
+                            ${entry.availability === 'demo' ? `📝 ` : `💰 ` }<strong>${this.escapeHtml(entry.convention)} ${entry.year}</strong> - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
                             <br>${this.escapeHtml(entry.user)}    
                         </div>
                         <span class=\"entry-priority priority-${this.getPriorityKey(entry) || 'none'}\">${priorityLabel}</span>
                     </div>
-                    <div class="entry-details">                        
+                    <div class="entry-details">
+                        <div class="entry-notes">🏢 ${this.getPublishersHtml(game, entry)}</div>
+                        <div class="entry-notes">Availability: ${entry.availability || 'N/A'}</div>
                         ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}                        
                     </div>
                 </div>
@@ -1152,106 +1141,6 @@ const GeekPreviewPage = {
     // The interest string is shown as-is; empty means not prioritized
     getPriorityLabel: function(entry) {
         return (entry && entry.interest) || 'Not Prioritized';
-    },
-    
-    updateGamePriority: function(gameId, entryKey, priority) {
-        // Find the game by BGGVersionId (primary), BGGId, or Name
-        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Name) === gameId);
-        if (!game || !game.entries) return;
-        
-        // Parse entry key (format: year-convention-user)
-        const [year, convention, user] = entryKey.split('-');
-        
-        // Find and update the entry
-        const entry = game.entries.find(e => 
-            e.year === year && e.convention === convention && e.user === user
-        );
-        
-        if (entry) {
-            entry.interest = this.interestByKey[priority] || '';
-            entry.lastModified = new Date().toISOString();
-            
-            // Clear cache since priority changed
-            this.clearCache();
-            this.batchUpdate();
-        }
-    },
-    
-    updateGameNotes: function(gameId, entryKey, notes) {
-        // Find the game by BGGVersionId (primary), BGGId, or Name
-        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Name) === gameId);
-        if (!game || !game.entries) return;
-        
-        // Parse entry key (format: year-convention-user)
-        const [year, convention, user] = entryKey.split('-');
-        
-        // Find and update the entry
-        const entry = game.entries.find(e => 
-            e.year === year && e.convention === convention && e.user === user
-        );
-        
-        if (entry) {
-            entry.notes = notes;
-            entry.lastModified = new Date().toISOString();
-        }
-    },
-    
-    exportUpdatedJson: async function() {
-        if (this.games.length === 0) {
-            alert('No games loaded. Please load a Spiel preview file first.');
-            return;
-        }
-        
-        // Create export data with updated metadata
-        const exportData = {
-            metadata: {
-                ...this.metadata,
-                lastUpdated: new Date().toISOString(),
-                totalGames: this.games.length
-            },
-            games: this.games
-        };
-        
-        const jsonContent = JSON.stringify(exportData, null, 2);
-        const filename = this.currentFileName || 'GeekPreview-Combined.json';
-        
-        // Try File System Access API (Chrome, Edge, Opera)
-        if ('showSaveFilePicker' in window) {
-            try {
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: filename,
-                    startIn: 'downloads',  // Change to 'documents', 'desktop', etc. (browser only allows these preset folders)
-                    types: [{
-                        description: 'JSON Files',
-                        accept: { 'application/json': ['.json'] }
-                    }]
-                });
-                
-                const writable = await handle.createWritable();
-                await writable.write(jsonContent);
-                await writable.close();
-                
-                alert(`Changes saved to ${filename}!\n\nYour updated priorities and notes have been exported.`);
-                return;
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    // User cancelled, do nothing
-                    return;
-                }
-                console.log('File System Access API failed, falling back to download:', err);
-            }
-        }
-        
-        // Fallback: automatic download
-        const blob = new Blob([jsonContent], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        alert(`Changes saved to ${filename}!\n\nYour updated priorities and notes have been exported.`);
     },
     
     escapeHtml: function(text) {
