@@ -345,14 +345,18 @@ const SettingsData = {
     },
 
     // Show the Geek Preview import success message and reset the loaded-file status
-    showSuccessMessage: function(filename, totalGames, importedGameCount) {
-        // Clear existing file reference (but keep handle if we have one)
-        SettingsPage.existingCombinedData = null;
-        SettingsPage.existingFileName = '';
-        // Note: Don't clear existingFileHandle - keep it for next save
-        const existingStatusEl = document.getElementById('existingFileStatus');
-        if (existingStatusEl) {
-            existingStatusEl.style.display = 'none';
+    showSuccessMessage: function(filename, totalGames, importedGameCount, exportData = null) {
+        if (SettingsPage.existingFileHandle && exportData) {
+            // Keep the file loaded (with the merged data) so the next add merges into it and reuses its name
+            SettingsPage.existingCombinedData = exportData;
+            SettingsPage.existingFileName = SettingsPage.existingFileHandle.name || filename;
+        } else {
+            SettingsPage.existingCombinedData = null;
+            SettingsPage.existingFileName = '';
+            const existingStatusEl = document.getElementById('existingFileStatus');
+            if (existingStatusEl) {
+                existingStatusEl.style.display = 'none';
+            }
         }
         
         const statusEl = document.getElementById('spielImportStatus');
@@ -365,7 +369,11 @@ const SettingsData = {
             }, 5000);
         }
         
-        alert(`Successfully processed ${importedGameCount} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}\n\nLoad this file in the Spiel Preview page to view your data.`);
+        const mergedRows = this.lastMergedRows || [];
+        const mergedNote = mergedRows.length
+            ? `\n\n${mergedRows.length} rows were merged into existing entries (duplicates in the file):\n- ${mergedRows.slice(0, 15).join('\n- ')}${mergedRows.length > 15 ? '\n...' : ''}`
+            : '';
+        alert(`Successfully processed ${importedGameCount} games!\n\nFile: ${filename}\n\nTotal games in file: ${totalGames}${mergedNote}\n\nLoad this file in the Spiel Preview page to view your data.`);
     },
 
     // Create a new empty JSON data file via the save picker (or a manual path as fallback).
@@ -444,9 +452,35 @@ const SettingsData = {
         return result;
     },
 
+    // BGG CSV column names -> internal field names
+    spielHeaderMap: {
+        'MSRP Price': 'MSRP',
+        'Show Currency': 'Show Price Currency',
+        'BGG ID': 'BGGId',
+        'BGG Version ID': 'BGGVersionId'
+    },
+
     // Parse a Spiel/Geek Preview CSV export into an array of game objects
     parseSpielCSV: function(csvText) {
-        const lines = csvText.split('\n');
+        // Strip the UTF-8 BOM (otherwise the first header becomes "\ufeffTitle") and split into
+        // records, keeping newlines that sit inside quoted fields within the same record.
+        const text = csvText.replace(/^\uFEFF/, '');
+        const lines = [];
+        let record = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            if (char === '"') inQuotes = !inQuotes;
+            if ((char === '\n' || char === '\r') && !inQuotes) {
+                if (char === '\r' && text[i + 1] === '\n') i++;
+                lines.push(record);
+                record = '';
+            } else {
+                record += char;
+            }
+        }
+        if (record !== '') lines.push(record);
+
         const headers = this.parseCSVLine(lines[0]);
         const games = [];
 
@@ -455,19 +489,15 @@ const SettingsData = {
 
             const values = this.parseCSVLine(lines[i]);
             if (values.length < headers.length) continue; // Skip incomplete lines
+            if (!values.some(v => v !== '')) continue;
 
             const game = {};
             headers.forEach((header, index) => {
-                game[header] = values[index] || '';
+                game[this.spielHeaderMap[header] || header] = values[index] || '';
             });
 
             game.imported = new Date().toISOString();
-            // Normalize priority: 'N/A' and '0' become empty string
-            let priority = game.Priority || '';
-            if (priority === 'N/A' || priority === '0') {
-                priority = '';
-            }
-            game.userPriority = priority; // Default to '' (not prioritized)
+            game.userInterest = game.Interest || ''; // Stored as the BGG string for now
             game.userNotes = game.Notes || '';
 
             games.push(game);
@@ -488,25 +518,37 @@ const SettingsData = {
             finalGames = JSON.parse(JSON.stringify(existingCombinedData.games));
         }
 
+        const mergedRows = [];
         tempSpielData.forEach(importedGame => {
+            // A version id of "0" means "no specific version", not a shared id            
+            const hasVersion = v => !!v && v !== '0';
+            // Short version of: const hasVersion = function (v) { return !!v && v !== '0'; };
+            const importedHasVersion = hasVersion(importedGame.BGGVersionId);
+
             let existingGame = finalGames.find(g =>
-                (g.BGGVersionId && g.BGGVersionId === importedGame.BGGVersionId) ||
-                (!importedGame.BGGVersionId && g.BGGId && g.BGGId === importedGame.BGGId) ||
-                (!importedGame.BGGVersionId && !importedGame.BGGId && g.Title === importedGame.Title)
+                (importedHasVersion && g.BGGVersionId === importedGame.BGGVersionId) ||
+                (!importedHasVersion && !hasVersion(g.BGGVersionId) && importedGame.BGGId && g.BGGId === importedGame.BGGId) ||
+                (!importedHasVersion && !importedGame.BGGId && !hasVersion(g.BGGVersionId) && !g.BGGId &&
+                    importedGame.Name && g.Name === importedGame.Name)
             );
 
-            // Normalize priority value (convert 'N/A' and '0' to empty string)
-            let priorityValue = importedGame.Priority || importedGame.userPriority || '';
-            if (priorityValue === 'N/A' || priorityValue === '0') {
-                priorityValue = '';
-            }
+            const exhibitor = {
+                publisher: importedGame.Publisher || '',
+                location: importedGame.Location || '',
+                availability: importedGame.Availability || '',
+                msrpCurrency: importedGame['MSRP Currency'] || '',
+                msrp: importedGame.MSRP || '',
+                showPriceCurrency: importedGame['Show Price Currency'] || '',
+                showPrice: importedGame['Show Price'] || ''
+            };
 
             const newEntry = {
                 year: year,
                 convention: convention,
                 user: user,
+                exhibitors: [exhibitor],
                 versionId: importedGame.BGGVersionId || '', // Store version ID in entry for proper filtering
-                priority: priorityValue,
+                interest: importedGame.Interest || importedGame.userInterest || '',
                 notes: importedGame.Notes || importedGame.userNotes || '',
                 availability: importedGame.Availability || '',
                 msrpCurrency: importedGame['MSRP Currency'] || '',
@@ -516,8 +558,6 @@ const SettingsData = {
                 location: importedGame.Location || '',
                 thumbs: importedGame.Thumbs || '',
                 releaseDate: importedGame['Release Date'] || '',
-                overrideReleaseDate: importedGame['Override Release Date'] || '',
-                events: importedGame.Events || '',
                 insertedDate: now,
                 lastModified: now
             };
@@ -534,23 +574,48 @@ const SettingsData = {
                 );
 
                 if (existingEntryIndex >= 0) {
-                    existingGame.entries[existingEntryIndex] = {
-                        ...existingGame.entries[existingEntryIndex],
-                        versionId: newEntry.versionId,
-                        priority: newEntry.priority,
-                        notes: newEntry.notes,
-                        availability: newEntry.availability,
-                        msrpCurrency: newEntry.msrpCurrency,
-                        msrp: newEntry.msrp,
-                        showPriceCurrency: newEntry.showPriceCurrency,
-                        showPrice: newEntry.showPrice,
-                        location: newEntry.location,
-                        thumbs: newEntry.thumbs,
-                        releaseDate: newEntry.releaseDate,
-                        overrideReleaseDate: newEntry.overrideReleaseDate,
-                        events: newEntry.events,
-                        lastModified: now
-                    };
+                    const entry = existingGame.entries[existingEntryIndex];
+                    if (!entry.exhibitors) {
+                        entry.exhibitors = [{
+                            // If no exhibitor data is available at the entry level, use the game level data
+                            publisher: existingGame.Publisher || '',
+                            location: entry.location || '',
+                            availability: entry.availability || '',
+                            msrpCurrency: entry.msrpCurrency || '',
+                            msrp: entry.msrp || '',
+                            showPriceCurrency: entry.showPriceCurrency || '',
+                            showPrice: entry.showPrice || ''
+                        }];
+                    }
+
+                    const exhibitorIndex = entry.exhibitors.findIndex(x =>
+                        x.publisher === exhibitor.publisher && x.location === exhibitor.location);
+
+                    if (exhibitorIndex < 0) {
+                        // Same game offered by another publisher/booth - keep both
+                        entry.exhibitors.push(exhibitor);
+                        entry.lastModified = now;
+                    } else {
+                        entry.exhibitors[exhibitorIndex] = exhibitor;
+                        if (exhibitorIndex === 0) {
+                            existingGame.entries[existingEntryIndex] = {
+                                ...entry,
+                                versionId: newEntry.versionId,
+                                interest: newEntry.interest,
+                                notes: newEntry.notes,
+                                availability: newEntry.availability,
+                                msrpCurrency: newEntry.msrpCurrency,
+                                msrp: newEntry.msrp,
+                                showPriceCurrency: newEntry.showPriceCurrency,
+                                showPrice: newEntry.showPrice,
+                                location: newEntry.location,
+                                thumbs: newEntry.thumbs,
+                                releaseDate: newEntry.releaseDate,
+                                lastModified: now
+                            };
+                        }
+                        mergedRows.push(`${importedGame.Name} (BGGId ${importedGame.BGGId || '-'}, version ${importedGame.BGGVersionId || '-'})`);
+                    }
                 } else {
                     existingGame.entries.push(newEntry);
                 }
@@ -558,9 +623,11 @@ const SettingsData = {
                 // Update base game info (in case anything changed)
                 Object.keys(importedGame).forEach(key => {
                     // Exclude user-specific and entry-specific fields from game level
-                    const excludedFields = ['Priority', 'Notes', 'userPriority', 'userNotes', 'metadata', 'entries',
+                    const excludedFields = ['Interest', 'Notes', 'userInterest', 'userNotes', 'metadata', 'entries',
                         'Availability', 'MSRP Currency', 'MSRP', 'Show Price Currency', 'Show Price',
-                        'Location', 'Thumbs', 'Release Date', 'Override Release Date', 'Events'];
+                        'Location', 'Thumbs', 'Release Date'];
+                    // Keep the first publisher; all publishers live in the entry's exhibitors list
+                    if (key === 'Publisher' && existingGame.Publisher) return;
                     if (!excludedFields.includes(key)) {
                         existingGame[key] = importedGame[key];
                     }
@@ -569,9 +636,9 @@ const SettingsData = {
             } else {
                 // New game - create with entry
                 const newGame = { ...importedGame };
-                delete newGame.Priority;
+                delete newGame.Interest;
                 delete newGame.Notes;
-                delete newGame.userPriority;
+                delete newGame.userInterest;
                 delete newGame.userNotes;
                 delete newGame.metadata;
                 delete newGame.Availability;
@@ -582,13 +649,16 @@ const SettingsData = {
                 delete newGame.Location;
                 delete newGame.Thumbs;
                 delete newGame['Release Date'];
-                delete newGame['Override Release Date'];
-                delete newGame.Events;
 
                 newGame.entries = [newEntry];
                 finalGames.push(newGame);
             }
         });
+
+        if (mergedRows.length > 0) {
+            console.warn(`${mergedRows.length} imported rows matched an existing game entry for the same year/convention/user and were merged instead of added:`, mergedRows);
+        }
+        this.lastMergedRows = mergedRows;
 
         const exportData = {
             metadata: {
@@ -725,7 +795,6 @@ const SettingsData = {
                         
                         // Store temporarily
                         SettingsPage.tempSpielData = parsedGames;
-                        
                         console.log(`Parsed ${parsedGames.length} games from Spiel preview`);
                         
                         // Show metadata modal
@@ -854,7 +923,7 @@ const SettingsData = {
                 await writable.write(jsonContent);
                 await writable.close();
                 
-                this.showSuccessMessage(filename, finalGames.length, importedGameCount);
+                this.showSuccessMessage(SettingsPage.existingFileHandle.name || filename, finalGames.length, importedGameCount, exportData);
                 SettingsPage.cancelSpielImport();
                 return;
             } catch (err) {
@@ -883,7 +952,7 @@ const SettingsData = {
                 SettingsPage.existingFileHandle = fileHandle;
                 SettingsPage.existingFileName = fileHandle.name;
                 
-                this.showSuccessMessage(filename, finalGames.length, importedGameCount);
+                this.showSuccessMessage(fileHandle.name, finalGames.length, importedGameCount, exportData);
                 SettingsPage.cancelSpielImport();
                 return;
             } catch (err) {

@@ -756,8 +756,9 @@ const GeekPreviewPage = {
         }
 
         return  (this.searchTerm === '' ||
-                (game.Title && game.Title.toLowerCase().includes(this.searchTerm)) ||
-                (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)));
+                (game.Name && game.Name.toLowerCase().includes(this.searchTerm)) ||
+                (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
+                game.entries.some(e => (e.exhibitors || []).some(x => (x.publisher || '').toLowerCase().includes(this.searchTerm))));
     },
 
     batchUpdate: function() {
@@ -787,8 +788,8 @@ const GeekPreviewPage = {
                 
                     // Game matches all filters (priority not yet considered)
                     counts.all++;
-                    const priority = relevantEntry.priority || '';
-                    if (priority === '' || !priority || priority === 'N/A' || priority === '0') {
+                    const priority = this.getPriorityKey(relevantEntry);
+                    if (priority === '') {
                         counts['none']++;
                     } else if (counts[priority] !== undefined) {
                         counts[priority]++;
@@ -800,7 +801,7 @@ const GeekPreviewPage = {
                     filteredUsers.add(relevantEntry.user);
                     
                     // Priority filter for display
-                    const entryPriority = relevantEntry.priority || '';
+                    const entryPriority = this.getPriorityKey(relevantEntry);
                     const priorityMatch = this.selectedPriorityFilters.size === 0 ||
                         this.selectedPriorityFilters.has(entryPriority);
                     
@@ -856,7 +857,7 @@ const GeekPreviewPage = {
         
         // Check cache first
         // Use BGGVersionId as primary key to distinguish different versions of the same game
-        const gameKey = game.BGGVersionId || game.BGGId || game.Title;
+        const gameKey = game.BGGVersionId || game.BGGId || game.Name;
         const cacheKey = `${gameKey}-${this.selectedYear}-${this.selectedConvention}-${this.selectedUser}`;
         if (this.relevantEntryCache.has(cacheKey)) {
             return this.relevantEntryCache.get(cacheKey);
@@ -931,8 +932,8 @@ const GeekPreviewPage = {
     sortFilteredGames: function() {
         if (this.sortBy === 'title') {
             this.filteredGames.sort((a, b) => {
-                const titleA = (a.Title || '').toLowerCase();
-                const titleB = (b.Title || '').toLowerCase();
+                const titleA = (a.Name || '').toLowerCase();
+                const titleB = (b.Name || '').toLowerCase();
                 return this.sortDirection === 'asc' 
                     ? titleA.localeCompare(titleB)
                     : titleB.localeCompare(titleA);
@@ -1007,8 +1008,8 @@ const GeekPreviewPage = {
         const currentEntry = this.getRelevantEntry(game);
         if (!currentEntry) return '';
         
-        const priorityClass = `priority-${currentEntry.priority || 'none'}`;
-        const priorityLabel = this.getPriorityLabel(currentEntry.priority);
+        const priorityClass = `priority-${this.getPriorityKey(currentEntry) || 'none'}`;
+        const priorityLabel = this.getPriorityLabel(currentEntry);
         const bggLink = game.BGGId ? `https://boardgamegeek.com/boardgame/${game.BGGId}` : '';
         
         // Get BGG data if available
@@ -1045,19 +1046,20 @@ const GeekPreviewPage = {
             <div class="spiel-card ${priorityClass}">
                 <div class="card-header">
                     
-                    <h3 class="game-title">${this.escapeHtml(game.Title || 'Untitled')}</h3>                    
+                    <h3 class="game-title">${this.escapeHtml(game.Name || 'Untitled')}</h3>                    
                     ${game.Type ? game.Type == 'Expansion' ? `<span class="value"><img src="img/icons/${this.escapeHtml(game.Type)}.png" alt="Expansion" title="Expansion" class="small-icon small-icon-img" /></span>` : '' : ''}
                     ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
                 </div>                
                 <div class="card-body">
                     <div class="game-info">
                         <div class="info-row">
-                                <span class="value">🏢 ${this.escapeHtml(game.Publisher || '?')}</span>
+                            <span class="value">🏢 ${this.getPublishersHtml(game, currentEntry)}</span>
                         </div>
                         <div class="info-row">
                             <span class="label">Release:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.overrideReleaseDate || currentEntry.releaseDate)}</span>
+                            <span class="value">${this.escapeHtml(currentEntry.releaseDate || '')}</span>
                         </div>
+                        ${game.Version ? `<div class="info-row"><span class="label">Version:</span> <span class="value">${this.escapeHtml(game.Version)}</span></div>` : ''}
                     </div>
                     
                     ${bggInfoHtml}
@@ -1072,7 +1074,7 @@ const GeekPreviewPage = {
                         </div>                    
                         <div class="info-row">
                             <span class="label">Notes:</span>
-                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Title}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
+                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Name}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
                         </div>
                     </div>
                     
@@ -1082,6 +1084,18 @@ const GeekPreviewPage = {
         `;
     },
     
+    // All distinct publishers (with booth location when there are several) for the entry
+    getPublishersHtml: function(game, entry) {
+        const exhibitors = entry && Array.isArray(entry.exhibitors) ? entry.exhibitors : [];
+        const publishers = exhibitors.filter(x => x.publisher);
+        if (publishers.length <= 1) {
+            return this.escapeHtml((publishers[0] && publishers[0].publisher) || game.Publisher || '?');
+        }
+        return publishers.map(x =>
+            this.escapeHtml(x.publisher) + (x.location ? ` <small>(${this.escapeHtml(x.location)})</small>` : '')
+        ).join('<br>');
+    },
+
     createHistoricalEntriesHtml: function(game, currentEntry) {
         if (!game.entries || game.entries.length <= 1) {
             return '';
@@ -1097,7 +1111,7 @@ const GeekPreviewPage = {
         const entriesHtml = sortedEntries.map(entry => {
             const isCurrent = entry === currentEntry;
             if (isCurrent) return ''; // Skip current entry in historical list
-            const priorityLabel = this.getPriorityLabel(entry.priority);
+            const priorityLabel = this.getPriorityLabel(entry);
             
             const insertedDate = new Date(entry.insertedDate).toLocaleDateString();
             const modifiedDate = entry.lastModified !== entry.insertedDate ? 
@@ -1110,7 +1124,7 @@ const GeekPreviewPage = {
                             <strong>${entry.year}</strong> ${this.escapeHtml(entry.convention)} - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
                             <br>${this.escapeHtml(entry.user)}    
                         </div>
-                        <span class=\"entry-priority priority-${entry.priority || 'none'}\">${priorityLabel}</span>
+                        <span class=\"entry-priority priority-${this.getPriorityKey(entry) || 'none'}\">${priorityLabel}</span>
                     </div>
                     <div class="entry-details">                        
                         ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}                        
@@ -1127,22 +1141,22 @@ const GeekPreviewPage = {
         `;
     },
     
-    getPriorityLabel: function(priority) {
-        const labels = {
-            '1': 'Must Have',
-            '2': 'Interested',
-            '3': 'Undecided',
-            '4': 'Not Interested',
-            '0': 'Not Prioritized',
-            '': 'Not Prioritized',
-            'N/A': 'Not Prioritized'
-        };
-        return labels[priority] || 'Not Prioritized';
+    interestByKey: { '1': 'Must Have', '2': 'Interested', '3': 'Undecided', '4': 'Not Interested' },
+
+    // Filter/CSS key ('1'-'4' or '') derived from the entry's BGG "Interest" string
+    getPriorityKey: function(entry) {
+        const interest = entry && entry.interest;
+        return Object.keys(this.interestByKey).find(k => this.interestByKey[k] === interest) || '';
+    },
+
+    // The interest string is shown as-is; empty means not prioritized
+    getPriorityLabel: function(entry) {
+        return (entry && entry.interest) || 'Not Prioritized';
     },
     
     updateGamePriority: function(gameId, entryKey, priority) {
-        // Find the game by BGGVersionId (primary), BGGId, or Title
-        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Title) === gameId);
+        // Find the game by BGGVersionId (primary), BGGId, or Name
+        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Name) === gameId);
         if (!game || !game.entries) return;
         
         // Parse entry key (format: year-convention-user)
@@ -1154,7 +1168,7 @@ const GeekPreviewPage = {
         );
         
         if (entry) {
-            entry.priority = priority;
+            entry.interest = this.interestByKey[priority] || '';
             entry.lastModified = new Date().toISOString();
             
             // Clear cache since priority changed
@@ -1164,8 +1178,8 @@ const GeekPreviewPage = {
     },
     
     updateGameNotes: function(gameId, entryKey, notes) {
-        // Find the game by BGGVersionId (primary), BGGId, or Title
-        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Title) === gameId);
+        // Find the game by BGGVersionId (primary), BGGId, or Name
+        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Name) === gameId);
         if (!game || !game.entries) return;
         
         // Parse entry key (format: year-convention-user)
