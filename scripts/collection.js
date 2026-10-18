@@ -27,7 +27,7 @@ const CollectionData = {
         return 'data/collection.json';
     },
 
-    // Open IndexedDB connection (shared store with settings.js/geek-preview.js)
+    // Open indexedDB connection (shared store with settings.js/geek-preview.js)
     openDB: function() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(this.dbName, this.dbVersion);
@@ -74,7 +74,7 @@ const CollectionData = {
                 timestamp: Date.now()
             });
 
-            console.log('Collection file handle stored in IndexedDB:', fileName);
+            console.log('Collection file handle stored in indexedDB:', fileName);
         } catch (error) {
             console.error('Error storing collection file handle:', error);
         }
@@ -92,8 +92,13 @@ const CollectionData = {
             const stored = await this.getStoredFileHandle();
             if (stored && stored.handle) {
                 try {
-                    const permission = await stored.handle.queryPermission({ mode: 'read' });
-                    if (permission === 'granted' || permission === 'prompt') {
+                    let permission = await stored.handle.queryPermission({ mode: 'read' });
+                    if (permission === 'prompt') {
+                        // Permission resets to 'prompt' after a restart/new session even though the
+                        // handle is still remembered - re-request it before giving up on the file.
+                        permission = await stored.handle.requestPermission({ mode: 'read' });
+                    }
+                    if (permission === 'granted') {
                         const file = await stored.handle.getFile();
                         const content = await file.text();
                         const data = JSON.parse(content);
