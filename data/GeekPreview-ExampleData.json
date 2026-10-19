@@ -354275,6 +354275,35 @@
           "releaseDate": "2027-03",
           "insertedDate": "2026-10-18T10:55:33.717Z",
           "lastModified": "2026-10-18T10:55:33.717Z"
+        },
+        {
+          "year": "2026",
+          "convention": "Spiel",
+          "user": "Testing",
+          "exhibitors": [
+            {
+              "publisher": "Wonderbow Games",
+              "location": "3-Q120",
+              "availability": "demo",
+              "msrpCurrency": "",
+              "msrp": "",
+              "showPriceCurrency": "",
+              "showPrice": ""
+            }
+          ],
+          "versionId": "773741",
+          "interest": "",
+          "notes": "Testing User same game",
+          "availability": "demo",
+          "msrpCurrency": "",
+          "msrp": "",
+          "showPriceCurrency": "",
+          "showPrice": "",
+          "location": "3-Q120",
+          "thumbs": "212",
+          "releaseDate": "2027-03",
+          "insertedDate": "2026-10-18T10:55:33.717Z",
+          "lastModified": "2026-10-18T10:55:33.717Z"
         }
       ]
     },

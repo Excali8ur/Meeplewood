@@ -28,13 +28,9 @@ const GeekPreviewPage = {
     selectedConvention: '',
     selectedUser: '',
     showHistoricalEntries: true,
-    showExpansions: true,
-    showExpansionsOnly: false,
-    showDemos: true,
-    showDemoOnly: false,
-    showAllEntries: true,
-    showMultipleEntriesOnly: false,
-    showUniqueEntriesOnly: false,
+    availabilityFilter: 'any', // 'any', 'demo', 'forsale'
+    typeFilter: 'any', // 'any', 'standalone', 'expansion'
+    entriesFilter: 'any', // 'any', 'multiple', 'single'
 
     // Sort settings
     sortBy: 'title', // 'title', 'thumbs', 'publisher'
@@ -231,125 +227,8 @@ const GeekPreviewPage = {
             });
         }
         
-        const showExpansions = document.getElementById('showExpansions');
-        const showExpansionsOnly = document.getElementById('showExpansionsOnly');
-        const showExpansionsOnlyWrapper = document.getElementById('showExpansionsOnlyWrapper');
-        const showDemos = document.getElementById('showDemos');
-        const showDemoOnly = document.getElementById('showDemoOnly');
-        const showDemoOnlyWrapper = document.getElementById('showDemoOnlyWrapper');
+        this.attachSegmentedControls();
 
-        this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
-        this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
-        if (showExpansions) {
-            showExpansions.addEventListener('change', (e) => {
-                this.showExpansions = e.target.checked;
-                if(!this.showExpansions){
-                    this.showExpansionsOnly = false; // Ensure "only expansions" is unchecked if expansions are hidden
-                }
-                showExpansionsOnly.checked = this.showExpansionsOnly;
-                showExpansions.checked = this.showExpansions;
-                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }      
-        if (showExpansionsOnly) {
-            showExpansionsOnly.addEventListener('change', (e) => {
-                this.showExpansionsOnly = e.target.checked;
-                if(this.showExpansionsOnly){
-                    this.showExpansions = e.target.checked; // Ensure exapnsions are shown if "only expansions" is checked
-                }
-                showExpansionsOnly.checked = this.showExpansionsOnly;
-                showExpansions.checked = this.showExpansions;
-                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-
-        if (showDemos) {
-            showDemos.addEventListener('change', (e) => {
-                this.showDemos = e.target.checked;
-                if(!this.showDemos){
-                    this.showDemoOnly = false; // Ensure "only demogames" is unchecked if demos are hidden
-                }
-                if (showDemoOnly) showDemoOnly.checked = this.showDemoOnly;
-                showDemos.checked = this.showDemos;
-                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-
-        if (showDemoOnly) {
-            showDemoOnly.addEventListener('change', (e) => {
-                this.showDemoOnly = e.target.checked;
-                if(this.showDemoOnly){
-                    this.showDemos = e.target.checked; // Ensure demos are shown if "only demogames" is checked
-                }
-                showDemoOnly.checked = this.showDemoOnly;
-                if (showDemos) showDemos.checked = this.showDemos;
-                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-
-        const showAllEntries = document.getElementById('showAllEntries');
-        const showMultipleOnly = document.getElementById('showMultipleEntriesOnly');
-        const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
-        if (showAllEntries) {            
-            showAllEntries.addEventListener('change', (e) => {                
-                this.showAllEntries = e.target.checked;
-                if(this.showAllEntries){
-                    this.showMultipleEntriesOnly = false;
-                    this.showUniqueEntriesOnly = false;
-                }
-                else {
-                    this.showMultipleEntriesOnly = true;
-                }
-                showAllEntries.checked = this.showAllEntries;
-                showMultipleOnly.checked = this.showMultipleEntriesOnly;
-                showUniqueOnly.checked = this.showUniqueEntriesOnly;
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-        if (showMultipleOnly) {
-            showMultipleOnly.addEventListener('change', (e) => {
-                this.showMultipleEntriesOnly = e.target.checked;
-                if(this.showMultipleEntriesOnly){
-                    this.showUniqueEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
-                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
-                }
-                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
-                    this.showAllEntries = true; // If both are unchecked, default to showing all
-                }
-                showAllEntries.checked = this.showAllEntries;
-                showMultipleOnly.checked = this.showMultipleEntriesOnly;
-                showUniqueOnly.checked = this.showUniqueEntriesOnly;
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }      
-        if (showUniqueOnly) {
-            showUniqueOnly.addEventListener('change', (e) => {
-                this.showUniqueEntriesOnly = e.target.checked;   
-                if(this.showUniqueEntriesOnly){
-                    this.showMultipleEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
-                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
-                }
-                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
-                    this.showAllEntries = true; // If both are unchecked, default to showing all
-                }
-                showAllEntries.checked = this.showAllEntries;
-                showMultipleOnly.checked = this.showMultipleEntriesOnly;
-                showUniqueOnly.checked = this.showUniqueEntriesOnly;
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-        
         // Filter buttons
         const filterButtons = document.querySelectorAll('.filter-btn');
         filterButtons.forEach(btn => {
@@ -392,12 +271,19 @@ const GeekPreviewPage = {
         }
     },
 
-    updateSubOptionUI: function(parentCheckbox, childCheckbox, childWrapper) {
-        if (!childCheckbox || !childWrapper) return;
-
-        const isVisible = !!(parentCheckbox && parentCheckbox.checked);
-        childCheckbox.disabled = !isVisible;
-        childWrapper.classList.toggle('is-hidden', !isVisible);
+    // Segmented single-choice controls: each [data-filter] maps to a "<name>Filter" property
+    attachSegmentedControls: function() {
+        document.querySelectorAll('.segmented[data-filter]').forEach(group => {
+            const prop = `${group.dataset.filter}Filter`;
+            group.addEventListener('click', (e) => {
+                const btn = e.target.closest('.segmented-btn');
+                if (!btn || !group.contains(btn)) return;
+                this[prop] = btn.dataset.value;
+                group.querySelectorAll('.segmented-btn').forEach(b => b.classList.toggle('active', b === btn));
+                this.clearCache();
+                this.batchUpdate();
+            });
+        });
     },
     
     loadSpielFile: async function() {
@@ -702,17 +588,12 @@ const GeekPreviewPage = {
         // Check if game has entries
         if (!game.entries || game.entries.length === 0) return false;
 
-        // If not showing all entries, apply filtering
-        if (!this.showAllEntries){
-            // Multiple entries filter
-            if (this.showMultipleEntriesOnly && game.entries.length <= 1) return false;
-            // Unique entries filter
-            if (this.showUniqueEntriesOnly && game.entries.length > 1) return false;
-        }
+        if (this.entriesFilter === 'multiple' && game.entries.length <= 1) return false;
+        if (this.entriesFilter === 'single' && game.entries.length > 1) return false;
 
-        // Check if the game is an expansion and if it should be shown
-        if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') return false;
-        if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') return false;
+        const isExpansion = (game.Type || '').toLowerCase() === 'expansion';
+        if (this.typeFilter === 'expansion' && !isExpansion) return false;
+        if (this.typeFilter === 'standalone' && isExpansion) return false;
 
         // Check if a search term is provided and if it matches the game name, publisher, or any exhibitor's publisher.
         if (this.searchTerm !== '' && !(            
@@ -735,8 +616,9 @@ const GeekPreviewPage = {
         // Check if the entry for the selected year is a demo
         for (let entry of game.entries) {            
             if (this.selectedYear === '' || entry.year === this.selectedYear) {
-                if (this.showDemoOnly && entry.availability.toLowerCase() !== 'demo') return false;
-                if (!this.showDemos && entry.availability.toLowerCase() === 'demo') return false;
+                const isDemo = (entry.availability || '').toLowerCase() === 'demo';
+                if (this.availabilityFilter === 'demo' && !isDemo) return false;
+                if (this.availabilityFilter === 'forsale' && isDemo) return false;
             }
         }        
 
@@ -1051,21 +933,17 @@ const GeekPreviewPage = {
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
                         <div class="info-row">                            
-                            <span class="label">👍Thumbs:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.thumbs)}</span>                            
-                        </div>
-                        <div class="info-row">
-                            <span class="label">📍 Location:</span>
-                            <span class="value">${currentEntry.location || '?'}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="label">Availability:</span>
-                                ${currentEntry.availability.toLowerCase() === 'demo' ?                             
-                                `<span class="value">📝 Demo</span>                                                    
-                                <span class="label">🗓️ ${currentEntry.releaseDate || '?'}</span>`
+                            <span class="label">👍 ${this.escapeHtml(currentEntry.thumbs)}</span>
+                            <span class="value">📍 ${currentEntry.location || '?'}</span>                        
+                            ${currentEntry.availability.toLowerCase() === 'demo' ?                             
+                                    `<span class="value">📝 Demo </span>
+                                </div>
+                                <div class="info-row"> 
+                                    <span class="label"></span><span class="value"></span>
+                                    <span class="value">
+                                    🗓️ ${currentEntry.releaseDate || '?'}</span>`
                             : `<span class="value">💰 For Sale</span>`}                              
-                        </div>                        
-
+                        </div>
                         <div class="info-row">
                             <span class="label">Notes:</span>
                             <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Name}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
@@ -1081,9 +959,8 @@ const GeekPreviewPage = {
     // All distinct exhibitors (with booth location if available) for the entry
     getPublishersHtml: function(game, entry) {
         const exhibitors = entry && Array.isArray(entry.exhibitors) ? entry.exhibitors : [];
-        const publishers = exhibitors.filter(x => x.publisher);
         return exhibitors.map(x =>
-            this.escapeHtml(x.publisher) + (x.location ? ` <small>-📍${this.escapeHtml(x.location)}</small>` : '')
+            (x.location ? ` <small>📍${this.escapeHtml(x.location)}</small>` : '') + ` - 🏢 ${this.escapeHtml(x.publisher)}`
         ).join('<br>');
     },
 
@@ -1107,15 +984,15 @@ const GeekPreviewPage = {
             return `
                 <div class="historical-entry">
                     <div class="entry-header">
-                        <div class="entry-meta">
-                            ${entry.availability === 'demo' ? `📝 ` : `💰 ` }<strong>${this.escapeHtml(entry.convention)} ${entry.year}</strong> - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
+                        <div class="entry-meta"><strong>${this.escapeHtml(entry.convention)} ${entry.year}</strong> - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
                             <br>${this.escapeHtml(entry.user)}    
                         </div>
                         <span class=\"entry-priority priority-${this.getPriorityKey(entry) || 'none'}\">${priorityLabel}</span>
                     </div>
                     <div class="entry-details">
-                        <div class="entry-notes">🏢 ${this.getPublishersHtml(game, entry)}</div>
-                        <div class="entry-notes">Availability: ${entry.availability || 'N/A'}</div>
+                        <div class="entry-notes">${this.getPublishersHtml(game, entry)}</div>
+                        <div class="entry-notes">
+                        ${entry.availability.toLowerCase() === 'demo' ? `📝 Demo` : `💰 For Sale`}</div> 
                         ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}                        
                     </div>
                 </div>

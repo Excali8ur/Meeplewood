@@ -532,106 +532,96 @@ const SettingsData = {
                     importedGame.Name && g.Name === importedGame.Name)
             );
 
+            const user_entry = {
+                user: user,
+                interest: importedGame.Interest || importedGame.userInterest || '',
+                notes: importedGame.Notes || importedGame.userNotes || '',
+                insertedDate: now,
+                lastModified: now
+            }
+
             const exhibitor = {
                 publisher: importedGame.Publisher || '',
-                location: importedGame.Location || '',
-                availability: importedGame.Availability || '',
-                msrpCurrency: importedGame['MSRP Currency'] || '',
-                msrp: importedGame.MSRP || '',
-                showPriceCurrency: importedGame['Show Price Currency'] || '',
-                showPrice: importedGame['Show Price'] || ''
+                location: importedGame.Location || ''
             };
 
             const newEntry = {
-                year: year,
-                convention: convention,
-                user: user,
-                exhibitors: [exhibitor],
                 versionId: importedGame.BGGVersionId || '', // Store version ID in entry for proper filtering
-                interest: importedGame.Interest || importedGame.userInterest || '',
-                notes: importedGame.Notes || importedGame.userNotes || '',
+                year: year,
+                convention: convention,                
+                thumbs: importedGame.Thumbs || '',                
                 availability: importedGame.Availability || '',
+                releaseDate: importedGame['Release Date'] || '',
+
                 msrpCurrency: importedGame['MSRP Currency'] || '',
                 msrp: importedGame.MSRP || '',
                 showPriceCurrency: importedGame['Show Price Currency'] || '',
-                showPrice: importedGame['Show Price'] || '',
-                location: importedGame.Location || '',
-                thumbs: importedGame.Thumbs || '',
-                releaseDate: importedGame['Release Date'] || '',
+                showPrice: importedGame['Show Price'] || '',                
+                
+                exhibitors: [exhibitor],              
+                users: [user_entry],
+
                 insertedDate: now,
                 lastModified: now
             };
 
             if (existingGame) {
-                if (!existingGame.entries) {
-                    existingGame.entries = [];
-                }
-
                 const existingEntryIndex = existingGame.entries.findIndex(e =>
                     e.year === year &&
-                    e.convention === convention &&
-                    e.user === user
+                    e.convention === convention
                 );
 
-                if (existingEntryIndex >= 0) {
+                // Merge into existing entry for combination year/convention
+                if (existingEntryIndex >= 0) { 
                     const entry = existingGame.entries[existingEntryIndex];
-                    if (!entry.exhibitors) {
-                        entry.exhibitors = [{
-                            // If no exhibitor data is available at the entry level, use the game level data
-                            publisher: existingGame.Publisher || '',
-                            location: entry.location || '',
-                            availability: entry.availability || '',
-                            msrpCurrency: entry.msrpCurrency || '',
-                            msrp: entry.msrp || '',
-                            showPriceCurrency: entry.showPriceCurrency || '',
-                            showPrice: entry.showPrice || ''
-                        }];
+
+                    // Seaarch for an existing user entry for this year/convention
+                    const userEntryIndex = entry.users.findIndex(x => x.user === user.user);
+                    if (userEntryIndex < 0) {
+                        //User not listed this year/convention yet - add them
+                        entry.users.push(user_entry);
+                    }
+                    else {
+                        //User already listed this year/convention - update data
+                        entry.users[userEntryIndex] = {
+                            ...entry.users[userEntryIndex],
+                            interest: user_entry.interest,
+                            notes: user_entry.notes,
+                            lastModified: now
+                        };
                     }
 
                     const exhibitorIndex = entry.exhibitors.findIndex(x =>
                         x.publisher === exhibitor.publisher && x.location === exhibitor.location);
 
-                    if (exhibitorIndex < 0) {
+                    if (exhibitorIndex < 0) { 
                         // Same game offered by another publisher/booth - keep both
-                        entry.exhibitors.push(exhibitor);
-                        entry.lastModified = now;
+                        entry.exhibitors.push(exhibitor);                        
                     } else {
-                        entry.exhibitors[exhibitorIndex] = exhibitor;
-                        if (exhibitorIndex === 0) {
-                            existingGame.entries[existingEntryIndex] = {
-                                ...entry,
-                                versionId: newEntry.versionId,
-                                interest: newEntry.interest,
-                                notes: newEntry.notes,
-                                availability: newEntry.availability,
-                                msrpCurrency: newEntry.msrpCurrency,
-                                msrp: newEntry.msrp,
-                                showPriceCurrency: newEntry.showPriceCurrency,
-                                showPrice: newEntry.showPrice,
-                                location: newEntry.location,
-                                thumbs: newEntry.thumbs,
-                                releaseDate: newEntry.releaseDate,
-                                lastModified: now
-                            };
-                        }
-                        mergedRows.push(`${importedGame.Name} (BGGId ${importedGame.BGGId || '-'}, version ${importedGame.BGGVersionId || '-'})`);
+                        // Combination publisher/booth found - update data
+                        entry.exhibitors[exhibitorIndex] = exhibitor;                        
                     }
+
+                    existingGame.entries[existingEntryIndex] = {
+                        ...entry, //Copy existing entry data
+                        //Overwrite with new data from the imported game                        
+                        thumbs: newEntry.thumbs,
+
+                        availability: newEntry.availability,
+                        releaseDate: newEntry.releaseDate,
+                        
+                        msrpCurrency: newEntry.msrpCurrency,
+                        msrp: newEntry.msrp,
+                        showPriceCurrency: newEntry.showPriceCurrency,
+                        showPrice: newEntry.showPrice,
+
+                        lastModified: now                 
+                    };
+                        
+                    mergedRows.push(`${importedGame.Name} (BGGId ${importedGame.BGGId || '-'}, version ${importedGame.BGGVersionId || '-'})`);
                 } else {
                     existingGame.entries.push(newEntry);
                 }
-
-                // Update base game info (in case anything changed)
-                Object.keys(importedGame).forEach(key => {
-                    // Exclude user-specific and entry-specific fields from game level
-                    const excludedFields = ['Interest', 'Notes', 'userInterest', 'userNotes', 'metadata', 'entries',
-                        'Availability', 'MSRP Currency', 'MSRP', 'Show Price Currency', 'Show Price',
-                        'Location', 'Thumbs', 'Release Date'];
-                    // Keep the first publisher; all publishers live in the entry's exhibitors list
-                    if (key === 'Publisher' && existingGame.Publisher) return;
-                    if (!excludedFields.includes(key)) {
-                        existingGame[key] = importedGame[key];
-                    }
-                });
 
             } else {
                 // New game - create with entry
@@ -656,7 +646,7 @@ const SettingsData = {
         });
 
         if (mergedRows.length > 0) {
-            console.warn(`${mergedRows.length} imported rows matched an existing game entry for the same year/convention/user and were merged instead of added:`, mergedRows);
+            console.warn(`${mergedRows.length} imported rows matched an existing game entry for the same year/convention and were merged instead of added:`, mergedRows);
         }
         this.lastMergedRows = mergedRows;
 
