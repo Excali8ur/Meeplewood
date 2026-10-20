@@ -572,11 +572,11 @@ const SettingsData = {
                 );
 
                 // Merge into existing entry for combination year/convention
-                if (existingEntryIndex >= 0) { 
+                if (existingEntryIndex >= 0) {
                     const entry = existingGame.entries[existingEntryIndex];
 
                     // Seaarch for an existing user entry for this year/convention
-                    const userEntryIndex = entry.users.findIndex(x => x.user === user.user);
+                    const userEntryIndex = entry.users.findIndex(x => x.user === user);
                     if (userEntryIndex < 0) {
                         //User not listed this year/convention yet - add them
                         entry.users.push(user_entry);
@@ -677,7 +677,8 @@ const SettingsData = {
             const conventionPart = convention.replace(/\s+/g, '-');
             filename = `${conventionPart}-Combined.json`;
         }
-
+        console.log(`Merged ${tempSpielData.length} imported games into ${finalGames.length} total games, saving as "${filename}"`);
+        console.log('ExportData: ', exportData);
         return { exportData, filename };
     },
 

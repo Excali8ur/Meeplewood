@@ -31,6 +31,7 @@ const GeekPreviewPage = {
     availabilityFilter: 'any', // 'any', 'demo', 'forsale'
     typeFilter: 'any', // 'any', 'standalone', 'expansion'
     entriesFilter: 'any', // 'any', 'multiple', 'single'
+    otherUsersFilter: 'show', // 'show', 'hide'
 
     // Sort settings
     sortBy: 'title', // 'title', 'thumbs', 'publisher'
@@ -286,90 +287,6 @@ const GeekPreviewPage = {
         });
     },
     
-    loadSpielFile: async function() {
-        console.log('Opening file picker to load a different file');
-        
-        // Always open file picker to let user choose a file
-        await this.openFilePicker();
-    },
-    
-    openFilePicker: async function() {
-        // Try File System Access API first (Chrome, Edge, Opera)
-        if ('showOpenFilePicker' in window) {
-            try {
-                const [fileHandle] = await window.showOpenFilePicker({
-                    types: [{
-                        description: 'JSON Files',
-                        accept: { 'application/json': ['.json'] }
-                    }],
-                    multiple: false,
-                    startIn: 'downloads'
-                });
-                
-                // Show loading screen
-                this.showLoadingScreen();
-                
-                const file = await fileHandle.getFile();
-                const content = await file.text();
-                
-                try {
-                    const data = JSON.parse(content);
-                    this.clearCache(); // Clear cache before processing new data
-                    this.processLoadedData(data, file.name);
-                    
-                    // Store the file handle for future auto-loading
-                    await this.storeFileHandle(fileHandle, file.name);
-                } catch (error) {
-                    console.error('Error parsing JSON file:', error);
-                    this.hideLoadingScreen();
-                    alert('Error parsing JSON file: ' + error.message);
-                    this.showNoGamesMessage();
-                }
-                return;
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    return;  // User cancelled
-                }
-                console.log('File System Access API failed, falling back to input method:', err);
-            }
-        }
-        
-        // Fallback for browsers without File System Access API
-        const input = document.createElement('input');
-        input.type = 'file';
-        // Include MIME type for better Android compatibility
-        input.accept = 'application/json,.json';
-        
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                // Show loading screen
-                this.showLoadingScreen();
-                
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const data = JSON.parse(event.target.result);
-                        this.processLoadedData(data, file.name);
-                    } catch (error) {
-                        console.error('Error parsing JSON file:', error);
-                        this.hideLoadingScreen();
-                        alert('Error parsing JSON file: ' + error.message);
-                        this.showNoGamesMessage();
-                    }
-                };
-                reader.onerror = () => {
-                    this.hideLoadingScreen();
-                    alert('Error reading file');
-                    this.showNoGamesMessage();
-                };
-                reader.readAsText(file);
-            }
-        };
-        
-        input.click();
-    },
-    
     // Store file handle in indexedDB
     storeFileHandle: async function(handle, fileName) {
         try {
@@ -432,21 +349,23 @@ const GeekPreviewPage = {
     extractFilterOptions: function() {
         const years = new Set();
         const conventions = new Set();
-        const users = new Set();
+        const user_list = new Set();
         
         this.games.forEach(game => {
             if (game.entries && Array.isArray(game.entries)) {
                 game.entries.forEach(entry => {
                     if (entry.year) years.add(entry.year);
                     if (entry.convention) conventions.add(entry.convention);
-                    if (entry.user) users.add(entry.user);
+                    if (entry.users && Array.isArray(entry.users)) {
+                        entry.users.forEach(u => user_list.add(u.user));
+                    }
                 });
             }
         });
         
         this.availableYears = Array.from(years).sort((a, b) => b.localeCompare(a)); // Descending
         this.availableConventions = Array.from(conventions).sort();
-        this.availableUsers = Array.from(users).sort();
+        this.availableUsers = Array.from(user_list).sort();
     },
     
     setDefaultFilters: function() {
@@ -488,10 +407,16 @@ const GeekPreviewPage = {
             });
         }
         
+        // The "All" option and the other-users toggle only make sense with multiple users
+        const multipleUsers = this.availableUsers.length > 1;
+        const otherUsersGroup = document.getElementById('otherUsersGroup');
+        if (otherUsersGroup) otherUsersGroup.style.display = multipleUsers ? '' : 'none';
+        if (!multipleUsers) this.otherUsersFilter = 'show';
+
         // Populate user dropdown
         const userSelect = document.getElementById('filterUser');
         if (userSelect) {
-            userSelect.innerHTML = '<option value="">All</option>';
+            userSelect.innerHTML = multipleUsers ? '<option value="">All</option>' : '';
             this.availableUsers.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user;
@@ -608,7 +533,7 @@ const GeekPreviewPage = {
         const hasRelevantEntry = game.entries.some(entry => {
             const yearMatch = this.selectedYear === '' || entry.year === this.selectedYear;
             const conventionMatch = this.selectedConvention === '' || entry.convention === this.selectedConvention;
-            const userMatch = this.selectedUser === '' || entry.user === this.selectedUser;
+            const userMatch = this.selectedUser === '' || entry.users.some(u => u.user === this.selectedUser);
             return yearMatch && conventionMatch && userMatch;
         });
         if (!hasRelevantEntry) return false;
@@ -662,7 +587,7 @@ const GeekPreviewPage = {
                     // Gather metadata
                     filteredYears.add(relevantEntry.year);
                     filteredConventions.add(relevantEntry.convention);
-                    filteredUsers.add(relevantEntry.user);
+                    (relevantEntry.users || []).forEach(u => filteredUsers.add(u.user));
                     
                     // Priority filter for display
                     const entryPriority = this.getPriorityKey(relevantEntry);
@@ -729,7 +654,7 @@ const GeekPreviewPage = {
         let matchingEntries = game.entries.filter(entry => {
             const yearMatch = this.selectedYear === '' || entry.year === this.selectedYear;
             const conventionMatch = this.selectedConvention === '' || entry.convention === this.selectedConvention;
-            const userMatch = this.selectedUser === '' || entry.user === this.selectedUser;
+            const userMatch = this.selectedUser === '' || entry.users.some(u => u.user === this.selectedUser);
             // Ensure entry belongs to this specific version of the game
             const versionMatch = !entry.versionId || !game.BGGVersionId || entry.versionId === game.BGGVersionId;
             
@@ -934,7 +859,7 @@ const GeekPreviewPage = {
                         </div>
                         <div class="info-row">                            
                             <span class="label">👍 ${this.escapeHtml(currentEntry.thumbs)}</span>
-                            <span class="value">📍 ${currentEntry.location || '?'}</span>                        
+                            <span class="value">📍 ${this.escapeHtml((currentEntry.exhibitors || []).map(x => x.location).filter(Boolean).join(', ') || '?')}</span>                        
                             ${currentEntry.availability.toLowerCase() === 'demo' ?                             
                                     `<span class="value">📝 Demo </span>
                                 </div>
@@ -946,9 +871,10 @@ const GeekPreviewPage = {
                         </div>
                         <div class="info-row">
                             <span class="label">Notes:</span>
-                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Name}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
+                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Name}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${this.escapeHtml(this.getUserData(currentEntry).user || '')}">${this.escapeHtml(this.getUserData(currentEntry).notes || '')}</span>
                         </div>
                     </div>
+                    ${this.getOtherUsersHtml(currentEntry)}
                     
                     ${historicalEntriesHtml}
                 </div>
@@ -956,6 +882,29 @@ const GeekPreviewPage = {
         `;
     },
     
+    // Interest/notes of every user on the entry except the one shown in the main card
+    getOtherUsersHtml: function(entry) {
+        if (this.otherUsersFilter === 'hide') return '';
+        const shown = this.getUserData(entry).user;
+        const others = (entry.users || []).filter(u => u.user !== shown);
+        if (others.length === 0) return '';
+        return `<div class="entry-users">${others.map(u => this.getUserHtml(u)).join('')}</div>`;
+    },
+
+    getUserHtml: function(u) {
+        const key = Object.keys(this.interestByKey).find(k => this.interestByKey[k] === u.interest) || '';
+        return `
+            <div class="info-row entry-user">
+                <span class="label">User:</span>
+                <span class="value">${this.escapeHtml(u.user || '')}</span>
+                <span class="entry-priority priority-${key || 'none'}" style="margin-left: auto;">${this.escapeHtml(u.interest || 'Not Prioritized')}</span>
+            </div>
+            ${u.notes ? `<div class="info-row">
+                <span class="label">Notes:</span>
+                <span class="value">${this.escapeHtml(u.notes)}</span>
+            </div>` : ''}`;
+    },
+
     // All distinct exhibitors (with booth location if available) for the entry
     getPublishersHtml: function(game, entry) {
         const exhibitors = entry && Array.isArray(entry.exhibitors) ? entry.exhibitors : [];
@@ -977,24 +926,24 @@ const GeekPreviewPage = {
         });
         
         const entriesHtml = sortedEntries.map(entry => {
-            const isCurrent = entry === currentEntry;
-            if (isCurrent) return ''; // Skip current entry in historical list
-            const priorityLabel = this.getPriorityLabel(entry);
+            if (entry === currentEntry) return ''; // Skip current entry in historical list
+            let users = entry.users || [];
+            if (this.otherUsersFilter === 'hide') {
+                const shown = this.getUserData(entry).user;
+                users = users.filter(u => u.user === shown);
+            }
+            const usersHtml = users.map(u => this.getUserHtml(u)).join('');
             
             return `
                 <div class="historical-entry">
                     <div class="entry-header">
-                        <div class="entry-meta"><strong>${this.escapeHtml(entry.convention)} ${entry.year}</strong> - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
-                            <br>${this.escapeHtml(entry.user)}    
-                        </div>
-                        <span class=\"entry-priority priority-${this.getPriorityKey(entry) || 'none'}\">${priorityLabel}</span>
+                        <div class="entry-meta"><strong>${this.escapeHtml(entry.convention)} ${this.escapeHtml(entry.year)}</strong>${entry.thumbs ? ` - 👍${this.escapeHtml(entry.thumbs)}` : ''}</div>
                     </div>
                     <div class="entry-details">
                         <div class="entry-notes">${this.getPublishersHtml(game, entry)}</div>
-                        <div class="entry-notes">
-                        ${entry.availability.toLowerCase() === 'demo' ? `📝 Demo` : `💰 For Sale`}</div> 
-                        ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}                        
+                        <div class="entry-notes">${(entry.availability || '').toLowerCase() === 'demo' ? `📝 Demo` : `💰 For Sale`}</div>
                     </div>
+                    <div class="entry-users">${usersHtml}</div>
                 </div>
             `;
         }).join('');
@@ -1011,13 +960,22 @@ const GeekPreviewPage = {
 
     // Filter/CSS key ('1'-'4' or '') derived from the entry's BGG "Interest" string
     getPriorityKey: function(entry) {
-        const interest = entry && entry.interest;
+        const interest = this.getUserData(entry).interest;
         return Object.keys(this.interestByKey).find(k => this.interestByKey[k] === interest) || '';
     },
 
     // The interest string is shown as-is; empty means not prioritized
     getPriorityLabel: function(entry) {
-        return (entry && entry.interest) || 'Not Prioritized';
+        return this.getUserData(entry).interest || 'Not Prioritized';
+    },
+
+    // Per-user data (interest, notes) of an entry: the selected user's, or the first user's when "All"
+    getUserData: function(entry) {
+        const users = entry && Array.isArray(entry.users) ? entry.users : [];
+        if (this.selectedUser !== '') {
+            return users.find(u => u.user === this.selectedUser) || {};
+        }
+        return users[0] || {};
     },
     
     escapeHtml: function(text) {
