@@ -28,13 +28,10 @@ const GeekPreviewPage = {
     selectedConvention: '',
     selectedUser: '',
     showHistoricalEntries: true,
-    showExpansions: true,
-    showExpansionsOnly: false,
-    showDemos: true,
-    showDemoOnly: false,
-    showAllEntries: true,
-    showMultipleEntriesOnly: false,
-    showUniqueEntriesOnly: false,
+    availabilityFilter: 'any', // 'any', 'demo', 'forsale'
+    typeFilter: 'any', // 'any', 'standalone', 'expansion'
+    entriesFilter: 'any', // 'any', 'multiple', 'single'
+    otherUsersFilter: 'show', // 'show', 'hide'
 
     // Sort settings
     sortBy: 'title', // 'title', 'thumbs', 'publisher'
@@ -168,7 +165,7 @@ const GeekPreviewPage = {
             }
             
             // Stored handle failed
-            console.log('Could not auto-load local file, please use the Load File button');
+            console.log('Could not load local file, please go to settings to select a different file.');
             this.showNoGamesMessage();
             return;
         }
@@ -193,12 +190,6 @@ const GeekPreviewPage = {
         const loadFileBtn = document.getElementById('loadSpielFileBtn');
         if (loadFileBtn) {
             loadFileBtn.addEventListener('click', this.loadSpielFile.bind(this));
-        }
-        
-        // Save changes button
-        const saveChangesBtn = document.getElementById('saveChangesBtn');
-        if (saveChangesBtn) {
-            saveChangesBtn.addEventListener('click', this.exportUpdatedJson.bind(this));
         }
         
         // Entry filter controls - no debouncing for dropdowns (single selection events)
@@ -237,125 +228,8 @@ const GeekPreviewPage = {
             });
         }
         
-        const showExpansions = document.getElementById('showExpansions');
-        const showExpansionsOnly = document.getElementById('showExpansionsOnly');
-        const showExpansionsOnlyWrapper = document.getElementById('showExpansionsOnlyWrapper');
-        const showDemos = document.getElementById('showDemos');
-        const showDemoOnly = document.getElementById('showDemoOnly');
-        const showDemoOnlyWrapper = document.getElementById('showDemoOnlyWrapper');
+        this.attachSegmentedControls();
 
-        this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
-        this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
-        if (showExpansions) {
-            showExpansions.addEventListener('change', (e) => {
-                this.showExpansions = e.target.checked;
-                if(!this.showExpansions){
-                    this.showExpansionsOnly = false; // Ensure "only expansions" is unchecked if expansions are hidden
-                }
-                showExpansionsOnly.checked = this.showExpansionsOnly;
-                showExpansions.checked = this.showExpansions;
-                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }      
-        if (showExpansionsOnly) {
-            showExpansionsOnly.addEventListener('change', (e) => {
-                this.showExpansionsOnly = e.target.checked;
-                if(this.showExpansionsOnly){
-                    this.showExpansions = e.target.checked; // Ensure exapnsions are shown if "only expansions" is checked
-                }
-                showExpansionsOnly.checked = this.showExpansionsOnly;
-                showExpansions.checked = this.showExpansions;
-                this.updateSubOptionUI(showExpansions, showExpansionsOnly, showExpansionsOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-
-        if (showDemos) {
-            showDemos.addEventListener('change', (e) => {
-                this.showDemos = e.target.checked;
-                if(!this.showDemos){
-                    this.showDemoOnly = false; // Ensure "only demogames" is unchecked if demos are hidden
-                }
-                if (showDemoOnly) showDemoOnly.checked = this.showDemoOnly;
-                showDemos.checked = this.showDemos;
-                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-
-        if (showDemoOnly) {
-            showDemoOnly.addEventListener('change', (e) => {
-                this.showDemoOnly = e.target.checked;
-                if(this.showDemoOnly){
-                    this.showDemos = e.target.checked; // Ensure demos are shown if "only demogames" is checked
-                }
-                showDemoOnly.checked = this.showDemoOnly;
-                if (showDemos) showDemos.checked = this.showDemos;
-                this.updateSubOptionUI(showDemos, showDemoOnly, showDemoOnlyWrapper);
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-
-        const showAllEntries = document.getElementById('showAllEntries');
-        const showMultipleOnly = document.getElementById('showMultipleEntriesOnly');
-        const showUniqueOnly = document.getElementById('showUniqueEntriesOnly');
-        if (showAllEntries) {            
-            showAllEntries.addEventListener('change', (e) => {                
-                this.showAllEntries = e.target.checked;
-                if(this.showAllEntries){
-                    this.showMultipleEntriesOnly = false;
-                    this.showUniqueEntriesOnly = false;
-                }
-                else {
-                    this.showMultipleEntriesOnly = true;
-                }
-                showAllEntries.checked = this.showAllEntries;
-                showMultipleOnly.checked = this.showMultipleEntriesOnly;
-                showUniqueOnly.checked = this.showUniqueEntriesOnly;
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-        if (showMultipleOnly) {
-            showMultipleOnly.addEventListener('change', (e) => {
-                this.showMultipleEntriesOnly = e.target.checked;
-                if(this.showMultipleEntriesOnly){
-                    this.showUniqueEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
-                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
-                }
-                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
-                    this.showAllEntries = true; // If both are unchecked, default to showing all
-                }
-                showAllEntries.checked = this.showAllEntries;
-                showMultipleOnly.checked = this.showMultipleEntriesOnly;
-                showUniqueOnly.checked = this.showUniqueEntriesOnly;
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }      
-        if (showUniqueOnly) {
-            showUniqueOnly.addEventListener('change', (e) => {
-                this.showUniqueEntriesOnly = e.target.checked;   
-                if(this.showUniqueEntriesOnly){
-                    this.showMultipleEntriesOnly = !e.target.checked; // Ensure mutual exclusivity
-                    this.showAllEntries = !e.target.checked; // Ensure mutual exclusivity
-                }
-                else if(!this.showMultipleEntriesOnly && !this.showUniqueEntriesOnly){
-                    this.showAllEntries = true; // If both are unchecked, default to showing all
-                }
-                showAllEntries.checked = this.showAllEntries;
-                showMultipleOnly.checked = this.showMultipleEntriesOnly;
-                showUniqueOnly.checked = this.showUniqueEntriesOnly;
-                this.clearCache();
-                this.batchUpdate();
-            });
-        }
-        
         // Filter buttons
         const filterButtons = document.querySelectorAll('.filter-btn');
         filterButtons.forEach(btn => {
@@ -396,120 +270,21 @@ const GeekPreviewPage = {
                 this.handleSort('publisher');
             });
         }
-        
-        // Event delegation for priority dropdowns and notes (on the grid)
-        /*Changes not made in Meeplewood at the moment, but can be re-enabled if needed.
-        const spielGrid = document.getElementById('spielGrid');
-        if (spielGrid) {
-            spielGrid.addEventListener('change', (e) => {
-                if (e.target.classList.contains('priority-select')) {
-                    const gameId = e.target.dataset.gameId;
-                    const entryKey = e.target.dataset.entryKey;
-                    this.updateGamePriority(gameId, entryKey, e.target.value);
-                }
+    },
+
+    // Segmented single-choice controls: each [data-filter] maps to a "<name>Filter" property
+    attachSegmentedControls: function() {
+        document.querySelectorAll('.segmented[data-filter]').forEach(group => {
+            const prop = `${group.dataset.filter}Filter`;
+            group.addEventListener('click', (e) => {
+                const btn = e.target.closest('.segmented-btn');
+                if (!btn || !group.contains(btn)) return;
+                this[prop] = btn.dataset.value;
+                group.querySelectorAll('.segmented-btn').forEach(b => b.classList.toggle('active', b === btn));
+                this.clearCache();
+                this.batchUpdate();
             });
-            
-            spielGrid.addEventListener('blur', (e) => {
-                if (e.target.classList.contains('notes-input')) {
-                    const gameId = e.target.dataset.gameId;
-                    const entryKey = e.target.dataset.entryKey;
-                    this.updateGameNotes(gameId, entryKey, e.target.value);
-                }
-            }, true); // Use capture phase for blur
-        }*/
-        
-    },
-
-    updateSubOptionUI: function(parentCheckbox, childCheckbox, childWrapper) {
-        if (!childCheckbox || !childWrapper) return;
-
-        const isVisible = !!(parentCheckbox && parentCheckbox.checked);
-        childCheckbox.disabled = !isVisible;
-        childWrapper.classList.toggle('is-hidden', !isVisible);
-    },
-    
-    loadSpielFile: async function() {
-        console.log('Opening file picker to load a different file');
-        
-        // Always open file picker to let user choose a file
-        await this.openFilePicker();
-    },
-    
-    openFilePicker: async function() {
-        // Try File System Access API first (Chrome, Edge, Opera)
-        if ('showOpenFilePicker' in window) {
-            try {
-                const [fileHandle] = await window.showOpenFilePicker({
-                    types: [{
-                        description: 'JSON Files',
-                        accept: { 'application/json': ['.json'] }
-                    }],
-                    multiple: false,
-                    startIn: 'downloads'
-                });
-                
-                // Show loading screen
-                this.showLoadingScreen();
-                
-                const file = await fileHandle.getFile();
-                const content = await file.text();
-                
-                try {
-                    const data = JSON.parse(content);
-                    this.clearCache(); // Clear cache before processing new data
-                    this.processLoadedData(data, file.name);
-                    
-                    // Store the file handle for future auto-loading
-                    await this.storeFileHandle(fileHandle, file.name);
-                } catch (error) {
-                    console.error('Error parsing JSON file:', error);
-                    this.hideLoadingScreen();
-                    alert('Error parsing JSON file: ' + error.message);
-                    this.showNoGamesMessage();
-                }
-                return;
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    return;  // User cancelled
-                }
-                console.log('File System Access API failed, falling back to input method:', err);
-            }
-        }
-        
-        // Fallback for browsers without File System Access API
-        const input = document.createElement('input');
-        input.type = 'file';
-        // Include MIME type for better Android compatibility
-        input.accept = 'application/json,.json';
-        
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                // Show loading screen
-                this.showLoadingScreen();
-                
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const data = JSON.parse(event.target.result);
-                        this.processLoadedData(data, file.name);
-                    } catch (error) {
-                        console.error('Error parsing JSON file:', error);
-                        this.hideLoadingScreen();
-                        alert('Error parsing JSON file: ' + error.message);
-                        this.showNoGamesMessage();
-                    }
-                };
-                reader.onerror = () => {
-                    this.hideLoadingScreen();
-                    alert('Error reading file');
-                    this.showNoGamesMessage();
-                };
-                reader.readAsText(file);
-            }
-        };
-        
-        input.click();
+        });
     },
     
     // Store file handle in indexedDB
@@ -540,11 +315,9 @@ const GeekPreviewPage = {
             this.currentFileName = fileName;
             
             // Extract available filter options from entries
-            this.extractFilterOptions();
-            
+            this.extractFilterOptions();        
             // Set default filters (latest year, first user)
-            this.setDefaultFilters();
-            
+            this.setDefaultFilters();            
             // Populate filter dropdowns
             this.populateFilterDropdowns();
             
@@ -560,21 +333,12 @@ const GeekPreviewPage = {
                 fileNameEl.textContent = `📄 ${fileName}`;
             }
             
-            // Show save button
-            /* Changes not made in Meeplewood (yet?)
-            const saveBtn = document.getElementById('saveChangesBtn');
-            if (saveBtn) {
-                saveBtn.style.display = 'inline-block';
-            }
-            */
-            
             // Hide loading screen and show content
-            this.hideLoadingScreen();
-            
+            this.hideLoadingScreen();            
             // Update UI with batch update (includes metadata, counts, and rendering)
             this.batchUpdate();
             
-            console.log(`Loaded ${this.games.length} games from ${fileName}`);
+            console.log(`Processed ${fileName}\nFound games: ${this.games.length}\nLoaded after filtering: ${this.filteredGames.length}`);
         } else {
             this.hideLoadingScreen();
             alert('Invalid file format. Expected JSON with "games" array.');
@@ -585,21 +349,23 @@ const GeekPreviewPage = {
     extractFilterOptions: function() {
         const years = new Set();
         const conventions = new Set();
-        const users = new Set();
+        const user_list = new Set();
         
         this.games.forEach(game => {
             if (game.entries && Array.isArray(game.entries)) {
                 game.entries.forEach(entry => {
                     if (entry.year) years.add(entry.year);
                     if (entry.convention) conventions.add(entry.convention);
-                    if (entry.user) users.add(entry.user);
+                    if (entry.users && Array.isArray(entry.users)) {
+                        entry.users.forEach(u => user_list.add(u.user));
+                    }
                 });
             }
         });
         
         this.availableYears = Array.from(years).sort((a, b) => b.localeCompare(a)); // Descending
         this.availableConventions = Array.from(conventions).sort();
-        this.availableUsers = Array.from(users).sort();
+        this.availableUsers = Array.from(user_list).sort();
     },
     
     setDefaultFilters: function() {
@@ -641,10 +407,16 @@ const GeekPreviewPage = {
             });
         }
         
+        // The "All" option and the other-users toggle only make sense with multiple users
+        const multipleUsers = this.availableUsers.length > 1;
+        const otherUsersGroup = document.getElementById('otherUsersGroup');
+        if (otherUsersGroup) otherUsersGroup.style.display = multipleUsers ? '' : 'none';
+        if (!multipleUsers) this.otherUsersFilter = 'show';
+
         // Populate user dropdown
         const userSelect = document.getElementById('filterUser');
         if (userSelect) {
-            userSelect.innerHTML = '<option value="">All</option>';
+            userSelect.innerHTML = multipleUsers ? '<option value="">All</option>' : '';
             this.availableUsers.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user;
@@ -741,24 +513,42 @@ const GeekPreviewPage = {
         // Check if game has entries
         if (!game.entries || game.entries.length === 0) return false;
 
-        // Check if the game is an expansion and if it should be shown
-        if (!this.showExpansions && game.Type.toLowerCase() === 'expansion') return false;
-        if (this.showExpansionsOnly && game.Type.toLowerCase() !== 'expansion') return false;
+        if (this.entriesFilter === 'multiple' && game.entries.length <= 1) return false;
+        if (this.entriesFilter === 'single' && game.entries.length > 1) return false;
 
-        if (this.showDemoOnly && !game.isDemo) return false;
-        if (!this.showDemos && game.isDemo) return false;
+        const isExpansion = (game.Type || '').toLowerCase() === 'expansion';
+        if (this.typeFilter === 'expansion' && !isExpansion) return false;
+        if (this.typeFilter === 'standalone' && isExpansion) return false;
 
-        if (!this.showAllEntries){
-            // Multiple entries filter
-            if (this.showMultipleEntriesOnly && game.entries.length <= 1) return false;
-            // Unique entries filter
-            if (this.showUniqueEntriesOnly && game.entries.length > 1) return false;
+        // Check if a search term is provided and if it matches the game name, publisher, or any exhibitor's publisher.
+        if (this.searchTerm !== '' && !(            
+            (game.Name && game.Name.toLowerCase().includes(this.searchTerm)) ||
+            (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
+            (game.entries.some(e => (e.exhibitors || []).some(x => (x.publisher || '').toLowerCase().includes(this.searchTerm))))
+           )) {
+            return false;
         }
 
-        return  (this.searchTerm === '' ||
-                (game.Name && game.Name.toLowerCase().includes(this.searchTerm)) ||
-                (game.Publisher && game.Publisher.toLowerCase().includes(this.searchTerm)) ||
-                game.entries.some(e => (e.exhibitors || []).some(x => (x.publisher || '').toLowerCase().includes(this.searchTerm))));
+        //Check if there is an entry for the selected year, convention, and user. If not, the game is not relevant.
+        const hasRelevantEntry = game.entries.some(entry => {
+            const yearMatch = this.selectedYear === '' || entry.year === this.selectedYear;
+            const conventionMatch = this.selectedConvention === '' || entry.convention === this.selectedConvention;
+            const userMatch = this.selectedUser === '' || entry.users.some(u => u.user === this.selectedUser);
+            return yearMatch && conventionMatch && userMatch;
+        });
+        if (!hasRelevantEntry) return false;
+
+        // Check if the entry for the selected year is a demo
+        for (let entry of game.entries) {            
+            if (this.selectedYear === '' || entry.year === this.selectedYear) {
+                const isDemo = (entry.availability || '').toLowerCase() === 'demo';
+                if (this.availabilityFilter === 'demo' && !isDemo) return false;
+                if (this.availabilityFilter === 'forsale' && isDemo) return false;
+            }
+        }        
+
+        // If all checks passed, the game is relevant
+        return true;
     },
 
     batchUpdate: function() {
@@ -780,12 +570,11 @@ const GeekPreviewPage = {
         // Single iteration through all games
         for (let i = 0; i < this.games.length; i++) {
             const game = this.games[i];
-            
+
             if (this.isRelevantGame(game)) {
                 // Get the relevant entry for this game
                 const relevantEntry = this.getRelevantEntry(game);
-                if (relevantEntry) {
-                
+                if (relevantEntry) {                
                     // Game matches all filters (priority not yet considered)
                     counts.all++;
                     const priority = this.getPriorityKey(relevantEntry);
@@ -798,7 +587,7 @@ const GeekPreviewPage = {
                     // Gather metadata
                     filteredYears.add(relevantEntry.year);
                     filteredConventions.add(relevantEntry.convention);
-                    filteredUsers.add(relevantEntry.user);
+                    (relevantEntry.users || []).forEach(u => filteredUsers.add(u.user));
                     
                     // Priority filter for display
                     const entryPriority = this.getPriorityKey(relevantEntry);
@@ -851,9 +640,7 @@ const GeekPreviewPage = {
     },
     
     getRelevantEntry: function(game) {
-        if (!game.entries || game.entries.length === 0) {
-            return null;
-        }
+        if (!game.entries || game.entries.length === 0) return null;
         
         // Check cache first
         // Use BGGVersionId as primary key to distinguish different versions of the same game
@@ -867,7 +654,7 @@ const GeekPreviewPage = {
         let matchingEntries = game.entries.filter(entry => {
             const yearMatch = this.selectedYear === '' || entry.year === this.selectedYear;
             const conventionMatch = this.selectedConvention === '' || entry.convention === this.selectedConvention;
-            const userMatch = this.selectedUser === '' || entry.user === this.selectedUser;
+            const userMatch = this.selectedUser === '' || entry.users.some(u => u.user === this.selectedUser);
             // Ensure entry belongs to this specific version of the game
             const versionMatch = !entry.versionId || !game.BGGVersionId || entry.versionId === game.BGGVersionId;
             
@@ -1038,14 +825,13 @@ const GeekPreviewPage = {
         
         // Get historical entries if enabled
         let historicalEntriesHtml = '';
-        if (this.showHistoricalEntries && game.entries && game.entries.length > 0) {
+        if (this.showHistoricalEntries && game.entries && game.entries.length > 1) {
             historicalEntriesHtml = this.createHistoricalEntriesHtml(game, currentEntry);
         }
         
         return `
             <div class="spiel-card ${priorityClass}">
-                <div class="card-header">
-                    
+                <div class="card-header">                    
                     <h3 class="game-title">${this.escapeHtml(game.Name || 'Untitled')}</h3>                    
                     ${game.Type ? game.Type == 'Expansion' ? `<span class="value"><img src="img/icons/${this.escapeHtml(game.Type)}.png" alt="Expansion" title="Expansion" class="small-icon small-icon-img" /></span>` : '' : ''}
                     ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
@@ -1053,13 +839,15 @@ const GeekPreviewPage = {
                 <div class="card-body">
                     <div class="game-info">
                         <div class="info-row">
-                            <span class="value">🏢 ${this.getPublishersHtml(game, currentEntry)}</span>
+                            <span class="value">🏢 ${game.Publisher
+                                //this.getPublishersHtml(game, currentEntry)}</span>
+                            }
                         </div>
-                        <div class="info-row">
-                            <span class="label">Release:</span>
-                            <span class="value">${this.escapeHtml(currentEntry.releaseDate || '')}</span>
-                        </div>
-                        ${game.Version ? `<div class="info-row"><span class="label">Version:</span> <span class="value">${this.escapeHtml(game.Version)}</span></div>` : ''}
+                        ${game.Version ? 
+                            `<div class="info-row">
+                                <span class="label">Version:</span>
+                                <span class="value">${this.escapeHtml(game.Version)}</span>
+                            </div>` : ''}
                     </div>
                     
                     ${bggInfoHtml}
@@ -1069,14 +857,24 @@ const GeekPreviewPage = {
                             <h4>${currentEntry.convention} ${currentEntry.year}</h4>
                             <span class=\"entry-priority ${priorityClass}\">${priorityLabel}</span>
                         </div>
-                        <div class="info-row">
-                            <span class="value">👍${this.escapeHtml(currentEntry.thumbs)}</span>
-                        </div>                    
+                        <div class="info-row">                            
+                            <span class="label">👍 ${this.escapeHtml(currentEntry.thumbs)}</span>
+                            <span class="value">📍 ${this.escapeHtml((currentEntry.exhibitors || []).map(x => x.location).filter(Boolean).join(', ') || '?')}</span>                        
+                            ${currentEntry.availability.toLowerCase() === 'demo' ?                             
+                                    `<span class="value">📝 Demo </span>
+                                </div>
+                                <div class="info-row"> 
+                                    <span class="label"></span><span class="value"></span>
+                                    <span class="value">
+                                    🗓️ ${currentEntry.releaseDate || '?'}</span>`
+                            : `<span class="value">💰 For Sale</span>`}                              
+                        </div>
                         <div class="info-row">
                             <span class="label">Notes:</span>
-                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Name}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${currentEntry.user}">${this.escapeHtml(currentEntry.notes || '')}</span>
+                            <span class="value" data-game-id="${game.BGGVersionId || game.BGGId || game.Name}" data-entry-key="${currentEntry.year}-${currentEntry.convention}-${this.escapeHtml(this.getUserData(currentEntry).user || '')}">${this.escapeHtml(this.getUserData(currentEntry).notes || '')}</span>
                         </div>
                     </div>
+                    ${this.getOtherUsersHtml(currentEntry)}
                     
                     ${historicalEntriesHtml}
                 </div>
@@ -1084,15 +882,34 @@ const GeekPreviewPage = {
         `;
     },
     
-    // All distinct publishers (with booth location when there are several) for the entry
+    // Interest/notes of every user on the entry except the one shown in the main card
+    getOtherUsersHtml: function(entry) {
+        if (this.otherUsersFilter === 'hide') return '';
+        const shown = this.getUserData(entry).user;
+        const others = (entry.users || []).filter(u => u.user !== shown);
+        if (others.length === 0) return '';
+        return `<div class="entry-users">${others.map(u => this.getUserHtml(u)).join('')}</div>`;
+    },
+
+    getUserHtml: function(u) {
+        const key = Object.keys(this.interestByKey).find(k => this.interestByKey[k] === u.interest) || '';
+        return `
+            <div class="info-row entry-user">
+                <span class="label">User:</span>
+                <span class="value">${this.escapeHtml(u.user || '')}</span>
+                <span class="entry-priority priority-${key || 'none'}" style="margin-left: auto;">${this.escapeHtml(u.interest || 'Not Prioritized')}</span>
+            </div>
+            ${u.notes ? `<div class="info-row">
+                <span class="label">Notes:</span>
+                <span class="value">${this.escapeHtml(u.notes)}</span>
+            </div>` : ''}`;
+    },
+
+    // All distinct exhibitors (with booth location if available) for the entry
     getPublishersHtml: function(game, entry) {
         const exhibitors = entry && Array.isArray(entry.exhibitors) ? entry.exhibitors : [];
-        const publishers = exhibitors.filter(x => x.publisher);
-        if (publishers.length <= 1) {
-            return this.escapeHtml((publishers[0] && publishers[0].publisher) || game.Publisher || '?');
-        }
-        return publishers.map(x =>
-            this.escapeHtml(x.publisher) + (x.location ? ` <small>(${this.escapeHtml(x.location)})</small>` : '')
+        return exhibitors.map(x =>
+            (x.location ? ` <small>📍${this.escapeHtml(x.location)}</small>` : '') + ` - 🏢 ${this.escapeHtml(x.publisher)}`
         ).join('<br>');
     },
 
@@ -1109,26 +926,24 @@ const GeekPreviewPage = {
         });
         
         const entriesHtml = sortedEntries.map(entry => {
-            const isCurrent = entry === currentEntry;
-            if (isCurrent) return ''; // Skip current entry in historical list
-            const priorityLabel = this.getPriorityLabel(entry);
-            
-            const insertedDate = new Date(entry.insertedDate).toLocaleDateString();
-            const modifiedDate = entry.lastModified !== entry.insertedDate ? 
-                `Modified: ${new Date(entry.lastModified).toLocaleDateString()}` : '';
+            if (entry === currentEntry) return ''; // Skip current entry in historical list
+            let users = entry.users || [];
+            if (this.otherUsersFilter === 'hide') {
+                const shown = this.getUserData(entry).user;
+                users = users.filter(u => u.user === shown);
+            }
+            const usersHtml = users.map(u => this.getUserHtml(u)).join('');
             
             return `
                 <div class="historical-entry">
                     <div class="entry-header">
-                        <div class="entry-meta">
-                            <strong>${entry.year}</strong> ${this.escapeHtml(entry.convention)} - ${entry.thumbs ? `👍${this.escapeHtml(entry.thumbs)}` : ''}
-                            <br>${this.escapeHtml(entry.user)}    
-                        </div>
-                        <span class=\"entry-priority priority-${this.getPriorityKey(entry) || 'none'}\">${priorityLabel}</span>
+                        <div class="entry-meta"><strong>${this.escapeHtml(entry.convention)} ${this.escapeHtml(entry.year)}</strong>${entry.thumbs ? ` - 👍${this.escapeHtml(entry.thumbs)}` : ''}</div>
                     </div>
-                    <div class="entry-details">                        
-                        ${entry.notes ? `<div class="entry-notes"><strong>Notes:</strong> "${this.escapeHtml(entry.notes)}"</div>` : ''}                        
+                    <div class="entry-details">
+                        <div class="entry-notes">${this.getPublishersHtml(game, entry)}</div>
+                        <div class="entry-notes">${(entry.availability || '').toLowerCase() === 'demo' ? `📝 Demo` : `💰 For Sale`}</div>
                     </div>
+                    <div class="entry-users">${usersHtml}</div>
                 </div>
             `;
         }).join('');
@@ -1145,113 +960,22 @@ const GeekPreviewPage = {
 
     // Filter/CSS key ('1'-'4' or '') derived from the entry's BGG "Interest" string
     getPriorityKey: function(entry) {
-        const interest = entry && entry.interest;
+        const interest = this.getUserData(entry).interest;
         return Object.keys(this.interestByKey).find(k => this.interestByKey[k] === interest) || '';
     },
 
     // The interest string is shown as-is; empty means not prioritized
     getPriorityLabel: function(entry) {
-        return (entry && entry.interest) || 'Not Prioritized';
+        return this.getUserData(entry).interest || 'Not Prioritized';
     },
-    
-    updateGamePriority: function(gameId, entryKey, priority) {
-        // Find the game by BGGVersionId (primary), BGGId, or Name
-        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Name) === gameId);
-        if (!game || !game.entries) return;
-        
-        // Parse entry key (format: year-convention-user)
-        const [year, convention, user] = entryKey.split('-');
-        
-        // Find and update the entry
-        const entry = game.entries.find(e => 
-            e.year === year && e.convention === convention && e.user === user
-        );
-        
-        if (entry) {
-            entry.interest = this.interestByKey[priority] || '';
-            entry.lastModified = new Date().toISOString();
-            
-            // Clear cache since priority changed
-            this.clearCache();
-            this.batchUpdate();
+
+    // Per-user data (interest, notes) of an entry: the selected user's, or the first user's when "All"
+    getUserData: function(entry) {
+        const users = entry && Array.isArray(entry.users) ? entry.users : [];
+        if (this.selectedUser !== '') {
+            return users.find(u => u.user === this.selectedUser) || {};
         }
-    },
-    
-    updateGameNotes: function(gameId, entryKey, notes) {
-        // Find the game by BGGVersionId (primary), BGGId, or Name
-        const game = this.games.find(g => (g.BGGVersionId || g.BGGId || g.Name) === gameId);
-        if (!game || !game.entries) return;
-        
-        // Parse entry key (format: year-convention-user)
-        const [year, convention, user] = entryKey.split('-');
-        
-        // Find and update the entry
-        const entry = game.entries.find(e => 
-            e.year === year && e.convention === convention && e.user === user
-        );
-        
-        if (entry) {
-            entry.notes = notes;
-            entry.lastModified = new Date().toISOString();
-        }
-    },
-    
-    exportUpdatedJson: async function() {
-        if (this.games.length === 0) {
-            alert('No games loaded. Please load a Spiel preview file first.');
-            return;
-        }
-        
-        // Create export data with updated metadata
-        const exportData = {
-            metadata: {
-                ...this.metadata,
-                lastUpdated: new Date().toISOString(),
-                totalGames: this.games.length
-            },
-            games: this.games
-        };
-        
-        const jsonContent = JSON.stringify(exportData, null, 2);
-        const filename = this.currentFileName || 'GeekPreview-Combined.json';
-        
-        // Try File System Access API (Chrome, Edge, Opera)
-        if ('showSaveFilePicker' in window) {
-            try {
-                const handle = await window.showSaveFilePicker({
-                    suggestedName: filename,
-                    startIn: 'downloads',  // Change to 'documents', 'desktop', etc. (browser only allows these preset folders)
-                    types: [{
-                        description: 'JSON Files',
-                        accept: { 'application/json': ['.json'] }
-                    }]
-                });
-                
-                const writable = await handle.createWritable();
-                await writable.write(jsonContent);
-                await writable.close();
-                
-                alert(`Changes saved to ${filename}!\n\nYour updated priorities and notes have been exported.`);
-                return;
-            } catch (err) {
-                if (err.name === 'AbortError') {
-                    // User cancelled, do nothing
-                    return;
-                }
-                console.log('File System Access API failed, falling back to download:', err);
-            }
-        }
-        
-        // Fallback: automatic download
-        const blob = new Blob([jsonContent], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-        
-        alert(`Changes saved to ${filename}!\n\nYour updated priorities and notes have been exported.`);
+        return users[0] || {};
     },
     
     escapeHtml: function(text) {

@@ -238,6 +238,14 @@ button:hover {
     vertical-align: middle;
 }
 
+.icon-text-sized {
+    width: 1.1em;
+    height: 1.1em;
+    position: relative;
+    top: -0.12em;
+    margin-right: 4px;
+}
+
 @media (max-width: 900px) {
     .banner {
         padding: 20px 16px;

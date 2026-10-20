@@ -12,21 +12,21 @@
         <h3>View Settings</h3>
         <div class="filter-row">
             <div class="filter-group">
-                <label for="filterYear">Year:</label>
+                <label for="filterYear" class="filter-group-title">Year:</label>
                 <select id="filterYear">
                     <option value="">Latest</option>
                 </select>
             </div>
             
             <div class="filter-group">
-                <label for="filterConvention">Convention:</label>
+                <label for="filterConvention" class="filter-group-title">Convention:</label>
                 <select id="filterConvention">
                     <option value="">All</option>
                 </select>
             </div>
             
             <div class="filter-group">
-                <label for="filterUser">User:</label>
+                <label for="filterUser" class="filter-group-title">User:</label>
                 <select id="filterUser">
                     <option value="">All</option>
                 </select>
@@ -34,35 +34,38 @@
         </div>
         <div class="filter-row">    
             <div class="filter-group">
-                <label>Show games:</label>
-                <!--<label>
-                    <input type="checkbox" id="showHistoricalEntries" checked>Show historical entries
-                </label>-->
-                <label>
-                    <input type="checkbox" id="showExpansions" checked>Expansions
-                </label>
-                <label id="showExpansionsOnlyWrapper" class="sub-option">
-                    <input type="checkbox" id="showExpansionsOnly">Only expansions
-                </label>
-                <label>
-                    <input type="checkbox" id="showDemos" checked>Demo games
-                </label>
-                <label id="showDemoOnlyWrapper" class="sub-option">
-                    <input type="checkbox" id="showDemoOnly">Only demo games
-                </label>
+                <span class="filter-group-title">Availability:</span>
+                <div class="segmented" data-filter="availability">
+                    <button type="button" class="segmented-btn active" data-value="any">All</button>
+                    <button type="button" class="segmented-btn" data-value="demo">📝 Demo</button>
+                    <button type="button" class="segmented-btn" data-value="forsale">💰 For Sale</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <span class="filter-group-title">Type:</span>
+                <div class="segmented" data-filter="type">
+                    <button type="button" class="segmented-btn active" data-value="any">All</button>
+                    <button type="button" class="segmented-btn" data-value="standalone"><img class="icon-text-sized" src="../img/icons/Standalone.png" alt="Standalone">Standalone</button>
+                    <button type="button" class="segmented-btn" data-value="expansion"><img class="icon-text-sized" src="../img/icons/Expansion.png" alt="Expansion">Expansion</button>
+                </div>
             </div>
             
             <div class="filter-group">
-                <label>Show Entries:</label>
-                <label>
-                    <input type="checkbox" id="showAllEntries" checked>All entries
-                </label>
-                <label>
-                    <input type="checkbox" id="showMultipleEntriesOnly">Only games with multiple entries
-                </label>
-                <label>
-                    <input type="checkbox" id="showUniqueEntriesOnly">Only games with 1 entry
-                </label>
+                <span class="filter-group-title">Entries:</span>
+                <div class="segmented" data-filter="entries">
+                    <button type="button" class="segmented-btn active" data-value="any">All</button>
+                    <button type="button" class="segmented-btn" data-value="multiple">Multiple</button>
+                    <button type="button" class="segmented-btn" data-value="single">Single</button>
+                </div>
+            </div>
+
+            <div class="filter-group" id="otherUsersGroup">
+                <span class="filter-group-title">Other users:</span>
+                <div class="segmented" data-filter="otherUsers">
+                    <button type="button" class="segmented-btn active" data-value="show">Show</button>
+                    <button type="button" class="segmented-btn" data-value="hide">Hide</button>
+                </div>
             </div>
 
 
@@ -96,9 +99,8 @@
     </div>
 </div>
 <div id="noGamesMessage" class="no-games" style="display: none;">
-    <p>� No Spiel preview list loaded yet.</p>
-    <p>Click "<strong>Load Spiel Preview File</strong>" above to load your JSON file.</p>
-    <p>Don't have a JSON file? Go to <a href="#settings" onclick="router.navigate('settings')">Settings</a> to import a CSV and create one.</p>
+    <p> No Spiel preview list loaded.</p>
+    <p>Go to <a href="#settings" onclick="router.navigate('settings')">Settings</a> to load an existing file or create one and import data.</p>
 </div>
 
 <div id="spielGrid" class="spiel-grid font-main">
