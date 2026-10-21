@@ -833,8 +833,8 @@ const GeekPreviewPage = {
             <div class="spiel-card ${priorityClass}">
                 <div class="card-header">                    
                     <h3 class="game-title">${this.escapeHtml(game.Name || 'Untitled')}</h3>                    
-                    ${game.Type ? game.Type == 'Expansion' ? `<span class="value"><img src="../img/icons/Expansion.png" alt="Expansion" title="Expansion" class="small-icon small-icon-img" /></span>` : '' : ''}
-                    ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="../img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
+                    ${game.Type ? game.Type == 'Expansion' ? `<span class="value"><img src="img/icons/Expansion.png" alt="Expansion" title="Expansion" class="small-icon small-icon-img" /></span>` : '' : ''}
+                    ${bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link" title="View on BGG"><img src="img/BGG_Logo.png" alt="BGG" class="small-icon"/></a>` : ''}
                 </div>                
                 <div class="card-body">
                     <div class="game-info">
