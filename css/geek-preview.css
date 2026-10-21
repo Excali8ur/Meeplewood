@@ -626,6 +626,16 @@
         grid-template-columns: 1fr;
     }
     
+    .filter-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .filter-group {
+        flex: none;
+        width: 100%;
+    }
+
     .filter-buttons {
         flex-direction: column;
     }
