@@ -103,3 +103,136 @@
     margin-top: 20px;
     line-height: 1.6;
 }
+
+/* Forest dashboard */
+.dashboard-page {
+    gap: 24px;
+}
+
+.dashboard-hero {
+    background:
+        radial-gradient(circle at 12% 12%, rgba(221,234,143,.2), transparent 25%),
+        linear-gradient(120deg, #264d2a, #5f7f3a);
+}
+
+.dashboard-story {
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 18px;
+}
+
+.story-card {
+    position: relative;
+    padding: 26px;
+    overflow: hidden;
+    border: 2px solid rgba(83, 99, 49, .17);
+    border-radius: 28px 28px 52px 20px;
+    background: rgba(255, 249, 223, .94);
+    box-shadow: var(--forest-shadow);
+}
+
+.story-card-accent {
+    color: #f8f4d7;
+    background: linear-gradient(145deg, #47713a, #2d562f);
+}
+
+.story-card h2 {
+    margin: 0 0 12px;
+    font-size: 1.65rem;
+}
+
+.story-card-accent h2 {
+    color: #fff;
+}
+
+.story-card p {
+    line-height: 1.6;
+}
+
+.story-card ul {
+    display: grid;
+    gap: 9px;
+    margin: 12px 0 0;
+    padding-left: 20px;
+}
+
+.dashboard-stats {
+    margin-top: 0;
+    gap: 16px;
+}
+
+.stat-card {
+    position: relative;
+    padding: 22px;
+    overflow: hidden;
+    border: 2px solid rgba(83, 111, 54, .22);
+    border-radius: 42% 18% 36px 18% / 24% 18% 36px 20%;
+    background: linear-gradient(150deg, #fffced, #edf1c8);
+    box-shadow: 0 8px 0 rgba(66, 93, 49, .12);
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    right: -28px;
+    bottom: -42px;
+    width: 100px;
+    height: 100px;
+    border-radius: 100% 0;
+    background: rgba(128, 158, 71, .12);
+}
+
+.stat-card:hover {
+    border-color: #8ca750;
+    box-shadow: 0 10px 0 rgba(66, 93, 49, .14);
+}
+
+.stat-card h3 {
+    color: var(--wood-700);
+    letter-spacing: .08em;
+}
+
+.stat-card span {
+    color: var(--muted-ink);
+    font-size: .72rem;
+}
+
+.stat-number {
+    color: var(--wood-700);
+    font-family: "Chicle", var(--font-header);
+    font-size: 2.6rem;
+}
+
+.recent-activity {
+    margin-top: 4px;
+    padding: 24px;
+    border: 2px solid rgba(93, 76, 42, .16);
+    border-radius: 26px;
+    background: rgba(255,249,223,.88);
+}
+
+.recent-activity h2 {
+    margin: 0;
+    padding: 0;
+    color: var(--wood-800);
+    border: 0;
+}
+
+.activity-item {
+    border: 1px solid #cad49a;
+    background: #f5f3d5;
+}
+
+.activity-item:hover {
+    background: #e8efc5;
+}
+
+.empty-state {
+    color: var(--muted-ink);
+}
+
+@media (max-width: 760px) {
+    .dashboard-story {
+        grid-template-columns: 1fr;
+    }
+}

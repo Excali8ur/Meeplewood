@@ -127,7 +127,7 @@ const GeekPreviewPage = {
     autoLoadDefaultFile: async function() {
         // Get default path from settings
         const savedSettings = localStorage.getItem('meeplewood_settings');
-        let defaultPreviewPath = 'data/GeekPreview-Combined.json'; // fallback default
+        let defaultPreviewPath = 'data/GeekPreview-ExampleData.json'; // bundled fallback
         
         if (savedSettings) {
             try {

@@ -109,6 +109,7 @@ const router = {
             const content = await route.render();
             mainContent.innerHTML = content;
             document.title = `Meeplewood - ${route.title}`;
+            document.querySelector('.banner')?.setAttribute('data-route', this.currentRoute);
             
             // Initialize any page-specific functionality
             this.initCurrentPage();

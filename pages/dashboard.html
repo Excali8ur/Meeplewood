@@ -1,42 +1,56 @@
-<div class = "dashboard-intro">
-    <h1>Meeplewood</h1>
-    <h3>A board game exploration tool in the making!</h3>
-</div>
-<div class="dashboard-description">
-    <p>Building something useful, being creative, learning new things and make board game data fun to explore.</p>
-    <h4>In other words: 'Because I can'-project ;)</h4>
-</div>
-<div class="dashboard-description">  
-    <p>Meeplewood is designed around several board game data sources, mainly logged plays from BGStats and information (like Geek Preview Lists and collection data) exports from BoardGameGeek. </p>
-    <p>The goal is to bring these data sources together in one place and turn them into useful insights and playful decision support for board game enthusiasts.</p>
-</div>
-<div class="dashboard-description">
-    <p>Meeplewood is a personal "because I can" project. Not sure when (or if) it will be completed.</p>
-    <p>Currently working (basic version): 
-        <ul>            
-            <li>* Reviewing GeekPreview Lists (mainly for Spiel, but can be used for all <a href="https://boardgamegeek.com/previews" target="_blank">preview lists available on BGG</a>)</li>
-            <li>* Adding preview information locally</li>
-        </ul>
-    </p>
-</div>
-<div class="dashboard-stats">
-    <div class="stat-card">
-        <h3>Total Games</h3>
-        <p class="stat-number" id="totalGames">0</p>
-    </div>
-    <div class="stat-card">
-        <h3>Recent Plays</h3>
-        <p class="stat-number" id="recentPlays">0</p>
-    </div>
-    <div class="stat-card">
-        <h3>Favorite Game</h3>
-        <p class="stat-number" id="favoriteGame">-</p>
-    </div>
-</div>
+<section class="forest-page dashboard-page">
+    <header class="page-hero dashboard-hero">
+        <div>
+            <p class="page-kicker">Welcome to the woods</p>
+            <h1>Meeplewood</h1>
+            <p class="page-lead">A playful place to explore your board games, logged plays, and future discoveries.</p>
+        </div>
+        <img src="img/forest/treehouse.png" alt="" aria-hidden="true">
+    </header>
 
-<div class="recent-activity">
-    <h2>Recent Activity</h2>
-    <div id="activityList" class="activity-list">
-        <p class="empty-state">No recent activity. Start logging your game plays!</p>
+    <div class="dashboard-story">
+        <div class="story-card">
+            <p class="story-eyebrow">The project</p>
+            <h2>Make board game data fun to explore</h2>
+            <p>Meeplewood brings together logged plays from BGStats, collection data, and Geek Preview lists from BoardGameGeek.</p>
+            <p>The goal is to turn those sources into useful insights and playful decision support for board game enthusiasts.</p>
+        </div>
+        <div class="story-card story-card-accent">
+            <p class="story-eyebrow">Currently growing</p>
+            <h2>Tools already in the grove</h2>
+            <ul>
+                <li>Review and combine Geek Preview lists.</li>
+                <li>Add personal preview priorities and notes locally.</li>
+                <li>Explore a collection as an interactive game forest.</li>
+            </ul>
+        </div>
     </div>
-</div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Total Games</h3>
+            <p class="stat-number" id="totalGames">0</p>
+            <span>in your collection</span>
+        </div>
+        <div class="stat-card">
+            <h3>Recent Plays</h3>
+            <p class="stat-number" id="recentPlays">0</p>
+            <span>new adventures</span>
+        </div>
+        <div class="stat-card">
+            <h3>Favorite Game</h3>
+            <p class="stat-number" id="favoriteGame">-</p>
+            <span>your current favourite</span>
+        </div>
+    </div>
+
+    <div class="recent-activity">
+        <div class="section-title">
+            <p class="story-eyebrow">Along the trail</p>
+            <h2>Recent Activity</h2>
+        </div>
+        <div id="activityList" class="activity-list">
+            <p class="empty-state">No recent activity yet. Your next game night will leave a trail here.</p>
+        </div>
+    </div>
+</section>
