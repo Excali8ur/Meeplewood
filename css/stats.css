@@ -107,3 +107,122 @@
     font-style: italic;
     padding: 40px;
 }
+
+/* Woodland statistics */
+.stats-hero {
+    background:
+        radial-gradient(circle at 18% 10%, rgba(218,234,143,.2), transparent 24%),
+        linear-gradient(120deg, #315b32, #6d8d44);
+}
+
+.stats-filters {
+    gap: 8px;
+    margin: 0;
+    padding: 12px;
+    border: 2px solid rgba(87, 105, 53, .18);
+    border-radius: 18px;
+    background: rgba(255,249,223,.9);
+    box-shadow: 0 8px 20px rgba(44, 69, 35, .1);
+}
+
+.filter-button {
+    color: var(--wood-700);
+    border: 1px solid #b7c58c;
+    border-radius: 16px 6px 16px 6px;
+    background: #f9f7dd;
+    box-shadow: none;
+}
+
+.filter-button:hover {
+    color: var(--wood-800);
+    border-color: #7f9d50;
+    background: #edf1ca;
+}
+
+.filter-button.active {
+    color: #fff;
+    border-color: var(--wood-700);
+    background: linear-gradient(145deg, #6f9248, #3f6b37);
+    box-shadow: 0 4px 0 rgba(42, 72, 36, .18);
+}
+
+.stats-grid {
+    gap: 16px;
+    margin-top: 0;
+}
+
+.stats-card {
+    position: relative;
+    min-height: 280px;
+    padding: 22px;
+    overflow: hidden;
+    border: 2px solid rgba(83, 103, 50, .18);
+    border-radius: 28px 28px 58px 20px;
+    background:
+        radial-gradient(circle at 95% 5%, rgba(186,207,91,.18), transparent 22%),
+        rgba(255, 250, 229, .96);
+    box-shadow: var(--forest-shadow);
+}
+
+.stats-card:nth-child(2n) {
+    border-radius: 28px 58px 22px 28px;
+}
+
+.stats-card h3 {
+    color: var(--wood-700);
+    border-bottom: 2px solid #d8dda8;
+    letter-spacing: .07em;
+}
+
+.chart-container {
+    min-height: 190px;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.55), rgba(226,235,184,.5)),
+        repeating-linear-gradient(90deg, transparent 0 54px, rgba(83,111,54,.06) 55px);
+}
+
+.chart-placeholder {
+    color: var(--muted-ink);
+}
+
+.detailed-stats {
+    margin-top: 0;
+    padding: 24px;
+    overflow-x: auto;
+    border: 2px solid rgba(90, 72, 39, .16);
+    border-radius: 28px;
+    background: rgba(255,249,223,.92);
+    box-shadow: var(--forest-shadow);
+}
+
+.detailed-stats h2 {
+    color: var(--wood-800);
+    border-bottom-color: #d7dca6;
+}
+
+.stats-table {
+    border-spacing: 0;
+    border-collapse: separate;
+}
+
+.stats-table th {
+    color: #fdfbe8;
+    background: var(--wood-700);
+}
+
+.stats-table th:first-child {
+    border-radius: 12px 0 0 0;
+}
+
+.stats-table th:last-child {
+    border-radius: 0 12px 0 0;
+}
+
+.stats-table td {
+    border-bottom-color: #d9ddad;
+}
+
+.stats-table tbody tr:hover {
+    background: #eff2ce;
+}

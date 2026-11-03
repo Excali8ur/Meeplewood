@@ -10,7 +10,7 @@ const CollectionData = {
     fileHandleId: 'defaultCollectionFile',
 
     /**
-     * Read the configured default path from settings (falls back to data/collection.json).
+     * Read the configured default path from settings (falls back to the bundled example collection).
      */
     getConfiguredPath: function() {
         const savedSettings = localStorage.getItem('meeplewood_settings');
@@ -24,7 +24,7 @@ const CollectionData = {
                 console.log('Error parsing settings, using default collection path');
             }
         }
-        return 'data/collection.json';
+        return 'data/collection-ExampleData.json';
     },
 
     // Open indexedDB connection (shared store with settings.js/geek-preview.js)
@@ -81,7 +81,7 @@ const CollectionData = {
     },
 
     /**
-     * Load the current collection.json (if present) into cache.
+     * Load the current collection file (if present) into cache.
      * Respects the configured default path, including local (File System Access) files.
      */
     init: async function() {

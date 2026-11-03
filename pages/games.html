@@ -1,26 +1,104 @@
-<h1>Games Library</h1>
-<div class="games-header">
-    <input type="text" id="gameSearch" placeholder="Search games..." class="search-input">
-    <button id="addGameBtn" class="primary-button">+ Add Game</button>
-</div>
+<section class="game-forest" aria-labelledby="gameForestTitle">
+    <header class="forest-hero">
+        <div class="forest-hero-copy">
+            <p class="forest-kicker">Your living board game collection</p>
+            <h1 id="gameForestTitle">The Game Grove</h1>
+            <p>Every game grows as a leaf. Wander between trees to find old favourites, unplayed treasures, and games still on your wish list.</p>
+        </div>
+        <img class="forest-hero-guide" src="img/forest/leafy.png" alt="" aria-hidden="true">
+        <div class="forest-summary" aria-live="polite">
+            <div><strong id="forestVisibleCount">0</strong><span>leaves shown</span></div>
+            <div><strong id="forestOwnedCount">0</strong><span>owned games</span></div>
+            <div><strong id="forestUnplayedCount">0</strong><span>still unplayed</span></div>
+        </div>
+    </header>
 
-<div class="games-filters" id="gamesFilters">
-    <span class="games-filters-label">Show:</span>
-    <label><input type="checkbox" id="filterOwn">Own</label>
-    <label><input type="checkbox" id="filterWantToPlay">Want to Play</label>
-    <label><input type="checkbox" id="filterWantToBuy">Want to Buy</label>
-    <label><input type="checkbox" id="filterWant">Want</label>
-    <label><input type="checkbox" id="filterWishlist">Wishlist</label>
-    <label><input type="checkbox" id="filterForTrade">For Trade</label>
-    <label><input type="checkbox" id="filterPreOrdered">Preordered</label>
-    <label><input type="checkbox" id="filterPrevOwned">Previously Owned</label>
-</div>
+    <div class="forest-explorer">
+    <div id="gamesForest" class="games-forest">
+        <div class="forest-loading">
+            <span class="forest-loading-leaf"></span>
+            <p>Growing your collection…</p>
+        </div>
+    </div>
 
-<div id="gamesGrid" class="games-grid">
-    <p style="grid-column: 1/-1; text-align: center; color: #666;">Loading games...</p>
-</div>
+    <section class="forest-controls" aria-label="Search, sort, and filter games">
+        <div class="forest-search">
+            <label for="gameSearch">Find a game</label>
+            <input type="search" id="gameSearch" placeholder="Search titles, mechanisms, or themes">
+        </div>
+
+        <div class="forest-control-grid">
+            <label>
+                <span>Collection tree</span>
+                <select id="statusFilter">
+                    <option value="all">All trees</option>
+                    <option value="own">Owned</option>
+                    <option value="wantToPlay">Want to play</option>
+                    <option value="want">Wanted</option>
+                    <option value="wishlist">Wishlist</option>
+                    <option value="wantToBuy">Want to buy</option>
+                    <option value="preOrdered">Preordered</option>
+                    <option value="forTrade">For trade</option>
+                    <option value="prevOwned">Previously owned</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Times played</span>
+                <select id="playsFilter">
+                    <option value="all">Any number</option>
+                    <option value="unplayed">Unplayed</option>
+                    <option value="one">Played once</option>
+                    <option value="few">2–4 plays</option>
+                    <option value="many">5+ plays</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Playtime</span>
+                <select id="playtimeFilter">
+                    <option value="all">Any length</option>
+                    <option value="30">Up to 30 minutes</option>
+                    <option value="60">Up to 60 minutes</option>
+                    <option value="120">Up to 2 hours</option>
+                    <option value="121">More than 2 hours</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Mechanism</span>
+                <select id="mechanismFilter">
+                    <option value="all">All mechanisms</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Theme or tag</span>
+                <select id="themeFilter">
+                    <option value="all">All themes</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Arrange leaves</span>
+                <select id="gameSort">
+                    <option value="name-asc">Title A–Z</option>
+                    <option value="plays-desc">Most played</option>
+                    <option value="plays-asc">Least played</option>
+                    <option value="time-asc">Shortest playtime</option>
+                    <option value="time-desc">Longest playtime</option>
+                    <option value="recent">Recently played</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="forest-control-footer">
+            <p id="forestResultText" aria-live="polite">Preparing the grove…</p>
+            <button type="button" id="clearGameFilters">Clear filters</button>
+        </div>
+    </section>
+    </div>
+</section>
 
 <div id="gameDetailsOverlay" class="game-details-overlay"></div>
-<div id="gameDetails" class="game-details">
-    <!-- Game details will be shown here -->
-</div>
+<aside id="gameDetails" class="game-details" aria-label="Game details" aria-hidden="true"></aside>

@@ -644,3 +644,258 @@
         width: 100%;
     }
 }
+
+/* Preview Market forest theme */
+.preview-hero {
+    background:
+        radial-gradient(circle at 16% 10%, rgba(179,190,210,.18), transparent 25%),
+        linear-gradient(120deg, #284b3a, #59626f);
+}
+
+.preview-controls {
+    margin: 0;
+    padding: 18px;
+    border: 2px solid rgba(87, 76, 44, .17);
+    border-radius: 26px;
+    background: rgba(255,249,223,.94);
+    box-shadow: var(--forest-shadow);
+}
+
+.file-controls {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #d9d5a3;
+}
+
+.file-controls h4 {
+    margin: 0;
+    color: var(--wood-800);
+}
+
+#currentFileName {
+    color: var(--muted-ink);
+    font-size: .86rem;
+}
+
+.entry-filters {
+    padding: 16px;
+    border: 1px solid #c9d197;
+    border-radius: 18px;
+    background: #f2f1d1;
+}
+
+.entry-filters h3,
+.filter-group label,
+.filter-group-title,
+.sort-controls label {
+    color: var(--wood-800);
+}
+
+.filter-group select,
+.search-bar input,
+.priority-select,
+.notes-input {
+    color: var(--ink);
+    border: 1px solid #b5c08a;
+    border-radius: 11px;
+    background: #fffef3;
+}
+
+.filter-group select:focus,
+.search-bar input:focus,
+.priority-select:focus,
+.notes-input:focus {
+    border-color: var(--wood-500);
+}
+
+.segmented {
+    border-color: #acb982;
+    border-radius: 14px 6px 14px 6px;
+    background: #fffef1;
+}
+
+.segmented-btn,
+.segmented-btn:hover {
+    color: var(--wood-800);
+    border-color: transparent;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.segmented-btn:hover {
+    background: #e9edc4;
+}
+
+.segmented-btn.active {
+    color: #fff;
+    border-color: var(--wood-700);
+    background: var(--wood-700);
+    box-shadow: none;
+}
+
+.filter-buttons {
+    gap: 7px;
+}
+
+.filter-btn {
+    padding: 8px 13px;
+    color: #4a5645;
+    border: 1px solid #b8c291;
+    border-radius: 16px 6px 16px 6px;
+    background: #edebd1;
+    box-shadow: none;
+}
+
+.filter-btn:hover {
+    color: var(--ink);
+    border-color: #849b5a;
+    background: #e3e8bc;
+}
+
+.filter-btn.active,
+.filter-btn.priority-none.active {
+    border-color: var(--wood-700);
+    background: var(--wood-700);
+}
+
+.filter-btn.priority-1.active {
+    background: #386c3d;
+}
+
+.filter-btn.priority-2.active {
+    background: #3d6477;
+}
+
+.filter-btn.priority-3.active {
+    background: #68685e;
+}
+
+.filter-btn.priority-4.active {
+    background: #8b4d47;
+}
+
+.search-bar {
+    margin: 12px 0;
+}
+
+.sort-controls {
+    flex-wrap: wrap;
+    margin-bottom: 0;
+}
+
+.sort-btn {
+    color: var(--wood-800);
+    border: 1px solid #b4bf8a;
+    border-radius: 14px 5px 14px 5px;
+    background: #fffef1;
+    box-shadow: none;
+}
+
+.sort-btn:hover {
+    border-color: var(--wood-500);
+    background: #eef1ca;
+}
+
+.sort-btn.active {
+    color: #fff;
+    border-color: var(--wood-700);
+    background: var(--wood-700);
+}
+
+.spiel-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.spiel-card {
+    border: 2px solid rgba(83, 103, 50, .2);
+    border-left: 6px solid #7b8764;
+    border-radius: 34px 18px 44px 16px;
+    background: rgba(255,250,230,.97);
+    box-shadow: var(--forest-shadow);
+}
+
+.spiel-card:nth-child(2n) {
+    border-radius: 18px 34px 16px 44px;
+}
+
+.spiel-card:hover {
+    transform: translateY(-4px) rotate(-.25deg);
+    box-shadow: 0 18px 30px rgba(38, 63, 32, .2);
+}
+
+.card-header {
+    padding: 16px 18px;
+    border-bottom: 1px solid #d8dba8;
+    background:
+        radial-gradient(circle at 92% 10%, rgba(153,177,82,.2), transparent 30%),
+        linear-gradient(135deg, #f6f3d5, #e8edbf);
+}
+
+.game-title {
+    color: var(--wood-800);
+}
+
+.card-body {
+    padding: 18px;
+}
+
+.info-row,
+.info-row .value {
+    color: var(--ink);
+}
+
+.info-row .label {
+    color: var(--muted-ink);
+}
+
+.entry-title,
+.historical-entry,
+.bgg-info {
+    border-radius: 13px !important;
+    background: #f1efd0 !important;
+}
+
+.loading-screen,
+.no-games,
+.no-results {
+    min-height: 300px;
+    border: 2px dashed rgba(75, 103, 52, .34);
+    border-radius: 28px;
+    background: rgba(255,249,223,.8);
+}
+
+.loading-spinner {
+    width: 52px;
+    height: 36px;
+    border: 0;
+    border-radius: 100% 0 100% 0;
+    background: var(--wood-500);
+    animation: preview-leaf 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes preview-leaf {
+    to { transform: translateY(-10px) rotate(14deg); }
+}
+
+.metadata-card {
+    color: #fffdeb;
+    border: 2px solid rgba(255,255,255,.16);
+    border-radius: 28px;
+    background: linear-gradient(135deg, #385f3a, #665a43);
+    box-shadow: var(--forest-shadow);
+}
+
+@media (max-width: 768px) {
+    .preview-controls {
+        padding: 13px;
+    }
+
+    .spiel-grid {
+        grid-template-columns: 1fr;
+    }
+}

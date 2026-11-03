@@ -57,8 +57,14 @@
 }
 
 .empty-icon {
-    font-size: 64px;
     margin-bottom: 20px;
+}
+
+.empty-icon img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 10px rgba(38, 63, 32, .2));
 }
 
 .group-details {
@@ -170,4 +176,51 @@
     margin-top: 20px;
 }
 
+/* Woodland gathering place */
+.groups-hero {
+    background: linear-gradient(120deg, #305a35, #806b3e);
+}
 
+.groups-header {
+    margin: 0;
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255,249,223,.9);
+}
+
+.groups-list {
+    margin-top: 0;
+}
+
+.group-card {
+    border-color: #c8d195;
+    border-radius: 28px 28px 52px 20px;
+    background: var(--parchment);
+    box-shadow: var(--forest-shadow);
+}
+
+.group-card:hover {
+    border-color: var(--wood-500);
+}
+
+.group-details {
+    border: 2px solid #d1cf9a;
+    border-radius: 24px;
+    background: var(--parchment);
+}
+
+.member-item {
+    border: 1px solid #d5d9a8;
+    background: #f4f2d3;
+}
+
+.member-avatar {
+    background: var(--wood-700);
+}
+
+.form-group input,
+.form-group textarea {
+    border-color: #bbc590;
+    border-radius: 10px;
+    background: #fffef2;
+}
