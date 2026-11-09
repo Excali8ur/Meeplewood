@@ -14,6 +14,10 @@ const GamesPage = {
         playtime: 'all',
         mechanism: 'all',
         theme: 'all',
+        expansion: 'all',
+        publisher: 'all',
+        rating: 'all',
+        complexity: 'all',
         sort: 'name-asc'
     },
 
@@ -172,6 +176,8 @@ const GamesPage = {
             lastPlayed: game.lastPlayed || (sourcePlayStats && sourcePlayStats.lastPlayed) || '',
             mechanisms: [...new Set(mechanisms.filter(Boolean))],
             themes: [...new Set(themes.filter(Boolean))],
+            isExpansion: game.isExpansion ?? (source && source.isExpansion) ?? false,
+            publisher: game.publisher || this.getPublisher(source) || '',
             localImageUrl: game.localImageUrl || localImageUrl,
             urlThumb: game.urlThumb || (source && (source.urlThumb || source.urlImage)) || '',
             urlImage: game.urlImage || (source && (source.urlImage || source.urlThumb)) || ''
@@ -189,6 +195,18 @@ const GamesPage = {
                 return item.name || item.label || item.value || '';
             });
         });
+    },
+
+    getPublisher: function(source) {
+        if (!source || !Array.isArray(source.copies) || source.copies.length === 0) return '';
+        const firstCopy = source.copies[0];
+        if (!firstCopy.metaData) return '';
+        try {
+            const metadata = typeof firstCopy.metaData === 'string' ? JSON.parse(firstCopy.metaData) : firstCopy.metaData;
+            return metadata.VersionPublishers || '';
+        } catch {
+            return '';
+        }
     },
 
     getCollectionStatus: function(game, source) {
@@ -222,6 +240,10 @@ const GamesPage = {
             playtimeFilter: event => { this.filters.playtime = event.target.value; },
             mechanismFilter: event => { this.filters.mechanism = event.target.value; },
             themeFilter: event => { this.filters.theme = event.target.value; },
+            expansionFilter: event => { this.filters.expansion = event.target.value; },
+            publisherFilter: event => { this.filters.publisher = event.target.value; },
+            ratingFilter: event => { this.filters.rating = event.target.value; },
+            complexityFilter: event => { this.filters.complexity = event.target.value; },
             gameSort: event => { this.filters.sort = event.target.value; }
         };
 
@@ -237,6 +259,41 @@ const GamesPage = {
         document.getElementById('clearGameFilters')?.addEventListener('click', () => this.clearFilters());
         document.getElementById('gameDetailsOverlay')?.addEventListener('click', () => this.hideGameDetails());
         document.addEventListener('keydown', this.handleEscapeKey);
+
+        const ownedDiv = document.getElementById('forestOwnedDiv');
+        const unplayedDiv = document.getElementById('forestUnplayedDiv');
+
+        if (ownedDiv) {
+            ownedDiv.addEventListener('click', () => {
+                this.filters.status = 'own';
+                document.getElementById('statusFilter').value = 'own';
+                this.applyFilters();
+            });
+            ownedDiv.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    this.filters.status = 'own';
+                    document.getElementById('statusFilter').value = 'own';
+                    this.applyFilters();
+                }
+            });
+        }
+
+        if (unplayedDiv) {
+            unplayedDiv.addEventListener('click', () => {
+                this.filters.plays = 'unplayed';
+                document.getElementById('playsFilter').value = 'unplayed';
+                this.applyFilters();
+            });
+            unplayedDiv.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    this.filters.plays = 'unplayed';
+                    document.getElementById('playsFilter').value = 'unplayed';
+                    this.applyFilters();
+                }
+            });
+        }
     },
 
     handleEscapeKey: function(event) {
@@ -246,6 +303,7 @@ const GamesPage = {
     populateTaxonomyFilters: function() {
         this.populateSelect('mechanismFilter', this.gamesData.flatMap(game => game.mechanisms));
         this.populateSelect('themeFilter', this.gamesData.flatMap(game => game.themes));
+        this.populateSelect('publisherFilter', this.gamesData.flatMap(game => game.publisher).filter(Boolean));
     },
 
     populateSelect: function(id, values) {
@@ -272,6 +330,10 @@ const GamesPage = {
             playtime: 'all',
             mechanism: 'all',
             theme: 'all',
+            expansion: 'all',
+            publisher: 'all',
+            rating: 'all',
+            complexity: 'all',
             sort: 'name-asc'
         };
 
@@ -282,6 +344,10 @@ const GamesPage = {
             playtimeFilter: 'all',
             mechanismFilter: 'all',
             themeFilter: 'all',
+            expansionFilter: 'all',
+            publisherFilter: 'all',
+            ratingFilter: 'all',
+            complexityFilter: 'all',
             gameSort: 'name-asc'
         };
         Object.entries(values).forEach(([id, value]) => {
@@ -300,7 +366,11 @@ const GamesPage = {
             const matchesPlaytime = this.matchesPlaytime(game.playingTime);
             const matchesMechanism = this.filters.mechanism === 'all' || game.mechanisms.includes(this.filters.mechanism);
             const matchesTheme = this.filters.theme === 'all' || game.themes.includes(this.filters.theme);
-            return matchesSearch && matchesStatus && matchesPlays && matchesPlaytime && matchesMechanism && matchesTheme;
+            const matchesExpansion = this.matchesExpansion(game.isExpansion);
+            const matchesPublisher = this.matchesPublisher(game.publisher);
+            const matchesRating = this.matchesRating(game);
+            const matchesComplexity = this.matchesComplexity(game);
+            return matchesSearch && matchesStatus && matchesPlays && matchesPlaytime && matchesMechanism && matchesTheme && matchesExpansion && matchesPublisher && matchesRating && matchesComplexity;
         });
 
         this.filteredGames = this.sortGames(filtered);
@@ -321,6 +391,66 @@ const GamesPage = {
         const minutes = Number(time) || 0;
         if (this.filters.playtime === '121') return minutes > 120;
         return minutes > 0 && minutes <= Number(this.filters.playtime);
+    },
+
+    matchesExpansion: function(isExpansion) {
+        if (this.filters.expansion === 'all') return true;
+        if (this.filters.expansion === 'base') return !isExpansion;
+        if (this.filters.expansion === 'expansion') return isExpansion;
+        return true;
+    },
+
+    matchesPublisher: function(publisher) {
+        if (this.filters.publisher === 'all') return true;
+        return publisher === this.filters.publisher;
+    },
+
+    matchesRating: function(game) {
+        if (this.filters.rating === 'all') return true;
+        
+        // Get BGG rating from game data
+        const bggId = game.bggId;
+        if (!bggId || !window.GameDatabase || !window.GameDatabase.cache) {
+            return true; // If no BGG data, include in results
+        }
+        
+        const bggData = window.GameDatabase.cache[String(bggId)];
+        if (!bggData) {
+            return true; // If no BGG data for this game, include in results
+        }
+        
+        const rating = bggData.rating && bggData.rating.average ? parseFloat(bggData.rating.average) : 0;
+        
+        if (this.filters.rating === '8+') return rating >= 8;
+        if (this.filters.rating === '7+') return rating >= 7;
+        if (this.filters.rating === '6+') return rating >= 6;
+        if (this.filters.rating === '5+') return rating >= 5;
+        
+        return true;
+    },
+
+    matchesComplexity: function(game) {
+        if (this.filters.complexity === 'all') return true;
+        
+        // Get BGG weight (complexity) from game data
+        const bggId = game.bggId;
+        if (!bggId || !window.GameDatabase || !window.GameDatabase.cache) {
+            return true; // If no BGG data, include in results
+        }
+        
+        const bggData = window.GameDatabase.cache[String(bggId)];
+        if (!bggData) {
+            return true; // If no BGG data for this game, include in results
+        }
+        
+        const weight = bggData.weight ? parseFloat(bggData.weight) : 0;
+        
+        if (this.filters.complexity === '3+') return weight >= 3;
+        if (this.filters.complexity === '2.5+') return weight >= 2.5;
+        if (this.filters.complexity === '2+') return weight >= 2;
+        if (this.filters.complexity === '1+') return weight >= 1;
+        
+        return true;
     },
 
     sortGames: function(games) {
@@ -480,12 +610,13 @@ const GamesPage = {
             : 'Unknown';
         const imageUrl = this.getGameImageUrl(game);
         const tags = [...game.mechanisms, ...game.themes];
+        const gameTypeLabel = game.isExpansion ? 'Expansion' : 'Base game';
+        const publisherLabel = game.publisher || 'Unknown';
 
         details.innerHTML = `
             <button type="button" class="game-details-close" aria-label="Close game details">&times;</button>
             <h2>${this.escapeHtml(game.name)}</h2>
             <div class="game-details-image">
-                <span class="game-leaf-fallback" aria-hidden="true">${this.escapeHtml(game.name.charAt(0).toUpperCase())}</span>
                 ${imageUrl ? `<img src="${this.escapeHtml(imageUrl)}" alt="${this.escapeHtml(game.name)}">` : ''}
             </div>
             <div class="game-details-stats">
@@ -496,6 +627,14 @@ const GamesPage = {
             <p class="game-details-label">Collection status</p>
             <div class="game-details-tags">
                 ${(statusLabels.length ? statusLabels : ['Other game']).map(label => `<span>${this.escapeHtml(label)}</span>`).join('')}
+            </div>
+            <p class="game-details-label">Game type</p>
+            <div class="game-details-tags">
+                <span>${gameTypeLabel}</span>
+            </div>
+            <p class="game-details-label">Publisher</p>
+            <div class="game-details-tags">
+                <span>${this.escapeHtml(publisherLabel)}</span>
             </div>
             ${tags.length ? `
                 <p class="game-details-label">Mechanisms, themes, and tags</p>

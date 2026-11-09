@@ -8,8 +8,8 @@
         <img class="forest-hero-guide" src="img/forest/leafy.png" alt="" aria-hidden="true">
         <div class="forest-summary" aria-live="polite">
             <div><strong id="forestVisibleCount">0</strong><span>leaves shown</span></div>
-            <div><strong id="forestOwnedCount">0</strong><span>owned games</span></div>
-            <div><strong id="forestUnplayedCount">0</strong><span>still unplayed</span></div>
+            <div id="forestOwnedDiv" role="button" tabindex="0" aria-label="Filter by owned games"><strong id="forestOwnedCount">0</strong><span>owned games</span></div>
+            <div id="forestUnplayedDiv" role="button" tabindex="0" aria-label="Filter by unplayed games"><strong id="forestUnplayedCount">0</strong><span>still unplayed</span></div>
         </div>
     </header>
 
@@ -76,6 +76,44 @@
                 <span>Theme or tag</span>
                 <select id="themeFilter">
                     <option value="all">All themes</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Game type</span>
+                <select id="expansionFilter">
+                    <option value="all">All games</option>
+                    <option value="base">Base games only</option>
+                    <option value="expansion">Expansions only</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Publisher</span>
+                <select id="publisherFilter">
+                    <option value="all">All publishers</option>
+                </select>
+            </label>
+
+            <label>
+                <span>BGG Rating</span>
+                <select id="ratingFilter">
+                    <option value="all">All ratings</option>
+                    <option value="8+">8.0 and above</option>
+                    <option value="7+">7.0 and above</option>
+                    <option value="6+">6.0 and above</option>
+                    <option value="5+">5.0 and above</option>
+                </select>
+            </label>
+
+            <label>
+                <span>Complexity</span>
+                <select id="complexityFilter">
+                    <option value="all">All complexity</option>
+                    <option value="3+">3.0 and above</option>
+                    <option value="2.5+">2.5 and above</option>
+                    <option value="2+">2.0 and above</option>
+                    <option value="1+">1.0 and above</option>
                 </select>
             </label>
 

@@ -192,6 +192,13 @@ const GeekPreviewPage = {
             loadFileBtn.addEventListener('click', this.loadSpielFile.bind(this));
         }
         
+        // Keyboard handler for Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.hideGameDetails();
+            }
+        });
+        
         // Entry filter controls - no debouncing for dropdowns (single selection events)
         const filterYear = document.getElementById('filterYear');
         if (filterYear) {
@@ -713,7 +720,31 @@ const GeekPreviewPage = {
             grid.innerHTML = this.filteredGames.map(game => this.createGameCard(game)).join('');
         }
         
-        // Event listeners are handled by event delegation in attachEventListeners
+        this.attachGameCardListeners();
+    },
+    
+    attachGameCardListeners: function() {
+        const grid = document.getElementById('spielGrid');
+        if (!grid) return;
+        
+        // Add click listener for game cards using event delegation
+        grid.addEventListener('click', (event) => {
+            const card = event.target.closest('.spiel-card');
+            if (card) {
+                const gameName = card.querySelector('.game-title')?.textContent;
+                const game = this.filteredGames.find(g => g.Name === gameName);
+                if (game) {
+                    this.showGameDetails(game);
+                }
+            }
+        });
+        
+        // Setup overlay listener once
+        const overlay = document.getElementById('gameDetailsOverlay');
+        if (overlay && !overlay.hasListener) {
+            overlay.addEventListener('click', () => this.hideGameDetails());
+            overlay.hasListener = true;
+        }
     },
     
     sortFilteredGames: function() {
@@ -978,11 +1009,120 @@ const GeekPreviewPage = {
         return users[0] || {};
     },
     
+    showGameDetails: function(game) {
+        const detailsPanel = document.getElementById('gameDetails');
+        const overlay = document.getElementById('gameDetailsOverlay');
+        
+        if (!detailsPanel || !overlay) return;
+        
+        const isExpansion = (game.Type || '').toLowerCase() === 'expansion';
+        const gameTypeLabel = isExpansion ? 'Expansion' : 'Base game';
+        const publisherLabel = game.Publisher || 'Unknown';
+        
+        // Get BGG data if available
+        const bggData = game.BGGId && window.GameDatabase ? window.GameDatabase.cache[game.BGGId] : null;
+        
+        // Extract BGG info for display
+        const rating = bggData && bggData.rating && bggData.rating.average ? bggData.rating.average.toFixed(1) : 'N/A';
+        const weight = bggData && bggData.weight ? bggData.weight.toFixed(1) : 'N/A';
+        const players = bggData && bggData.minPlayers && bggData.maxPlayers ? 
+            `${bggData.minPlayers}–${bggData.maxPlayers}` : 'N/A';
+        const playTime = bggData && bggData.playingTime ? bggData.playingTime : 'N/A';
+        
+        const bggLink = game.BGGId ? `https://boardgamegeek.com/boardgame/${game.BGGId}` : '';
+        const bggLinkHtml = bggLink ? `<a href="${bggLink}" target="_blank" class="bgg-link">View on BoardGameGeek</a>` : '';
+        
+        // Try .jpg first, fallback to .png
+        const gameImagePathJpg = game.BGGId ? `img/games/${game.BGGId}.jpg` : '';
+        const gameImagePathPng = game.BGGId ? `img/games/${game.BGGId}.png` : '';
+        const imageHtml = gameImagePathJpg ? `
+            <div class="game-details-image" style="height: 160px; width: 120px; border-radius: 12px; margin-bottom: 16px; overflow: hidden; flex-shrink: 0;">
+                <img src="${gameImagePathJpg}" alt="${this.escapeHtml(game.Name)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${gameImagePathPng}'; this.onerror=() => this.parentElement.style.display='none';">
+            </div>
+        ` : '';
+        
+        detailsPanel.innerHTML = `
+            <button class="details-close" aria-label="Close details">✕</button>
+            <div class="details-content">
+                ${imageHtml}
+                
+                <h2>${this.escapeHtml(game.Name)}</h2>
+                
+                <div class="game-details-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; text-align: center; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 18px;">${playTime}</div>
+                        <div style="font-size: 12px; color: var(--muted-ink);">Minutes</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 18px;">${players}</div>
+                        <div style="font-size: 12px; color: var(--muted-ink);">Players</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 18px;">⭐ ${rating}</div>
+                        <div style="font-size: 12px; color: var(--muted-ink);">BGG Rating</div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>Game Info</h3>
+                    <div class="info-row">
+                        <span class="label">Game Type:</span>
+                        <span class="value">${gameTypeLabel}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Publisher:</span>
+                        <span class="value">${this.escapeHtml(publisherLabel)}</span>
+                    </div>
+                    ${game.Version ? `
+                    <div class="info-row">
+                        <span class="label">Version:</span>
+                        <span class="value">${this.escapeHtml(game.Version)}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                ${weight !== 'N/A' ? `
+                <div class="detail-section">
+                    <h3>Additional Info</h3>
+                    <div class="info-row">
+                        <span class="label">Complexity:</span>
+                        <span class="value">🧩 ${weight}/5</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${bggLinkHtml ? `<div class="detail-actions">${bggLinkHtml}</div>` : ''}
+            </div>
+        `;
+        
+        detailsPanel.classList.add('open');
+        overlay.classList.add('open');
+        
+        const closeBtn = detailsPanel.querySelector('.details-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.hideGameDetails());
+        }
+    },
+    
+    hideGameDetails: function() {
+        const detailsPanel = document.getElementById('gameDetails');
+        const overlay = document.getElementById('gameDetailsOverlay');
+        
+        if (detailsPanel) {
+            detailsPanel.classList.remove('open');
+        }
+        
+        if (overlay) {
+            overlay.classList.remove('open');
+        }
+    },
+    
     escapeHtml: function(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
+
 };
 
 // Export for use in other modules
